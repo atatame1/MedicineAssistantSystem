@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"d:\\\\JavaProject\\\\MedicineAssistantSystem\\\\src\\\\main\\\\java\\\\com\\\\atatame\\\\medicineassistantsystem\\\\model\\\\dto\")"
+    ]
+  }
+}
