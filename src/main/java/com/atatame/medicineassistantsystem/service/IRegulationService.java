@@ -1,7 +1,9 @@
 package com.atatame.medicineassistantsystem.service;
 
+import com.atatame.medicineassistantsystem.model.dto.response.RegulationReminderResponse;
 import com.atatame.medicineassistantsystem.model.entity.Regulation;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2026-03-26
  */
 public interface IRegulationService extends IService<Regulation> {
-
+    List<Regulation> listByKeyword(String keyword);
+    List<RegulationReminderResponse> reminders();
 }

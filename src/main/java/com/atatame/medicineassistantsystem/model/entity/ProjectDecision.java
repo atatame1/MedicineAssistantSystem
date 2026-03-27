@@ -22,67 +22,78 @@ public class ProjectDecision {
     /**
      * 项目 ID
      */
+    @TableField("project_id")
     private Long projectId;
 
     /**
      * 决策类型 (FORMULATION-配方决策 EXPERIMENT-实验决策 RESOURCE-资源决策 RISK-风险控制)
      */
+    @TableField("decision_type")
     private String decisionType;
 
     /**
      * 决策标题
      */
+    @TableField("title")
     private String title;
 
     /**
      * 决策内容
      */
+    @TableField("content")
     private String content;
 
     /**
      * AI 分析建议
      */
+    @TableField("ai_recommendation")
     private String aiRecommendation;
 
     /**
      * 专家结论
      */
+    @TableField("expert_conclusion")
     private String expertConclusion;
 
     /**
      * 证据链 (JSON 格式)
      */
+    @TableField("evidence_chain")
     private String evidenceChain;
 
     /**
      * 置信度 (0-1)
      */
+    @TableField("confidence")
     private Double confidence;
 
     /**
      * 决策人
      */
+    @TableField("projector_id")
     private Long projectorId;
 
     /**
      * 版本号
      */
+    @TableField("version")
     private Integer version;
 
     /**
      * 关联文档 ID
      */
+    @TableField("document_id")
     private Long documentId;
 
     /**
      * 创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;
 
     /**
      * 更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 }

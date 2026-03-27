@@ -22,57 +22,67 @@ public class ProjectDocument {
     /**
      * 项目 ID
      */
+    @TableField("project_id")
     private Long projectId;
 
     /**
      * 文档类型 (PROJECT_REPORT-项目报告 RESEARCH-研究文档 EXPERIMENT-实验记录 TECHNICAL-技术资料)
      */
+    @TableField("doc_type")
     private String docType;
 
     /**
      * 文档名称
      */
+    @TableField("doc_name")
     private String docName;
 
     /**
      * 文件路径
      */
+    @TableField("file_path")
     private String filePath;
 
     /**
      * 文件大小 (字节)
      */
+    @TableField("file_size")
     private Long fileSize;
 
     /**
      * 文件类型
      */
+    @TableField("file_type")
     private String fileType;
 
     /**
      * 版本号
      */
+    @TableField("version")
     private String version;
 
     /**
      * 上传人
      */
+    @TableField("upload_by")
     private String uploadBy;
 
     /**
      * 上传时间
      */
-    @TableField(fill = FieldFill.INSERT)
+    @TableField(value = "upload_time", fill = FieldFill.INSERT)
     private LocalDateTime uploadTime;
 
     /**
      * 分类标签 (逗号分隔)
      */
+    @TableField("tags")
     private String tags;
 
     /**
      * 摘要/描述
      */
+    @TableField("summary")
     private String summary;
 
 }

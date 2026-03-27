@@ -2,6 +2,7 @@ package com.atatame.medicineassistantsystem.service;
 
 import com.atatame.medicineassistantsystem.model.entity.Disease;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * <p>
@@ -12,5 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  * @since 2026-03-26
  */
 public interface IDiseaseService extends IService<Disease> {
-
+    List<Disease> listByKeyword(String keyword);
 }

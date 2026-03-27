@@ -22,16 +22,25 @@ public class ProjectMember {
     /**
      * 项目 ID
      */
+    @TableField("project_id")
     private Long projectId;
 
     /**
      * 用户 ID
      */
+    @TableField("user_id")
     private Long userId;
 
     /**
      * 用户角色 (LEAD-负责人 MEMBER-普通成员 REVIEWER-评审员 OBSERVER-观察员)
      */
+    @TableField("role")
     private String role;
+
+    /**
+     * 加入时间
+     */
+    @TableField(value = "join_time", fill = FieldFill.INSERT)
+    private LocalDateTime joinTime;
 
 }

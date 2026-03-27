@@ -22,43 +22,63 @@ public class User {
     /**
      * 用户名（登录账号）
      */
+    @TableField("username")
     private String username;
 
     /**
      * 密码
      */
+    @TableField("password")
     private String password;
 
     /**
      * 用户昵称
      */
+    @TableField("nickname")
     private String nickname;
 
     /**
      * 用户邮箱
      */
+    @TableField("email")
     private String email;
 
     /**
      * 手机号码
      */
+    @TableField("phone")
     private String phone;
 
     /**
      * 性别 (MALE-男 FEMALE-女 OTHER-其他)
      */
+    @TableField("gender")
     private String gender;
 
     /**
      * 头像 URL
      */
+    @TableField("avatar_url")
     private String avatarUrl;
 
 
     /**
      * 账户状态 (ACTIVE-正常 DISABLED-禁用 DELETED-已删除)
      */
+    @TableField("status")
     private String status;
+
+    /**
+     * 创建时间
+     */
+    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
 
 

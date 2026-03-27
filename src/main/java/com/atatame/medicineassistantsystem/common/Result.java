@@ -23,11 +23,11 @@ public class Result<T> {
     public static<T> Result<List<T>> ok(List<T> data, Long total){
         return new Result<>(true, null, data);
     }
-    public static Result<Void> fail(String errorMsg){
+    public static <T> Result<T> fail(String errorMsg){
         return new Result<>(false, errorMsg, null);
     }
 
-    public static Result<Void> fail(){
+    public static <T> Result<T> fail(){
         return new Result<>(false, "系统错误", null);
     }
 

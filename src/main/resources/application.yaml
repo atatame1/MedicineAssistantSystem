@@ -1,6 +1,12 @@
 spring:
   application:
     name: MedicineAssistantSystem
+  ai:
+    ollama:
+      base-url: http://10.20.62.52/:11434
+      chat:
+        options:
+          model: qwen3.5:35b
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/MedicineAssistantSystem?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
