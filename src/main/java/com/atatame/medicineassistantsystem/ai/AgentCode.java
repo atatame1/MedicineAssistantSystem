@@ -1,0 +1,13 @@
+package com.atatame.medicineassistantsystem.ai;
+
+public enum AgentCode {
+    PROJECT_EVALUATION,
+    FORMULA_COMPATIBILITY,
+    MECHANISM_INFERENCE,
+    TARGET_PREDICTION,
+    LITERATURE_ANALYSIS,
+    PATENT_ANALYSIS,
+    EXPERIMENT_DESIGN,
+    REPORT_GENERATION
+}
+
