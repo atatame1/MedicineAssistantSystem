@@ -23,6 +23,7 @@ import java.util.List;
  */
 public interface IUserService extends IService<User> {
     List<TaskResponse> myTasks(Long userId);
+    List<TaskResponse> myRecentTasks(Long userId, int limit);
     List<ProjectResponse> myProjects(Long userId);
     List<DocumentResponse> myReports(Long userId);
     List<FavoriteResponse> myFavorites(Long userId);

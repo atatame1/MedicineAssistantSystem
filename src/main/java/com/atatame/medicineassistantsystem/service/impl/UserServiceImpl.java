@@ -33,9 +33,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -62,11 +64,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<TaskResponse> myTasks(Long userId) {
         List<UserTask> tasks = userTaskService.list(new LambdaQueryWrapper<UserTask>()
-                .eq(UserTask::getUserId, userId)
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
                 .orderByAsc(UserTask::getStatus)
+                .orderByAsc(UserTask::getPriority)
                 .orderByAsc(UserTask::getDeadline)
                 .orderByDesc(UserTask::getCreateTime));
-        return tasks.stream().map(this::toTaskResponse).collect(Collectors.toList());
+        return mapTasksToResponses(tasks);
+    }
+
+    @Override
+    public List<TaskResponse> myRecentTasks(Long userId, int limit) {
+        List<UserTask> tasks = userTaskService.list(new LambdaQueryWrapper<UserTask>()
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .orderByAsc(UserTask::getPriority)
+                .orderByDesc(UserTask::getCreateTime)
+                .last("LIMIT " + limit));
+        return mapTasksToResponses(tasks);
+    }
+
+    private List<TaskResponse> mapTasksToResponses(List<UserTask> tasks) {
+        if (tasks.isEmpty()) {
+            return new ArrayList<>();
+        }
+        Set<Long> pids = tasks.stream().map(UserTask::getProjectId).filter(Objects::nonNull).collect(Collectors.toCollection(HashSet::new));
+        Map<Long, String> projectNames = new HashMap<>();
+        if (!pids.isEmpty()) {
+            projectService.listByIds(pids).forEach(p -> projectNames.put(p.getId(), p.getProjectName()));
+        }
+        return tasks.stream().map(t -> toTaskResponse(t, projectNames)).collect(Collectors.toList());
     }
 
     @Override
@@ -195,41 +220,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         response.setPhone(user.getPhone());
         response.setGender(user.getGender());
         response.setAvatarUrl(user.getAvatarUrl());
-        response.setStatus(user.getStatus());
+        response.setStatus(user.getStatus() == null ? null : String.valueOf(user.getStatus()));
         response.setStatistics(buildUserStatistics(userId));
         return response;
     }
 
     private UserStatisticsResponse buildUserStatistics(Long userId) {
         UserStatisticsResponse statistics = new UserStatisticsResponse();
-        statistics.setTotalTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>().eq(UserTask::getUserId, userId)));
-        statistics.setPendingTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>().eq(UserTask::getUserId, userId).eq(UserTask::getStatus, "PENDING")));
-        statistics.setInProgressTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>().eq(UserTask::getUserId, userId).eq(UserTask::getStatus, "IN_PROGRESS")));
-        statistics.setCompletedTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>().eq(UserTask::getUserId, userId).eq(UserTask::getStatus, "COMPLETED")));
+        statistics.setTotalTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>()
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))));
+        statistics.setPendingTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>()
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .eq(UserTask::getStatus, 0)));
+        statistics.setInProgressTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>()
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .eq(UserTask::getStatus, 1)));
+        statistics.setCompletedTasks(userTaskService.count(new LambdaQueryWrapper<UserTask>()
+                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .eq(UserTask::getStatus, 2)));
         List<ProjectResponse> projects = myProjects(userId);
         statistics.setTotalProjects((long) projects.size());
         statistics.setActiveProjects(projects.stream()
-                .filter(p -> "IN_PROGRESS".equals(p.getStatus()) || "PLANNING".equals(p.getStatus()))
+                .filter(p -> p.getStatus() != null && (p.getStatus() == 1 || p.getStatus() == 2))
                 .count());
         statistics.setTotalFavorites(userFavoriteService.count(new LambdaQueryWrapper<UserFavorite>().eq(UserFavorite::getUserId, userId)));
         statistics.setTotalDocuments((long) myReports(userId).size());
         return statistics;
     }
 
-    private TaskResponse toTaskResponse(UserTask task) {
+    private TaskResponse toTaskResponse(UserTask task, Map<Long, String> projectNames) {
         TaskResponse response = new TaskResponse();
         response.setId(task.getId());
         response.setTitle(task.getTitle());
         response.setDescription(task.getDescription());
-        response.setTaskType(task.getTaskType());
         response.setPriority(task.getPriority());
         response.setStatus(task.getStatus());
         response.setProjectId(task.getProjectId());
-        response.setProjectName(task.getProjectName());
+        response.setProjectName(task.getProjectId() != null ? projectNames.get(task.getProjectId()) : null);
+        response.setAssigneeId(task.getAssigneeId());
+        response.setCompletionFeedback(task.getCompletionFeedback());
         response.setDeadline(task.getDeadline());
         response.setCreateTime(task.getCreateTime());
-        response.setOverdue(task.getDeadline() != null && LocalDateTime.now().isAfter(task.getDeadline()) && !"COMPLETED".equals(task.getStatus()));
-        response.setTags(parseTags(task.getTags()));
+        boolean done = task.getStatus() != null && task.getStatus() == 2;
+        response.setOverdue(task.getDeadline() != null && LocalDateTime.now().isAfter(task.getDeadline()) && !done);
         return response;
     }
 
@@ -288,23 +321,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return document == null ? null : document.getDocName();
         }
         return favoriteType + "-" + favoriteId;
-    }
-
-    private List<String> parseTags(String tags) {
-        if (tags == null || tags.isBlank()) {
-            return new ArrayList<>();
-        }
-        String normalized = tags.trim();
-        if (normalized.startsWith("[") && normalized.endsWith("]")) {
-            normalized = normalized.substring(1, normalized.length() - 1).replace("\"", "");
-        }
-        List<String> result = new ArrayList<>();
-        for (String item : normalized.split(",")) {
-            if (!item.trim().isEmpty()) {
-                result.add(item.trim());
-            }
-        }
-        return result;
     }
 
     private SettingsResponse buildDefaultSettings(Long userId) {

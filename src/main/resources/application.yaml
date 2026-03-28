@@ -1,6 +1,10 @@
 spring:
   application:
     name: MedicineAssistantSystem
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 55MB
   ai:
     ollama:
       base-url: http://10.20.62.52:11434
@@ -15,3 +19,7 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+app:
+  storage:
+    root: ${user.dir}/medicine-uploads

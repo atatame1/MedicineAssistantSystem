@@ -63,10 +63,10 @@ public class User {
 
 
     /**
-     * 账户状态 (ACTIVE-正常 DISABLED-禁用 DELETED-已删除)
+     * 账户状态 (0-正常 1-禁用 2-已删除)
      */
     @TableField("status")
-    private String status;
+    private Integer status;
 
     /**
      * 创建时间

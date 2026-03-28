@@ -56,10 +56,10 @@ public class Project {
     private Long projectorId;
 
     /**
-     * 项目状态 (PLANNING-立项中 IN_PROGRESS-进行中 COMPLETED-已完成 CANCELLED-已取消)
+     * 项目状态 (1-立项中 2-进行中 3-已完成 4-已取消)
      */
     @TableField("status")
-    private String status;
+    private Integer status;
 
     /**
      * 立项时间
@@ -92,10 +92,22 @@ public class Project {
     private Double budget;
 
     /**
-     * 优先级 (HIGH-高 MEDIUM-中 LOW-低)
+     * 优先级
      */
     @TableField("priority")
-    private String priority;
+    private Integer priority;
+
+    /**
+     * AI 评估
+     */
+    @TableField("ai_assess")
+    private String aiAssess;
+
+    /**
+     * AI生成报告
+     */
+    @TableField("ai_report")
+    private String aiReport;
 
     /**
      * 创建时间

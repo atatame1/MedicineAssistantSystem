@@ -2,15 +2,14 @@ package com.atatame.medicineassistantsystem.service;
 
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.web.multipart.MultipartFile;
 
-/**
- * <p>
- * 项目文档管理表 服务类
- * </p>
- *
- * @author author
- * @since 2026-03-26
- */
+import java.io.IOException;
+import java.util.List;
+
 public interface IProjectDocumentService extends IService<ProjectDocument> {
 
+    ProjectDocument upload(Long projectId, MultipartFile file, Long uploadUserId, String docType) throws IOException;
+
+    List<ProjectDocument> searchKeyword(Long projectId, String keyword);
 }

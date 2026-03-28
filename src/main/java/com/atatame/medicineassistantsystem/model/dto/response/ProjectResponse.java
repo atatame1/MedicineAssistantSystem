@@ -12,8 +12,8 @@ public class ProjectResponse {
     private String formulaName;
     private String indication;
     private String phase;
-    private String status;
-    private String priority;
+    private Integer status;
+    private Integer priority;
     private LocalDateTime startTime;
     private LocalDateTime plannedEndTime;
     private String description;

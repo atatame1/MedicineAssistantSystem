@@ -2,6 +2,7 @@ package com.atatame.medicineassistantsystem.ai;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.core.io.Resource;
+import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
 
@@ -25,6 +26,14 @@ public abstract class BasePromptAgent implements AiAgent {
                 .system(systemPrompt)
                 .user(input)
                 .call()
+                .content();
+    }
+
+    public Flux<String> stream(String input) {
+        return chatClient.prompt()
+                .system(systemPrompt)
+                .user(input)
+                .stream()
                 .content();
     }
 }

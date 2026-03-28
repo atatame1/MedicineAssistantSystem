@@ -26,6 +26,7 @@ public class ProjectDecision {
     private Long projectId;
 
     /**
+     * 前端决定
      * 决策类型 (FORMULATION-配方决策 EXPERIMENT-实验决策 RESOURCE-资源决策 RISK-风险控制)
      */
     @TableField("decision_type")
@@ -56,18 +57,6 @@ public class ProjectDecision {
     private String expertConclusion;
 
     /**
-     * 证据链 (JSON 格式)
-     */
-    @TableField("evidence_chain")
-    private String evidenceChain;
-
-    /**
-     * 置信度 (0-1)
-     */
-    @TableField("confidence")
-    private Double confidence;
-
-    /**
      * 决策人
      */
     @TableField("projector_id")
@@ -78,12 +67,6 @@ public class ProjectDecision {
      */
     @TableField("version")
     private Integer version;
-
-    /**
-     * 关联文档 ID
-     */
-    @TableField("document_id")
-    private Long documentId;
 
     /**
      * 创建时间

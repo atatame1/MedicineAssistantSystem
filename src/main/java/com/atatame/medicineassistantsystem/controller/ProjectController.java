@@ -1,15 +1,19 @@
 package com.atatame.medicineassistantsystem.controller;
 
-import com.atatame.medicineassistantsystem.ai.AgentCode;
+import com.atatame.medicineassistantsystem.ai.ProjectEvaluationAgent;
+import com.atatame.medicineassistantsystem.ai.ReportGenerationAgent;
 import com.atatame.medicineassistantsystem.common.Result;
+import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.request.AiTaskRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.DeleteByIdRequest;
-import com.atatame.medicineassistantsystem.model.dto.response.AiTaskResponse;
+import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
+import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDecision;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
-import com.atatame.medicineassistantsystem.service.IAiAgentService;
+import com.atatame.medicineassistantsystem.service.FileStorageService;
 import com.atatame.medicineassistantsystem.service.IProjectDecisionService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
@@ -18,8 +22,22 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import reactor.core.scheduler.Schedulers;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -32,13 +50,15 @@ public class ProjectController {
     private final IProjectDecisionService projectDecisionService;
     private final IProjectDocumentService projectDocumentService;
     private final IProjectMemberService projectMemberService;
-    private final IAiAgentService aiAgentService;
+    private final ProjectEvaluationAgent projectEvaluationAgent;
+    private final ReportGenerationAgent reportGenerationAgent;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     @Operation(summary = "项目列表")
-    public Result<List<Project>> list(@RequestParam(required = false) String status) {
+    public Result<List<Project>> list(@RequestParam(required = false) Integer status) {
         LambdaQueryWrapper<Project> q = new LambdaQueryWrapper<>();
-        if (status != null && !status.isBlank()) {
+        if (status != null) {
             q.eq(Project::getStatus, status);
         }
         q.orderByDesc(Project::getCreateTime);
@@ -46,7 +66,7 @@ public class ProjectController {
     }
 
     @PostMapping("/create")
-    @Operation(summary = "创建项目")
+    @Operation(summary = "创建项目（提交表单含 aiAssess；保存后异步生成立项报告写入 aiReport）")
     public Result<Void> create(@RequestBody Project request) {
         projectService.save(request);
         return Result.ok();
@@ -66,12 +86,55 @@ public class ProjectController {
         return Result.ok();
     }
 
+    @PostMapping(value = "/draft/evaluate-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "立项评估流式输出（不落库）")
+    public SseEmitter draftEvaluateStream(@RequestBody ProjectEstablishmentDraftRequest req) {
+        SseEmitter emitter = new SseEmitter(600_000L);
+        String userText = buildDraftPrompt(req);
+        projectEvaluationAgent.stream(userText)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(
+                        chunk -> {
+                            try {
+                                emitter.send(SseEmitter.event().data(chunk));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        },
+                        emitter::completeWithError,
+                        emitter::complete
+                );
+        return emitter;
+    }
+
+    @GetMapping("/{projectId}/board")
+    @Operation(summary = "项目看板")
+    public Result<ProjectBoardResponse> board(@PathVariable Long projectId) {
+        ProjectBoardResponse b = projectService.getBoard(projectId);
+        if (b == null) {
+            return Result.fail("项目不存在");
+        }
+        return Result.ok(b);
+    }
+
     @GetMapping("/{projectId}/decisions")
     @Operation(summary = "决策记录列表")
     public Result<List<ProjectDecision>> decisions(@PathVariable Long projectId) {
         return Result.ok(projectDecisionService.list(new LambdaQueryWrapper<ProjectDecision>()
                 .eq(ProjectDecision::getProjectId, projectId)
                 .orderByDesc(ProjectDecision::getCreateTime)));
+    }
+
+    @GetMapping("/{projectId}/decisions/compare")
+    @Operation(summary = "决策版本对比")
+    public Result<DecisionCompareResponse> compareDecisions(@PathVariable Long projectId,
+                                                            @RequestParam Long id1,
+                                                            @RequestParam Long id2) {
+        DecisionCompareResponse r = projectDecisionService.compare(id1, id2);
+        if (!r.getFirst().getProjectId().equals(projectId)) {
+            throw new BusinessException("决策不属于该项目");
+        }
+        return Result.ok(r);
     }
 
     @PostMapping("/{projectId}/decisions/create")
@@ -90,12 +153,58 @@ public class ProjectController {
                 .orderByDesc(ProjectDocument::getUploadTime)));
     }
 
+    @GetMapping("/{projectId}/documents/search")
+    @Operation(summary = "文档全文检索（名称/摘要/抽取正文）")
+    public Result<List<ProjectDocument>> searchDocuments(@PathVariable Long projectId,
+                                                         @RequestParam String q) {
+        return Result.ok(projectDocumentService.searchKeyword(projectId, q));
+    }
+
+    @PostMapping(value = "/{projectId}/documents/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "上传项目文档")
+    public Result<ProjectDocument> uploadDocument(@PathVariable Long projectId,
+                                                @RequestPart("file") MultipartFile file,
+                                                @RequestParam(required = false) Long uploadUserId,
+                                                @RequestParam(required = false) String docType) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("文件为空");
+        }
+        ProjectDocument d = projectDocumentService.upload(projectId, file, uploadUserId, docType);
+        return Result.ok(d);
+    }
+
     @PostMapping("/{projectId}/documents/create")
-    @Operation(summary = "新增项目文档")
+    @Operation(summary = "仅登记文档元数据（不推荐，请优先上传接口）")
     public Result<Void> createDocument(@PathVariable Long projectId, @RequestBody ProjectDocument request) {
         request.setProjectId(projectId);
+        if (!StringUtils.hasText(request.getStorageKey()) && StringUtils.hasText(request.getFilePath())) {
+            request.setStorageKey(request.getFilePath());
+        }
         projectDocumentService.save(request);
         return Result.ok();
+    }
+
+    @GetMapping("/{projectId}/documents/{docId}/file")
+    @Operation(summary = "下载文档文件")
+    public ResponseEntity<Resource> downloadDocument(@PathVariable Long projectId, @PathVariable Long docId) throws IOException {
+        ProjectDocument doc = projectDocumentService.getById(docId);
+        if (doc == null || !doc.getProjectId().equals(projectId)) {
+            throw new BusinessException("文档不存在");
+        }
+        if (!StringUtils.hasText(doc.getStorageKey())) {
+            throw new BusinessException("无服务器文件");
+        }
+        Path path = fileStorageService.resolvePath(doc.getStorageKey());
+        if (!Files.exists(path)) {
+            throw new BusinessException("文件已丢失");
+        }
+        Resource resource = new FileSystemResource(path.toFile());
+        String fn = doc.getOriginalFilename() != null ? doc.getOriginalFilename() : doc.getDocName();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + URLEncoder.encode(fn, StandardCharsets.UTF_8) + "\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @GetMapping("/{projectId}/members")
@@ -113,16 +222,60 @@ public class ProjectController {
         return Result.ok();
     }
 
-    @PostMapping("/{projectId}/ai/evaluate")
-    @Operation(summary = "AI立项评估")
-    public Result<AiTaskResponse> aiEvaluate(@PathVariable Long projectId, @RequestBody AiTaskRequest request) {
-        return Result.ok(aiAgentService.run(AgentCode.PROJECT_EVALUATION, "项目ID:" + projectId + "\n" + request.getInput()));
+    @PostMapping(value = "/{projectId}/ai/report-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "立项/阶段报告流式生成")
+    public SseEmitter reportStream(@PathVariable Long projectId, @RequestBody(required = false) AiTaskRequest extra) {
+        Project p = projectService.getById(projectId);
+        if (p == null) {
+            throw new BusinessException("项目不存在");
+        }
+        String ctx = buildProjectContext(p);
+        String extraIn = extra != null && extra.getInput() != null ? extra.getInput() : "";
+        String input = ctx + "\n补充说明:\n" + extraIn;
+        SseEmitter emitter = new SseEmitter(600_000L);
+        reportGenerationAgent.stream(input)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(
+                        chunk -> {
+                            try {
+                                emitter.send(SseEmitter.event().data(chunk));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        },
+                        emitter::completeWithError,
+                        emitter::complete
+                );
+        return emitter;
     }
 
-    @PostMapping("/{projectId}/ai/report")
-    @Operation(summary = "AI报告生成")
-    public Result<AiTaskResponse> aiReport(@PathVariable Long projectId, @RequestBody AiTaskRequest request) {
-        return Result.ok(aiAgentService.run(AgentCode.REPORT_GENERATION, "项目ID:" + projectId + "\n" + request.getInput()));
+    private static String buildDraftPrompt(ProjectEstablishmentDraftRequest req) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("项目名称:").append(nullToEmpty(req.getProjectName())).append("\n");
+        sb.append("药材:").append(nullToEmpty(req.getHerbName())).append("\n");
+        sb.append("方剂:").append(nullToEmpty(req.getFormulaName())).append("\n");
+        sb.append("适应症:").append(nullToEmpty(req.getIndication())).append("\n");
+        sb.append("描述:").append(nullToEmpty(req.getDescription())).append("\n");
+        sb.append("预算:").append(req.getBudget() != null ? req.getBudget() : "").append("\n");
+        sb.append("优先级:").append(nullToEmpty(req.getPriority())).append("\n");
+        return sb.toString();
+    }
+
+    private static String nullToEmpty(String s) {
+        return s == null ? "" : s;
+    }
+
+    private static String buildProjectContext(Project p) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("项目ID:").append(p.getId()).append("\n");
+        sb.append("名称:").append(nullToEmpty(p.getProjectName())).append("\n");
+        sb.append("药材:").append(nullToEmpty(p.getHerbName())).append("\n");
+        sb.append("方剂:").append(nullToEmpty(p.getFormulaName())).append("\n");
+        sb.append("适应症:").append(nullToEmpty(p.getIndication())).append("\n");
+        sb.append("阶段:").append(nullToEmpty(p.getPhase())).append("\n");
+        sb.append("描述:").append(nullToEmpty(p.getDescription())).append("\n");
+        sb.append("立项评估(aiAssess):\n").append(nullToEmpty(p.getAiAssess())).append("\n");
+        sb.append("已有立项报告(aiReport):\n").append(nullToEmpty(p.getAiReport())).append("\n");
+        return sb.toString();
     }
 }
-

@@ -37,6 +37,12 @@ public class ProjectDocument {
     @TableField("doc_name")
     private String docName;
 
+    @TableField("storage_key")
+    private String storageKey;
+
+    @TableField("original_filename")
+    private String originalFilename;
+
     /**
      * 文件路径
      */
@@ -61,11 +67,8 @@ public class ProjectDocument {
     @TableField("version")
     private String version;
 
-    /**
-     * 上传人
-     */
-    @TableField("upload_by")
-    private String uploadBy;
+    @TableField("upload_user_id")
+    private Long uploadUserId;
 
     /**
      * 上传时间

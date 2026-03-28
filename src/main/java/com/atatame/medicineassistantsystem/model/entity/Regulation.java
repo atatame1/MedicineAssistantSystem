@@ -182,40 +182,11 @@ public class Regulation {
     private String tags;
 
     /**
-     * 关注级别 (CRITICAL-关键 IMPORTANT-重要 NORMAL-普通)
+     * 关注级别
      */
     @TableField("importance")
-    private String importance;
+    private Integer importance;
 
-    /**
-     * 是否需要跟进
-     */
-    @TableField("need_follow_up")
-    private Boolean needFollowUp;
-
-    /**
-     * 跟进状态 (PENDING-待处理 IN_PROGRESS-进行中 COMPLETED-已完成)
-     */
-    @TableField("follow_up_status")
-    private String followUpStatus;
-
-    /**
-     * 跟进人
-     */
-    @TableField("follow_up_by")
-    private String followUpBy;
-
-    /**
-     * 最后跟进时间
-     */
-    @TableField("last_follow_up_time")
-    private LocalDateTime lastFollowUpTime;
-
-    /**
-     * 备注
-     */
-    @TableField("remark")
-    private String remark;
 
     /**
      * 创建时间
@@ -229,10 +200,5 @@ public class Regulation {
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private LocalDateTime updateTime;
 
-    @TableField(value = "create_by", fill = FieldFill.INSERT)
-    private String createBy;
-
-    @TableField(value = "update_by", fill = FieldFill.INSERT_UPDATE)
-    private String updateBy;
 
 }

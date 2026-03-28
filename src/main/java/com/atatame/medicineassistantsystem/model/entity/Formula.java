@@ -127,17 +127,6 @@ public class Formula {
     @TableField("contraindications")
     private String contraindications;
 
-    /**
-     * 加减变化
-     */
-    @TableField("modifications")
-    private String modifications;
-
-    /**
-     * 现代研究 (JSON 数组)
-     */
-    @TableField("modern_research")
-    private String modernResearch;
 
     /**
      * 临床验证案例数
@@ -158,19 +147,19 @@ public class Formula {
     private String imageUrl;
 
     /**
-     * 相关药材 (JSON 数组)
+     * 相关药材
      */
     @TableField("related_herbs")
     private String relatedHerbs;
 
     /**
-     * 相关方剂 (JSON 数组)
+     * 相关方剂
      */
     @TableField("related_formulas")
     private String relatedFormulas;
 
     /**
-     * 相似方剂推荐 (JSON 数组)
+     * 相似方剂推荐
      */
     @TableField("similar_formulas")
     private String similarFormulas;

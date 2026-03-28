@@ -146,10 +146,10 @@ public class Disease {
     private String prevention;
 
     /**
-     * 疾病严重程度 (MILD-轻度 MODERATE-中度 SEVERE-重度)
+     * 疾病严重程度
      */
     @TableField("severity")
-    private String severity;
+    private Integer severity;
 
     /**
      * 适用人群

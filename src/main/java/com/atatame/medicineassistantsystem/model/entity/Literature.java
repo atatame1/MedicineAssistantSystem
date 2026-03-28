@@ -248,10 +248,10 @@ public class  Literature {
     private String tags;
 
     /**
-     * 重要程度 (CRITICAL-关键 IMPORTANT-重要 NORMAL-普通)
+     * 重要程度
      */
     @TableField("importance")
-    private String importance;
+    private Integer importance;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private LocalDateTime createTime;

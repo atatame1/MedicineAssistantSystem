@@ -72,20 +72,20 @@ INSERT INTO `regulation` (`id`, `name`, `name_english`, `regulation_number`, `is
 -- ========================
 -- 用户数据
 -- ========================
-INSERT INTO `user` (`id`, `username`, `nickname`, `email`, `gender`, `status`) VALUES
-(1, 'admin', '系统管理员', 'admin@medicine.com', 'MALE', 'ACTIVE'),
-(2, 'wangwei', '王伟', 'wangwei@medicine.com', 'MALE', 'ACTIVE'),
-(3, 'lixia', '李华', 'lixia@medicine.com', 'FEMALE', 'ACTIVE'),
-(4, 'zhangming', '张明', 'zhangming@medicine.com', 'MALE', 'ACTIVE'),
-(5, 'chenjing', '陈静', 'chenjing@medicine.com', 'FEMALE', 'ACTIVE');
+INSERT INTO `user` (`id`, `username`, `password`, `nickname`, `email`, `gender`, `status`, `create_time`, `update_time`) VALUES
+(1, 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '系统管理员', 'admin@medicine.com', 'MALE', 0, NOW(), NOW()),
+(2, 'wangwei', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '王伟', 'wangwei@medicine.com', 'MALE', 0, NOW(), NOW()),
+(3, 'lixia', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '李华', 'lixia@medicine.com', 'FEMALE', 0, NOW(), NOW()),
+(4, 'zhangming', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '张明', 'zhangming@medicine.com', 'MALE', 0, NOW(), NOW()),
+(5, 'chenjing', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '陈静', 'chenjing@medicine.com', 'FEMALE', 0, NOW(), NOW());
 
 -- ========================
 -- 项目数据
 -- ========================
-INSERT INTO `project` (`id`, `project_name`, `herb_name`, `formula_name`, `indication`, `phase`, `projector_id`, `status`, `start_time`, `budget`, `priority`, `description`, `create_time`, `update_time`) VALUES
-(1, '基于人参皂苷 Rg1 的神经保护新药研发', '人参', '六味地黄丸', '2 型糖尿病认知功能障碍', 'EXPLORATION', 1, 'IN_PROGRESS', '2024-01-15', 5000000.00, 'HIGH', '针对 2 型糖尿病引起的认知功能障碍，开发基于人参皂苷 Rg1 神经保护作用的创新药物', NOW(), NOW()),
-(2, '丹复方心血管保护制剂开发', '丹参', '血府逐瘀汤', '冠心病心绞痛', 'VERIFICATION', 2, 'IN_PROGRESS', '2024-03-01', 8000000.00, 'HIGH', '基于血府逐瘀汤，开发丹复方心血管保护制剂，用于冠心病心绞痛的辅助治疗', NOW(), NOW()),
-(3, '葛根素缓释制剂研究', '葛根', '无', '高血压', 'EXPLORATION', 3, 'IN_PROGRESS', '2024-02-20', 3000000.00, 'MEDIUM', '开发葛根素缓释制剂，提高葛根素生物利用度，用于高血压的长期治疗', NOW(), NOW());
+INSERT INTO `project` (`id`, `project_name`, `herb_name`, `formula_name`, `indication`, `phase`, `projector_id`, `status`, `start_time`, `budget`, `priority`, `description`, `ai_assess`, `ai_report`, `create_time`, `update_time`) VALUES
+(1, '基于人参皂苷 Rg1 的神经保护新药研发', '人参', '六味地黄丸', '2 型糖尿病认知功能障碍', 'EXPLORATION', 1, 2, '2024-01-15 00:00:00', 5000000.00, 1, '针对 2 型糖尿病引起的认知功能障碍，开发基于人参皂苷 Rg1 神经保护作用的创新药物', '创新性、可行性评估已通过。', NULL, NOW(), NOW()),
+(2, '丹复方心血管保护制剂开发', '丹参', '血府逐瘀汤', '冠心病心绞痛', 'VERIFICATION', 2, 2, '2024-03-01 00:00:00', 8000000.00, 1, '基于血府逐瘀汤，开发丹复方心血管保护制剂，用于冠心病心绞痛的辅助治疗', '临床前数据充分，建议推进。', NULL, NOW(), NOW()),
+(3, '葛根素缓释制剂研究', '葛根', NULL, '高血压', 'EXPLORATION', 3, 2, '2024-02-20 00:00:00', 3000000.00, 2, '开发葛根素缓释制剂，提高葛根素生物利用度，用于高血压的长期治疗', '缓释剂型路线可行。', NULL, NOW(), NOW());
 
 -- ========================
 -- 项目成员数据
@@ -102,11 +102,11 @@ INSERT INTO `project_member` (`id`, `project_id`, `user_id`, `role`, `join_time`
 -- ========================
 -- 用户任务数据
 -- ========================
-INSERT INTO `user_task` (`id`, `user_id`, `title`, `task_type`, `priority`, `status`, `project_id`, `project_name`, `deadline`, `assignee_id`, `assignee_name`, `create_by`, `source`, `create_time`, `update_time`) VALUES
-(1, 1, '审核神经保护新药申报资料', 'APPROVAL', 'HIGH', 'PENDING', 1, '基于人参皂苷 Rg1 的神经保护新药研发', '2024-04-01 17:00:00', 1, '系统管理员', 2, 'AUTO', NOW(), NOW()),
-(2, 2, '完成人参皂苷 Rg1 药效学评价报告', 'RESEARCH', 'HIGH', 'IN_PROGRESS', 1, '基于人参皂苷 Rg1 的神经保护新药研发', '2024-03-30 17:00:00', 2, '王伟', 1, 'AUTO', NOW(), NOW()),
-(3, 3, '提交丹复方制剂工艺研究进展', 'REPORT', 'MEDIUM', 'PENDING', 2, '丹复方心血管保护制剂开发', '2024-03-28 17:00:00', 3, '李华', 2, 'MANUAL', NOW(), NOW()),
-(4, 4, '审批葛根素制剂处方筛选结果', 'APPROVAL', 'MEDIUM', 'COMPLETED', 3, '葛根素缓释制剂研究', '2024-03-15 17:00:00', 4, '张明', 3, 'AUTO', NOW(), NOW());
+INSERT INTO `user_task` (`id`, `user_id`, `project_id`, `title`, `description`, `priority`, `status`, `assignee_id`, `deadline`, `completion_feedback`, `create_time`, `update_time`) VALUES
+(1, 1, 1, '审核神经保护新药申报资料', '整理申报材料', 1, 0, 1, '2024-04-01 17:00:00', NULL, NOW(), NOW()),
+(2, 2, 1, '完成人参皂苷 Rg1 药效学评价报告', NULL, 1, 1, 2, '2024-03-30 17:00:00', NULL, NOW(), NOW()),
+(3, 3, 2, '提交丹复方制剂工艺研究进展', NULL, 2, 0, 3, '2024-03-28 17:00:00', NULL, NOW(), NOW()),
+(4, 4, 3, '审批葛根素制剂处方筛选结果', NULL, 2, 2, 4, '2024-03-15 17:00:00', '已归档', NOW(), NOW());
 
 -- ========================
 -- 用户收藏数据
