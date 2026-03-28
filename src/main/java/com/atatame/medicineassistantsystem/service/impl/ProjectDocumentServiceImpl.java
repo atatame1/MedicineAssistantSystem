@@ -33,7 +33,7 @@ public class ProjectDocumentServiceImpl extends ServiceImpl<ProjectDocumentMappe
         d.setOriginalFilename(orig);
         d.setDocName(StringUtils.hasText(orig) ? orig : "upload");
         d.setFileSize(file.getSize());
-        d.setFileType(file.getContentType());
+        d.setFileType(file.getContentType().substring(0,50));
         d.setUploadUserId(uploadUserId);
         d.setDocType(StringUtils.hasText(docType) ? docType : guessDocType(ext));
         d.setTags(d.getDocType() + "," + (ext == null ? "" : ext));

@@ -73,7 +73,7 @@ public class ProjectDocument {
     /**
      * 上传时间
      */
-    @TableField(value = "upload_time", fill = FieldFill.INSERT)
+    @TableField(value = "upload_time")
     private LocalDateTime uploadTime;
 
     /**

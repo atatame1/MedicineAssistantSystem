@@ -1,7 +1,7 @@
 package com.atatame.medicineassistantsystem.service.impl;
 
 import com.atatame.medicineassistantsystem.model.constants.UserCenterConstants;
-import com.atatame.medicineassistantsystem.model.dto.request.FavoriteCreateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
@@ -11,6 +11,11 @@ import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserProfileResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserStatisticsResponse;
+import com.atatame.medicineassistantsystem.model.entity.Component;
+import com.atatame.medicineassistantsystem.model.entity.Formula;
+import com.atatame.medicineassistantsystem.model.entity.Herb;
+import com.atatame.medicineassistantsystem.model.entity.Literature;
+import com.atatame.medicineassistantsystem.model.entity.Patent;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
@@ -19,6 +24,11 @@ import com.atatame.medicineassistantsystem.model.entity.UserFavorite;
 import com.atatame.medicineassistantsystem.model.entity.UserSettings;
 import com.atatame.medicineassistantsystem.model.entity.UserTask;
 import com.atatame.medicineassistantsystem.mapper.UserMapper;
+import com.atatame.medicineassistantsystem.service.IComponentService;
+import com.atatame.medicineassistantsystem.service.IFormulaService;
+import com.atatame.medicineassistantsystem.service.IHerbService;
+import com.atatame.medicineassistantsystem.service.ILiteratureService;
+import com.atatame.medicineassistantsystem.service.IPatentService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
@@ -60,6 +70,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IProjectDocumentService projectDocumentService;
     private final IUserFavoriteService userFavoriteService;
     private final IUserSettingsService userSettingsService;
+    private final ILiteratureService literatureService;
+    private final IPatentService patentService;
+    private final IFormulaService formulaService;
+    private final IHerbService herbService;
+    private final IComponentService componentService;
 
     @Override
     public List<TaskResponse> myTasks(Long userId) {
@@ -146,7 +161,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public void addFavorite(Long userId, FavoriteCreateRequest request) {
+    public void addFavorite(Long userId, FavoriteOperationRequest request) {
         long count = userFavoriteService.count(new LambdaQueryWrapper<UserFavorite>()
                 .eq(UserFavorite::getUserId, userId)
                 .eq(UserFavorite::getFavoriteId, request.getFavoriteId())
@@ -162,9 +177,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     @Override
-    public void removeFavorite(Long userId, Long favoriteRecordId) {
+    public void removeFavorite(Long userId, FavoriteOperationRequest request) {
         userFavoriteService.remove(new LambdaQueryWrapper<UserFavorite>()
-                .eq(UserFavorite::getId, favoriteRecordId)
+                .eq(UserFavorite::getFavoriteType,request.getFavoriteType())
+                .eq(UserFavorite::getId, request.getFavoriteId())
                 .eq(UserFavorite::getUserId, userId));
     }
 
@@ -296,10 +312,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         response.setFavoriteId(favorite.getFavoriteId());
         response.setFavoriteType(favorite.getFavoriteType());
         response.setEntityName(resolveFavoriteEntityName(favorite.getFavoriteType(), favorite.getFavoriteId()));
+        response.setCollectTime(favorite.getCreateTime());
         return response;
     }
 
     private String resolveFavoriteEntityName(String favoriteType, Long favoriteId) {
+        if (UserCenterConstants.EntityType.TASK.equals(favoriteType)) {
+            UserTask task = userTaskService.getById(favoriteId);
+            return task == null ? null : task.getTitle();
+        }
         if (UserCenterConstants.EntityType.PROJECT.equals(favoriteType)) {
             Project project = projectService.getById(favoriteId);
             return project == null ? null : project.getProjectName();
@@ -307,6 +328,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (UserCenterConstants.EntityType.DOCUMENT.equals(favoriteType)) {
             ProjectDocument document = projectDocumentService.getById(favoriteId);
             return document == null ? null : document.getDocName();
+        }
+        if (UserCenterConstants.EntityType.LITERATURE.equals(favoriteType)) {
+            Literature literature = literatureService.getById(favoriteId);
+            return literature == null ? null : literature.getTitle();
+        }
+        if (UserCenterConstants.EntityType.PATENT.equals(favoriteType)) {
+            Patent patent = patentService.getById(favoriteId);
+            return patent == null ? null : patent.getName();
+        }
+        if (UserCenterConstants.EntityType.FORMULA.equals(favoriteType)) {
+            Formula formula = formulaService.getById(favoriteId);
+            return formula == null ? null : formula.getName();
+        }
+        if (UserCenterConstants.EntityType.HERB.equals(favoriteType)) {
+            Herb herb = herbService.getById(favoriteId);
+            return herb == null ? null : herb.getName();
+        }
+        if (UserCenterConstants.EntityType.COMPONENT.equals(favoriteType)) {
+            Component component = componentService.getById(favoriteId);
+            return component == null ? null : component.getName();
         }
         return favoriteType + "-" + favoriteId;
     }

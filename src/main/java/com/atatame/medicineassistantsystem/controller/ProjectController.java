@@ -6,6 +6,7 @@ import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.request.AiTaskRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.DeleteByIdRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.MemberCreateRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
@@ -38,6 +39,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -173,17 +175,6 @@ public class ProjectController {
         return Result.ok(d);
     }
 
-    @PostMapping("/{projectId}/documents/create")
-    @Operation(summary = "仅登记文档元数据（不推荐，请优先上传接口）")
-    public Result<Void> createDocument(@PathVariable Long projectId, @RequestBody ProjectDocument request) {
-        request.setProjectId(projectId);
-        if (!StringUtils.hasText(request.getStorageKey()) && StringUtils.hasText(request.getFilePath())) {
-            request.setStorageKey(request.getFilePath());
-        }
-        projectDocumentService.save(request);
-        return Result.ok();
-    }
-
     @GetMapping("/{projectId}/documents/{docId}/file")
     @Operation(summary = "下载文档文件")
     public ResponseEntity<Resource> downloadDocument(@PathVariable Long projectId, @PathVariable Long docId) throws IOException {
@@ -216,9 +207,14 @@ public class ProjectController {
 
     @PostMapping("/{projectId}/members/create")
     @Operation(summary = "新增项目成员")
-    public Result<Void> createMember(@PathVariable Long projectId, @RequestBody ProjectMember request) {
-        request.setProjectId(projectId);
-        projectMemberService.save(request);
+    public Result<Void> createMember(@PathVariable Long projectId, @RequestBody MemberCreateRequest request) {
+
+        ProjectMember projectMember = new ProjectMember();
+        projectMember.setProjectId(projectId);
+        projectMember.setRole(request.getRole());
+        projectMember.setUserId(request.getUserId());
+        projectMember.setJoinTime(request.getJoinTime()!=null?request.getJoinTime():LocalDateTime.now());
+        projectMemberService.save(projectMember);
         return Result.ok();
     }
 

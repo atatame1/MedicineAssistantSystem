@@ -1,6 +1,6 @@
 package com.atatame.medicineassistantsystem.service;
 
-import com.atatame.medicineassistantsystem.model.dto.request.FavoriteCreateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
@@ -27,8 +27,8 @@ public interface IUserService extends IService<User> {
     List<ProjectResponse> myProjects(Long userId);
     List<DocumentResponse> myReports(Long userId);
     List<FavoriteResponse> myFavorites(Long userId);
-    void addFavorite(Long userId, FavoriteCreateRequest request);
-    void removeFavorite(Long userId, Long favoriteRecordId);
+    void addFavorite(Long userId, FavoriteOperationRequest request);
+    void removeFavorite(Long userId, FavoriteOperationRequest request);
     FavoriteStatisticsResponse favoriteStatistics(Long userId);
     SettingsResponse settings(Long userId);
     void updateSettings(Long userId, SettingsUpdateRequest request);

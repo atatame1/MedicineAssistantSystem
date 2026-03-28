@@ -1,7 +1,7 @@
 package com.atatame.medicineassistantsystem.controller;
 
 import com.atatame.medicineassistantsystem.common.Result;
-import com.atatame.medicineassistantsystem.model.dto.request.FavoriteCreateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
@@ -71,21 +71,20 @@ public class UserController {
     public Result<Void> addFavorite(
             @Parameter(description = "用户 ID", required = true)
             @PathVariable Long userId,
-            @RequestBody FavoriteCreateRequest request
+            @RequestBody FavoriteOperationRequest request
     ) {
         userService.addFavorite(userId, request);
         return Result.ok();
     }
 
-    @PostMapping("/{userId}/favorites/remove/{favoriteId}")
+    @PostMapping("/{userId}/favorites/remove")
     @Operation(summary = "取消收藏", description = "取消某一条收藏记录")
     public Result<Void> removeFavorite(
             @Parameter(description = "用户 ID", required = true)
             @PathVariable Long userId,
-            @Parameter(description = "收藏记录 ID", required = true)
-            @PathVariable Long favoriteId
+            @RequestBody FavoriteOperationRequest request
     ) {
-        userService.removeFavorite(userId, favoriteId);
+        userService.removeFavorite(userId, request);
         return Result.ok();
     }
 
@@ -107,6 +106,7 @@ public class UserController {
         return Result.ok(userService.settings(userId));
     }
 
+    //前端须转义字符避免引号歧义
     @PostMapping("/{userId}/settings/update")
     @Operation(summary = "更新设置", description = "更新用户个性化设置")
     public Result<Void> updateSettings(

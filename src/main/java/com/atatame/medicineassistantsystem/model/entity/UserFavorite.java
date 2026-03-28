@@ -40,6 +40,6 @@ public class UserFavorite {
     /**
      * 收藏时间
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField(value = "create_time")
     private LocalDateTime createTime;
 }
