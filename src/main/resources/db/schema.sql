@@ -4,6 +4,7 @@
 -- 删除已存在的表（按依赖关系逆序）
 DROP TABLE IF EXISTS `user_task`;
 DROP TABLE IF EXISTS `user_favorite`;
+DROP TABLE IF EXISTS `user_settings`;
 DROP TABLE IF EXISTS `user`;
 DROP TABLE IF EXISTS `project_member`;
 DROP TABLE IF EXISTS `project_document`;
@@ -38,6 +39,15 @@ CREATE TABLE `user` (
   KEY `idx_email` (`email`),
   KEY `idx_phone` (`phone`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='系统用户账户';
+
+-- ============================================
+-- 用户个性化设置
+-- ============================================
+CREATE TABLE `user_settings` (
+  `user_id` BIGINT NOT NULL COMMENT '用户 ID，与 user.id 一致',
+  `preferences` TEXT COMMENT '前端原样提交的设置字符串',
+  PRIMARY KEY (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户个性化设置';
 
 -- ============================================
 -- 用户收藏表

@@ -16,6 +16,7 @@ import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
 import com.atatame.medicineassistantsystem.model.entity.User;
 import com.atatame.medicineassistantsystem.model.entity.UserFavorite;
+import com.atatame.medicineassistantsystem.model.entity.UserSettings;
 import com.atatame.medicineassistantsystem.model.entity.UserTask;
 import com.atatame.medicineassistantsystem.mapper.UserMapper;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
@@ -23,6 +24,7 @@ import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
 import com.atatame.medicineassistantsystem.service.IUserService;
 import com.atatame.medicineassistantsystem.service.IUserFavoriteService;
+import com.atatame.medicineassistantsystem.service.IUserSettingsService;
 import com.atatame.medicineassistantsystem.service.IUserTaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -38,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -58,8 +59,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IProjectMemberService projectMemberService;
     private final IProjectDocumentService projectDocumentService;
     private final IUserFavoriteService userFavoriteService;
-
-    private static final Map<Long, SettingsResponse> USER_SETTINGS_CACHE = new ConcurrentHashMap<>();
+    private final IUserSettingsService userSettingsService;
 
     @Override
     public List<TaskResponse> myTasks(Long userId) {
@@ -181,32 +181,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     @Override
     public SettingsResponse settings(Long userId) {
-        return USER_SETTINGS_CACHE.computeIfAbsent(userId, this::buildDefaultSettings);
+        UserSettings row = userSettingsService.getById(userId);
+        SettingsResponse response = new SettingsResponse();
+        response.setUserId(userId);
+        response.setPreferences(row != null && row.getPreferences() != null ? row.getPreferences() : "");
+        return response;
     }
 
     @Override
     public void updateSettings(Long userId, SettingsUpdateRequest request) {
-        SettingsResponse response = new SettingsResponse();
-        response.setUserId(userId);
-
-        SettingsResponse.NotificationSettings ns = new SettingsResponse.NotificationSettings();
-        ns.setEmailEnabled(request.getNotificationSettings().getEmailEnabled());
-        ns.setInAppEnabled(request.getNotificationSettings().getInAppEnabled());
-        ns.setTaskReminderEnabled(request.getNotificationSettings().getTaskReminderEnabled());
-        ns.setProjectNotificationEnabled(request.getNotificationSettings().getProjectNotificationEnabled());
-        response.setNotificationSettings(ns);
-
-        SettingsResponse.ThemeSettings ts = new SettingsResponse.ThemeSettings();
-        ts.setMode(request.getThemeSettings().getMode());
-        ts.setAccentColor(request.getThemeSettings().getAccentColor());
-        response.setThemeSettings(ts);
-
-        SettingsResponse.PrivacySettings ps = new SettingsResponse.PrivacySettings();
-        ps.setProfileVisibility(request.getPrivacySettings().getProfileVisibility());
-        ps.setSearchEnabled(request.getPrivacySettings().getSearchEnabled());
-        response.setPrivacySettings(ps);
-        response.setOtherSettings(request.getOtherSettings());
-        USER_SETTINGS_CACHE.put(userId, response);
+        String p = request.getPreferences() != null ? request.getPreferences() : "";
+        UserSettings row = new UserSettings();
+        row.setUserId(userId);
+        row.setPreferences(p);
+        userSettingsService.saveOrUpdate(row);
     }
 
     @Override
@@ -323,26 +311,4 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return favoriteType + "-" + favoriteId;
     }
 
-    private SettingsResponse buildDefaultSettings(Long userId) {
-        SettingsResponse response = new SettingsResponse();
-        response.setUserId(userId);
-        SettingsResponse.NotificationSettings ns = new SettingsResponse.NotificationSettings();
-        ns.setEmailEnabled(true);
-        ns.setInAppEnabled(true);
-        ns.setTaskReminderEnabled(true);
-        ns.setProjectNotificationEnabled(true);
-        response.setNotificationSettings(ns);
-
-        SettingsResponse.ThemeSettings ts = new SettingsResponse.ThemeSettings();
-        ts.setMode("AUTO");
-        ts.setAccentColor("#3B82F6");
-        response.setThemeSettings(ts);
-
-        SettingsResponse.PrivacySettings ps = new SettingsResponse.PrivacySettings();
-        ps.setProfileVisibility("PRIVATE");
-        ps.setSearchEnabled(false);
-        response.setPrivacySettings(ps);
-        response.setOtherSettings(new HashMap<>());
-        return response;
-    }
 }

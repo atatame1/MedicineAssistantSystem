@@ -2,7 +2,6 @@ package com.atatame.medicineassistantsystem.controller;
 
 import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.model.dto.request.DeleteByIdRequest;
-import com.atatame.medicineassistantsystem.model.dto.response.RegulationReminderResponse;
 import com.atatame.medicineassistantsystem.model.entity.Regulation;
 import com.atatame.medicineassistantsystem.service.IRegulationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,12 +49,6 @@ public class RegulationController {
     public Result<Void> delete(@RequestBody DeleteByIdRequest request) {
         regulationService.removeById(request.getId());
         return Result.ok();
-    }
-
-    @GetMapping("/reminders")
-    @Operation(summary = "政策更新提醒")
-    public Result<List<RegulationReminderResponse>> reminders() {
-        return Result.ok(regulationService.reminders());
     }
 }
 

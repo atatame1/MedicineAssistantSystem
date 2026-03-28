@@ -16,7 +16,7 @@ public class UserSettings {
     private Long userId;
 
     /**
-     * 用户设置，json存储，直接返回给前端处理
+     * 前端原样提交的字符串，后端不解析
      */
     @TableField("preferences")
     private String preferences;
