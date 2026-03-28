@@ -18,6 +18,7 @@ public class AiAgentServiceImpl implements IAiAgentService {
     private final List<AiAgent> agents;
     private Map<AgentCode, AiAgent> cache;
 
+
     @Override
     public AiTaskResponse run(AgentCode code, String input) {
         if (cache == null) {
