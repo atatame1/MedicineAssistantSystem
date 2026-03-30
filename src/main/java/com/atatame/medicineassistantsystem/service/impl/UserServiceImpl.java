@@ -296,10 +296,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         response.setProjectName(projectName);
         response.setDocType(doc.getDocType());
         response.setDocName(doc.getDocName());
-        response.setFilePath(doc.getFilePath());
+        response.setStorageKey(doc.getStorageKey());
         response.setFileSize(doc.getFileSize());
         response.setFileType(doc.getFileType());
-        response.setVersion(doc.getVersion());
         response.setUploadTime(doc.getUploadTime());
         response.setTags(doc.getTags());
         response.setSummary(doc.getSummary());

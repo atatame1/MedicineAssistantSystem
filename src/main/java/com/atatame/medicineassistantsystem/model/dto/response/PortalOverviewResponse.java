@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class PortalOverviewResponse {
-    private List<TaskResponse> todayTasks;
+    private List<TaskResponse> tasks;
     private List<Project> myProjects;
     private Long riskWarnings;
 }

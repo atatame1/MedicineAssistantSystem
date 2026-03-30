@@ -5,6 +5,7 @@ import com.atatame.medicineassistantsystem.model.dto.response.LiteratureSummaryR
 import com.atatame.medicineassistantsystem.model.entity.Literature;
 import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 /**
  * <p>
@@ -17,5 +18,6 @@ import java.util.List;
 public interface ILiteratureService extends IService<Literature> {
     List<Literature> listByKeyword(String keyword);
     LiteratureSummaryResponse buildSummary(Long literatureId);
+    SseEmitter streamSummary(Long literatureId);
     LiteratureRefreshResponse triggerRefresh(String source);
 }

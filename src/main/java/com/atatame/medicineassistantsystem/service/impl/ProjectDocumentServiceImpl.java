@@ -2,9 +2,10 @@ package com.atatame.medicineassistantsystem.service.impl;
 
 import cn.hutool.core.io.FileUtil;
 import com.atatame.medicineassistantsystem.mapper.ProjectDocumentMapper;
+import com.atatame.medicineassistantsystem.model.dto.request.ProjectDocumentUploadRequest;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
-import com.atatame.medicineassistantsystem.service.FileStorageService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
+import com.atatame.medicineassistantsystem.utils.FileStorageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -19,23 +20,30 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProjectDocumentServiceImpl extends ServiceImpl<ProjectDocumentMapper, ProjectDocument> implements IProjectDocumentService {
 
-    private final FileStorageService fileStorageService;
+    private final FileStorageUtil fileStorageUtil;
 
     @Override
-    public ProjectDocument upload(Long projectId, MultipartFile file, Long uploadUserId, String docType) throws IOException {
-        String key = fileStorageService.store(projectId, file);
+    public ProjectDocument upload(Long projectId, MultipartFile file, ProjectDocumentUploadRequest metadata) throws IOException {
+        if (metadata == null) {
+            metadata = new ProjectDocumentUploadRequest();
+        }
+        String key = fileStorageUtil.store(projectId, file);
         String orig = file.getOriginalFilename();
         String ext = FileUtil.extName(orig);
         ProjectDocument d = new ProjectDocument();
         d.setProjectId(projectId);
         d.setStorageKey(key);
-        d.setFilePath(key);
         d.setOriginalFilename(orig);
         d.setDocName(StringUtils.hasText(orig) ? orig : "upload");
         d.setFileSize(file.getSize());
-        d.setFileType(file.getContentType().substring(0,50));
-        d.setUploadUserId(uploadUserId);
-        d.setDocType(StringUtils.hasText(docType) ? docType : guessDocType(ext));
+        String ct = file.getContentType();
+        if (ct != null && ct.length() > 50) {
+            ct = ct.substring(0, 50);
+        }
+        d.setFileType(ct);
+        d.setUploadUserId(metadata.getUploadUserId());
+        d.setDocType(StringUtils.hasText(metadata.getDocType()) ? metadata.getDocType() : guessDocType(ext));
+        d.setSummary(metadata.getSummary());
         d.setTags(d.getDocType() + "," + (ext == null ? "" : ext));
         save(d);
         return d;

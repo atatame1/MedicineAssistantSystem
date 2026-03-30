@@ -11,12 +11,10 @@ public class DocumentResponse {
     private String projectName;
     private String docType;
     private String docName;
-    private String filePath;
+    private String storageKey;
     private Long fileSize;
     private String fileType;
-    private String version;
     private LocalDateTime uploadTime;
     private String tags;
     private String summary;
 }
-

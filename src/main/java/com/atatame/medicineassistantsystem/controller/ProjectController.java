@@ -7,6 +7,7 @@ import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.request.AiTaskRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.DeleteByIdRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.MemberCreateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.ProjectDocumentUploadRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
@@ -14,11 +15,11 @@ import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDecision;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
-import com.atatame.medicineassistantsystem.service.FileStorageService;
 import com.atatame.medicineassistantsystem.service.IProjectDecisionService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
+import com.atatame.medicineassistantsystem.utils.FileStorageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -54,7 +55,7 @@ public class ProjectController {
     private final IProjectMemberService projectMemberService;
     private final ProjectEvaluationAgent projectEvaluationAgent;
     private final ReportGenerationAgent reportGenerationAgent;
-    private final FileStorageService fileStorageService;
+    private final FileStorageUtil fileStorageUtil;
 
     @GetMapping
     @Operation(summary = "项目列表")
@@ -165,13 +166,12 @@ public class ProjectController {
     @PostMapping(value = "/{projectId}/documents/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "上传项目文档")
     public Result<ProjectDocument> uploadDocument(@PathVariable Long projectId,
-                                                @RequestPart("file") MultipartFile file,
-                                                @RequestParam(required = false) Long uploadUserId,
-                                                @RequestParam(required = false) String docType) throws IOException {
+                                                  @RequestPart("file") MultipartFile file,
+                                                  @RequestBody ProjectDocumentUploadRequest metadata) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("文件为空");
         }
-        ProjectDocument d = projectDocumentService.upload(projectId, file, uploadUserId, docType);
+        ProjectDocument d = projectDocumentService.upload(projectId, file, metadata);
         return Result.ok(d);
     }
 
@@ -185,7 +185,7 @@ public class ProjectController {
         if (!StringUtils.hasText(doc.getStorageKey())) {
             throw new BusinessException("无服务器文件");
         }
-        Path path = fileStorageService.resolvePath(doc.getStorageKey());
+        Path path = fileStorageUtil.resolvePath(doc.getStorageKey());
         if (!Files.exists(path)) {
             throw new BusinessException("文件已丢失");
         }

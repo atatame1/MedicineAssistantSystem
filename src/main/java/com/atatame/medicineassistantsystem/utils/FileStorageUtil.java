@@ -1,9 +1,8 @@
-package com.atatame.medicineassistantsystem.service.impl;
+package com.atatame.medicineassistantsystem.utils;
 
 import cn.hutool.core.io.FileUtil;
-import com.atatame.medicineassistantsystem.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -12,13 +11,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 
-@Service
-public class FileStorageServiceImpl implements FileStorageService {
+@Component
+public class FileStorageUtil {
 
     @Value("${app.storage.root:${user.dir}/medicine-uploads}")
     private String root;
 
-    @Override
     public String store(Long projectId, MultipartFile file) throws IOException {
         Path base = Paths.get(root).normalize().toAbsolutePath();
         Path dir = base.resolve("projects").resolve(String.valueOf(projectId));
@@ -31,7 +29,6 @@ public class FileStorageServiceImpl implements FileStorageService {
         return "projects/" + projectId + "/" + name;
     }
 
-    @Override
     public Path resolvePath(String storageKey) {
         if (storageKey == null || storageKey.contains("..")) {
             throw new IllegalArgumentException("invalid storage key");

@@ -64,10 +64,10 @@ INSERT INTO `target_pathway` (`id`, `name`, `type`, `target_type`, `function`, `
 -- 法规数据
 -- ========================
 INSERT INTO `regulation` (`id`, `name`, `name_english`, `regulation_number`, `issuing_authority`, `issuing_authority_type`, `regulation_type`, `category`, `effective_date`, `is_valid`, `applicable_field`, `summary`, `importance`, `create_time`, `update_time`) VALUES
-(1, '中药新药临床研究指导原则', 'Guidelines for Clinical Research of New Chinese Medicines', '国食药监注 [2005]480 号', '国家食品药品监督管理局', 'NMPA', 'GUIDELINE', '临床研究', '2005-09-01', 1, '中药', '指导中药新药临床试验的设计、实施和评价', 'CRITICAL', NOW(), NOW()),
-(2, '中药注册管理专门规定', 'Special Provisions on the Registration of Chinese Medicines', '国家市场监督管理总局令 第 65 号', '国家市场监督管理总局', 'NMPA', 'REGULATION', '注册管理', '2023-12-01', 1, '中药', '完善中药注册分类和申报资料要求', 'CRITICAL', NOW(), NOW()),
-(3, '中药注册分类及申报资料要求', 'Classification and Requirements for Registration of Chinese Medicines', '2020 年第 68 号公告', '国家药品监督管理局', 'NMPA', 'NOTICE', '注册管理', '2020-07-01', 1, '中药', '明确中药注册分类和相应申报资料要求', 'CRITICAL', NOW(), NOW()),
-(4, '中药新药处方药转非处方药评价指导原则', 'Guidelines for Evaluation of Prescription to OTC Switch of New Chinese Medicines', '药审中心公告 2021 年第 66 号', '国家药品监督管理局药品审评中心', 'NMPA', 'GUIDELINE', '上市后研究', '2021-06-01', 1, '中药', '指导中药处方药向非处方药转换的评估工作', 'NORMAL', NOW(), NOW());
+(1, '中药新药临床研究指导原则', 'Guidelines for Clinical Research of New Chinese Medicines', '国食药监注 [2005]480 号', '国家食品药品监督管理局', 'NMPA', 'GUIDELINE', '临床研究', '2005-09-01', 1, '中药', '指导中药新药临床试验的设计、实施和评价', 1, NOW(), NOW()),
+(2, '中药注册管理专门规定', 'Special Provisions on the Registration of Chinese Medicines', '国家市场监督管理总局令 第 65 号', '国家市场监督管理总局', 'NMPA', 'REGULATION', '注册管理', '2023-12-01', 1, '中药', '完善中药注册分类和申报资料要求', 1, NOW(), NOW()),
+(3, '中药注册分类及申报资料要求', 'Classification and Requirements for Registration of Chinese Medicines', '2020 年第 68 号公告', '国家药品监督管理局', 'NMPA', 'NOTICE', '注册管理', '2020-07-01', 1, '中药', '明确中药注册分类和相应申报资料要求', 1, NOW(), NOW()),
+(4, '中药新药处方药转非处方药评价指导原则', 'Guidelines for Evaluation of Prescription to OTC Switch of New Chinese Medicines', '药审中心公告 2021 年第 66 号', '国家药品监督管理局药品审评中心', 'NMPA', 'GUIDELINE', '上市后研究', '2021-06-01', 1, '中药', '指导中药处方药向非处方药转换的评估工作', 1, NOW(), NOW());
 
 -- ========================
 -- 用户数据
