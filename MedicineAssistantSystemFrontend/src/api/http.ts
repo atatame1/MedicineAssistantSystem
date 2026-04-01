@@ -7,13 +7,36 @@ export type ApiResult<T> = {
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig } from 'axios'
 
-const API_BASE_URL =
-  (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:8080'
-
 const client: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: '',
   timeout: 60000
 })
+
+const LS_TOKEN = 'mas_token'
+
+client.interceptors.request.use((config) => {
+  try {
+    const token = localStorage.getItem(LS_TOKEN)
+    if (token) {
+      config.headers = config.headers || {}
+      ;(config.headers as any).Authorization = `Bearer ${token}`
+    }
+  } catch {}
+  return config
+})
+
+client.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const status = err?.response?.status
+    if (status === 401) {
+      try {
+        window.dispatchEvent(new CustomEvent('auth:required'))
+      } catch {}
+    }
+    return Promise.reject(err)
+  }
+)
 
 async function requestJson<T>(
   path: string,
