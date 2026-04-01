@@ -23,29 +23,52 @@ onMounted(load)
 </script>
 
 <template>
-  <div>
-    <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center">
-      <el-input v-model="keyword" placeholder="keyword" style="flex: 1" />
-      <el-button @click="load" :loading="loading" type="primary">搜索</el-button>
-      <router-link to="/literatures/create">新增文献</router-link>
-    </div>
+  <div class="page-wrap">
+    <el-card>
+      <div class="toolbar">
+        <el-input v-model="keyword" placeholder="输入关键词检索文献" clearable class="keyword-input" />
+        <el-button @click="load" :loading="loading" type="primary">搜索</el-button>
+        <el-button @click="$router.push('/literatures/create')">新增文献</el-button>
+      </div>
 
-    <el-alert v-if="error" type="error" show-icon :title="error" style="margin-bottom: 12px" />
+      <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
-    <el-table v-if="!loading" :data="items" style="width: 100%">
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="title" label="标题" />
-      <el-table-column prop="researchType" label="研究类型" width="160" />
-      <el-table-column label="操作" width="220">
-        <template #default="scope">
-          <router-link :to="`/literatures/${scope.row.id}/summary`">生成摘要</router-link>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <div v-if="loading" style="padding: 12px 0">加载中...</div>
+      <el-table v-loading="loading" :data="items" stripe>
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="title" label="标题" min-width="260" />
+        <el-table-column prop="researchType" label="研究类型" width="160" />
+        <el-table-column label="操作" width="130" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="$router.push(`/literatures/${row.id}/summary`)">
+              生成摘要
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.keyword-input {
+  flex: 1;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+</style>
 

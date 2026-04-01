@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { getUserSettings, updateUserSettings, type SettingsResponse } from '@/api/user'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
-const userId = computed(() => Number(route.params.userId))
+const router = useRouter()
+const auth = useAuthStore()
+const userId = computed(() => auth.user?.userId || Number(route.params.userId))
 
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -36,29 +39,53 @@ async function submit() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  if (auth.user?.userId && Number(route.params.userId) !== auth.user.userId) {
+    router.replace(`/user/${auth.user.userId}/settings`)
+    return
+  }
+  load()
+})
 </script>
 
 <template>
-  <div>
-    <div style="display: flex; gap: 12px; margin-bottom: 12px">
-      <router-link :to="`/user/${userId}/favorites`">返回收藏</router-link>
-    </div>
+  <div class="page-wrap">
+    <el-card>
+      <template #header>
+        <div class="card-header">
+          <span>用户设置</span>
+          <el-button text @click="$router.push(`/user/${userId}/favorites`)">查看收藏</el-button>
+        </div>
+      </template>
 
-    <div style="margin-bottom: 12px">用户ID：{{ userId }}</div>
+      <el-tag type="success" class="mb-12">用户ID：{{ userId }}</el-tag>
+      <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
-    <el-alert v-if="error" type="error" show-icon :title="error" style="margin-bottom: 12px" />
-
-    <el-form :model="{ preferences: form }" label-width="120px">
-      <el-form-item label="preferences（前端原样字符串）">
-        <el-input v-model="form" type="textarea" :rows="8" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="loading" @click="submit">保存</el-button>
-      </el-form-item>
-    </el-form>
+      <el-form :model="{ preferences: form }" label-width="120px">
+        <el-form-item label="preferences">
+          <el-input v-model="form" type="textarea" :rows="10" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="submit">保存</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-wrap {
+  max-width: 900px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+</style>
 

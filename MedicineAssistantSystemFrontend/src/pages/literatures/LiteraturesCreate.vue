@@ -41,56 +41,75 @@ async function submit() {
 </script>
 
 <template>
-  <div>
-    <div style="display: flex; gap: 12px; margin-bottom: 12px">
-      <router-link to="/literatures">返回</router-link>
-    </div>
+  <div class="page-wrap">
+    <el-card>
+      <template #header>
+        <div class="card-header">
+          <span>新增文献</span>
+          <el-button text @click="$router.push('/literatures')">返回列表</el-button>
+        </div>
+      </template>
 
-    <el-alert v-if="error" type="error" show-icon :title="error" style="margin-bottom: 12px" />
+      <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
-    <el-form :model="form" label-width="120px" @submit.prevent>
-      <el-form-item label="文件">
-        <el-upload
-          :auto-upload="false"
-          :limit="1"
-          :file-list="fileList"
-          :on-change="handleFileChange"
-          accept="application/pdf,.pdf"
-          list-type="text"
-        >
-          <el-button type="primary">选择 PDF</el-button>
-        </el-upload>
-      </el-form-item>
-      <el-form-item label="标题">
-        <el-input v-model="form.title" placeholder="必填" />
-      </el-form-item>
-      <el-form-item label="研究类型">
-        <el-input v-model="form.researchType" />
-      </el-form-item>
-      <el-form-item label="研究方法">
-        <el-input v-model="form.methodology" type="textarea" rows="3" />
-      </el-form-item>
-      <el-form-item label="主要发现">
-        <el-input v-model="form.mainFindings" type="textarea" rows="3" />
-      </el-form-item>
-      <el-form-item label="结论">
-        <el-input v-model="form.conclusion" type="textarea" rows="3" />
-      </el-form-item>
-      <el-form-item label="创新点">
-        <el-input v-model="form.innovations" type="textarea" rows="3" />
-      </el-form-item>
-      <el-form-item label="关键词">
-        <el-input v-model="form.keywords" />
-      </el-form-item>
-      <el-form-item label="摘要">
-        <el-input v-model="form.abstractContent" type="textarea" rows="3" />
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" :loading="loading" @click="submit">提交</el-button>
-      </el-form-item>
-    </el-form>
+      <el-form :model="form" label-width="120px" @submit.prevent>
+        <el-form-item label="文件">
+          <el-upload
+            :auto-upload="false"
+            :limit="1"
+            :file-list="fileList"
+            :on-change="handleFileChange"
+            accept="application/pdf,.pdf"
+            list-type="text"
+          >
+            <el-button type="primary">选择 PDF</el-button>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="标题">
+          <el-input v-model="form.title" placeholder="必填" />
+        </el-form-item>
+        <el-form-item label="研究类型">
+          <el-input v-model="form.researchType" />
+        </el-form-item>
+        <el-form-item label="研究方法">
+          <el-input v-model="form.methodology" type="textarea" rows="3" />
+        </el-form-item>
+        <el-form-item label="主要发现">
+          <el-input v-model="form.mainFindings" type="textarea" rows="3" />
+        </el-form-item>
+        <el-form-item label="结论">
+          <el-input v-model="form.conclusion" type="textarea" rows="3" />
+        </el-form-item>
+        <el-form-item label="创新点">
+          <el-input v-model="form.innovations" type="textarea" rows="3" />
+        </el-form-item>
+        <el-form-item label="关键词">
+          <el-input v-model="form.keywords" />
+        </el-form-item>
+        <el-form-item label="摘要">
+          <el-input v-model="form.abstractContent" type="textarea" rows="3" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" :loading="loading" @click="submit">提交</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-wrap {
+  max-width: 920px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+</style>
 

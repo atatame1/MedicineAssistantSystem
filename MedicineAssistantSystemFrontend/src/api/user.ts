@@ -46,3 +46,60 @@ export async function getUserFavoriteStatistics(userId: number) {
   )
 }
 
+export type TaskResponse = {
+  id: number
+  title: string
+  description: string | null
+  priority: number | null
+  status: number | null
+  projectId: number | null
+  projectName: string | null
+  assigneeId: number | null
+  deadline: string | null
+  completionFeedback: string | null
+  createTime: string | null
+  overdue: boolean | null
+}
+
+export type ProjectResponse = {
+  projectId: number
+  projectName: string | null
+  phase: string | null
+  status: number | null
+  role: string | null
+  joinTime: string | null
+}
+
+export type DocumentResponse = {
+  id: number
+  name: string | null
+  type: string | null
+  url: string | null
+  createTime: string | null
+}
+
+export type UserProfileResponse = {
+  userId: number
+  username: string | null
+  role: string | null
+  taskCount: number | null
+  projectCount: number | null
+  favoriteCount: number | null
+}
+
+export async function listMyTasks(userId: number) {
+  return apiGet<TaskResponse[]>(`/api/user/${userId}/tasks`)
+}
+
+export async function listMyProjects(userId: number) {
+  return apiGet<ProjectResponse[]>(`/api/user/${userId}/projects`)
+}
+
+export async function listMyReports(userId: number) {
+  return apiGet<DocumentResponse[]>(`/api/user/${userId}/reports`)
+}
+
+export async function getMyProfile(userId: number) {
+  return apiGet<UserProfileResponse>(`/api/user/${userId}/profile`)
+}
+

@@ -1,0 +1,61 @@
+:root {
+  --el-color-primary: #2f7b62;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.el-card {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  transition: none;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.el-table {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.el-card:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.el-table th.el-table__cell,
+.el-table td.el-table__cell {
+  background: transparent !important;
+}
+
+.el-table__inner-wrapper::before {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.el-button {
+  transition: transform 0.15s ease;
+}
+
+.el-button:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .el-card,
+  .el-button {
+    transition: none;
+  }
+}

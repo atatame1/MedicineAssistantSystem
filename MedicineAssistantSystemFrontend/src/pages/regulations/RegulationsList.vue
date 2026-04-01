@@ -23,24 +23,45 @@ onMounted(load)
 </script>
 
 <template>
-  <div>
-    <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center">
-      <el-input v-model="keyword" placeholder="keyword" style="flex: 1" />
-      <el-button @click="load" :loading="loading" type="primary">搜索</el-button>
-    </div>
+  <div class="page-wrap">
+    <el-card>
+      <div class="toolbar">
+        <el-input v-model="keyword" placeholder="输入关键词检索法规" clearable class="keyword-input" />
+        <el-button @click="load" :loading="loading" type="primary">搜索</el-button>
+      </div>
 
-    <el-alert v-if="error" type="error" show-icon :title="error" style="margin-bottom: 12px" />
+      <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
-    <el-table v-if="!loading" :data="items" style="width: 100%">
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="name" label="名称" />
-      <el-table-column prop="regulationNumber" label="文号" width="160" />
-      <el-table-column prop="issuingAuthority" label="发布机构" />
-    </el-table>
-
-    <div v-if="loading" style="padding: 12px 0">加载中...</div>
+      <el-table v-loading="loading" :data="items" stripe>
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="name" label="名称" min-width="260" />
+        <el-table-column prop="regulationNumber" label="文号" width="180" />
+        <el-table-column prop="issuingAuthority" label="发布机构" min-width="220" />
+      </el-table>
+    </el-card>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.keyword-input {
+  flex: 1;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+</style>
 

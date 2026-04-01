@@ -19,36 +19,72 @@ async function load() {
   }
 }
 
+function statusText(status?: number | null) {
+  const m: Record<number, string> = { 1: '立项中', 2: '进行中', 3: '已完成', 4: '已取消' }
+  if (status == null) return '-'
+  return m[status] || `状态${status}`
+}
+
 onMounted(load)
 </script>
 
 <template>
-  <div>
-    <div style="display: flex; gap: 12px; margin-bottom: 12px; align-items: center">
-      <div style="display: flex; gap: 8px; align-items: center">
-        <span style="font-size: 14px">状态</span>
-        <el-select v-model="status" style="width: 120px" placeholder="全部" clearable>
-          <el-option :value="1" label="1" />
-          <el-option :value="2" label="2" />
-          <el-option :value="3" label="3" />
-          <el-option :value="4" label="4" />
-        </el-select>
+  <div class="page-wrap">
+    <el-card>
+      <div class="toolbar">
+        <div class="left-tools">
+          <el-select v-model="status" style="width: 150px" placeholder="全部状态" clearable>
+            <el-option :value="1" label="立项中" />
+            <el-option :value="2" label="进行中" />
+            <el-option :value="3" label="已完成" />
+            <el-option :value="4" label="已取消" />
+          </el-select>
+          <el-button @click="load" :loading="loading">刷新</el-button>
+        </div>
+        <el-button type="primary" @click="$router.push('/projects/create')">创建项目</el-button>
       </div>
-      <el-button @click="load" :loading="loading">刷新</el-button>
-      <router-link to="/projects/create">创建项目</router-link>
-    </div>
 
-    <el-alert v-if="error" :title="error" type="error" show-icon style="margin-bottom: 12px" />
+      <el-alert v-if="error" :title="error" type="error" show-icon class="mb-12" />
 
-    <el-table v-if="!loading" :data="items" style="width: 100%">
-      <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="projectName" label="项目名称" />
-      <el-table-column prop="phase" label="阶段" width="120" />
-      <el-table-column prop="status" label="状态" width="90" />
-      <el-table-column prop="projectorId" label="负责人" width="100" />
-    </el-table>
+      <el-table v-loading="loading" :data="items" stripe>
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="projectName" label="项目名称" min-width="200" />
+        <el-table-column prop="phase" label="阶段" width="140" />
+        <el-table-column label="状态" width="120">
+          <template #default="{ row }">
+            <el-tag effect="light">{{ statusText(row.status) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="projectorId" label="负责人" width="100" />
+      </el-table>
+    </el-card>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.page-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.left-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mb-12 {
+  margin-bottom: 12px;
+}
+</style>
 
