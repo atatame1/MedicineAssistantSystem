@@ -132,8 +132,7 @@ CREATE TABLE `component` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_component_name` (`name`),
   UNIQUE KEY `uk_cas_number` (`cas_number`),
-  KEY `idx_source_database` (`source_database`),
-  KEY `idx_bioactivity` (`bioactivity`)
+  KEY `idx_source_database` (`source_database`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='化学成分库';
 
 -- ============================================
