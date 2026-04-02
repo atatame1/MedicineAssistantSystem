@@ -20,13 +20,6 @@ function go(p: string) {
 
 <template>
   <div class="hub">
-    <div class="head">
-      <div>
-        <div class="t">知识中心</div>
-        <div class="s">按库进入数据与分析</div>
-      </div>
-    </div>
-
     <div class="grid">
       <button v-for="it in items" :key="it.path" class="card" @click="go(it.path)">
         <div class="icon">{{ it.icon }}</div>
@@ -41,24 +34,7 @@ function go(p: string) {
 .hub {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 20px;
-  font-weight: 950;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
+  gap: 0;
 }
 .grid {
   display: grid;

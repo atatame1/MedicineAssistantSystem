@@ -26,19 +26,18 @@ onMounted(load)
 
 <template>
   <div class="page">
-    <div class="head">
+    <header class="head">
       <div>
-        <div class="t">我的项目</div>
-        <div class="s">参与与创建</div>
+        <p class="kicker">工作台</p>
+        <h1 class="t">我的项目</h1>
+        <p class="s">参与与创建</p>
       </div>
-      <div class="act">
-        <el-button :loading="loading" @click="load">加载</el-button>
-      </div>
-    </div>
+      <el-button class="btn" round :loading="loading" @click="load">刷新</el-button>
+    </header>
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
+    <div class="panel">
       <el-table v-loading="loading" :data="rows" stripe>
         <el-table-column prop="id" label="项目ID" width="110" />
         <el-table-column prop="projectName" label="项目名称" min-width="200" />
@@ -49,7 +48,7 @@ onMounted(load)
         <el-table-column prop="status" label="状态" width="100" />
         <el-table-column prop="plannedEndTime" label="计划完成" width="180" />
       </el-table>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -57,29 +56,63 @@ onMounted(load)
 .page {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: in 0.5s ease both;
 }
+
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
 }
+
+.kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
 .t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.94);
 }
+
 .s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
+  margin-top: 8px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.58);
 }
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+
+.btn {
+  align-self: center;
+}
+
+.panel {
+  border-radius: 22px;
+  padding: 4px 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>
 

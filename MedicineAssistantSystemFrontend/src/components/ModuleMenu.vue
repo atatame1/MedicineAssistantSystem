@@ -26,7 +26,7 @@ const groups: MenuGroup[] = [
     items: [
       { label: '门户总览', path: '/portal' },
       { label: '我的任务', path: '/me/tasks' },
-      { label: '我的资料', path: '/me/profile' }
+      { label: '个人主页', path: '/me' }
     ]
   },
   {

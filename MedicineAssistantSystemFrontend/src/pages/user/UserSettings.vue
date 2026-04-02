@@ -50,38 +50,85 @@ onMounted(() => {
 
 <template>
   <div class="page-wrap">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>用户设置</span>
-          <el-button text @click="$router.push(`/user/${userId}/favorites`)">查看收藏</el-button>
-        </div>
-      </template>
+    <header class="page-head">
+      <div>
+        <p class="kicker">偏好</p>
+        <h1 class="title">个人设置</h1>
+        <p class="sub">同步到账号，随时可改</p>
+      </div>
+      <el-button round @click="$router.push(`/user/${userId}/favorites`)">我的收藏</el-button>
+    </header>
 
-      <el-tag type="success" class="mb-12">用户ID：{{ userId }}</el-tag>
+    <div class="panel">
+      <el-tag type="success" class="mb-12" effect="dark">用户ID：{{ userId }}</el-tag>
       <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
-      <el-form :model="{ preferences: form }" label-width="120px">
-        <el-form-item label="preferences">
-          <el-input v-model="form" type="textarea" :rows="10" />
+      <el-form :model="{ preferences: form }" label-width="100px" label-position="top">
+        <el-form-item label="偏好配置（JSON 或文本）">
+          <el-input v-model="form" type="textarea" :rows="12" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" :loading="loading" @click="submit">保存</el-button>
+          <el-button type="primary" round :loading="loading" @click="submit">保存</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .page-wrap {
-  max-width: 900px;
+  max-width: 720px;
+  margin: 0 auto;
+  animation: in 0.5s ease both;
 }
 
-.card-header {
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.sub {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.panel {
+  border-radius: 22px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .mb-12 {

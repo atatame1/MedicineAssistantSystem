@@ -59,6 +59,16 @@ const history = ref<AiConversationHistoryItem[]>([])
 const listEl = ref<HTMLElement | null>(null)
 const isLanding = computed(() => msgs.value.filter((m) => m.role === 'user').length === 0)
 const agentTitle = computed(() => titleMap[agent.value] || '智能体')
+const conversationTitle = ref<string>('')
+
+const displayConversationTitle = computed(() => {
+  const t = conversationTitle.value.trim()
+  if (t) return t
+  const firstUser = msgs.value.find((m) => m.role === 'user')?.content || ''
+  const v = firstUser.trim()
+  if (!v) return '新对话'
+  return v.length > 22 ? v.slice(0, 22) + '…' : v
+})
 
 const memoryEnabled = computed(() => {
   return agent.value !== 'project-evaluation' && agent.value !== 'report-generation'
@@ -123,6 +133,7 @@ function loadFromHistory(item: AiConversationHistoryItem) {
   ]
   error.value = null
   input.value = ''
+  conversationTitle.value = truncate(item.title ?? item.inputText, 22)
   nextTick(() => {
     listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
   })
@@ -162,6 +173,10 @@ async function send() {
   if (!text) return
   input.value = ''
   error.value = null
+  if (!conversationTitle.value.trim()) {
+    const v = text.trim()
+    conversationTitle.value = v.length > 22 ? v.slice(0, 22) + '…' : v
+  }
   msgs.value.push({ role: 'user', content: text, ts: Date.now() })
   loading.value = true
 
@@ -204,6 +219,7 @@ async function send() {
 
 function clearChat() {
   conversationId.value = memoryEnabled.value ? Date.now() : null
+  conversationTitle.value = ''
   msgs.value = [
     {
       role: 'assistant',
@@ -217,45 +233,55 @@ function clearChat() {
 function pickPrompt(p: string) {
   input.value = p
 }
+
 </script>
 
 <template>
   <div class="g">
-    <div class="topbar">
-      <div class="brand">
-        <div class="ttl">{{ agentTitle }}</div>
-        <div class="sub">对话</div>
-      </div>
-      <div class="actions">
-        <el-button text @click="clearChat">清空</el-button>
-      </div>
-    </div>
-
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <div v-if="isLanding" class="landing-wrap">
-      <div v-if="memoryEnabled" class="history-panel">
-        <div class="history-head">
-          <div class="history-title">历史记录</div>
-          <div class="history-sub">{{ agentTitle }}</div>
+    <div class="layout">
+      <aside class="side">
+        <div class="side-top">
+          <div class="side-title">
+            <div class="st">{{ agentTitle }}</div>
+          </div>
         </div>
 
-        <div v-if="historyLoading" class="history-loading">加载中...</div>
-        <el-alert v-else-if="historyError" type="error" show-icon :title="historyError" />
-        <div v-else-if="history.length === 0" class="history-empty">暂无历史</div>
-        <div v-else class="history-groups">
-          <div v-for="g in groupedHistory" :key="g.label" class="history-group">
-            <div class="history-group-label">{{ g.label }}</div>
-            <div v-for="it in g.items" :key="String(it.conversationId ?? it.createTime ?? it.title)"
-              class="history-item" @click="loadFromHistory(it)">
-              <div class="history-item-input">{{ truncate(it.title ?? it.inputText, 40) }}</div>
-              <div class="history-item-time">{{ formatTime(it.createTime) }}</div>
+        <div class="side-actions">
+          <button class="side-btn" type="button" @click="clearChat">
+            <span class="bi">＋</span>
+            <span class="bt">新对话</span>
+          </button>
+        </div>
+
+        <div v-if="memoryEnabled" class="history">
+          <div class="history-head">
+            <div class="history-title">对话历史</div>
+          </div>
+
+          <div v-if="historyLoading" class="history-loading">加载中...</div>
+          <el-alert v-else-if="historyError" type="error" show-icon :title="historyError" />
+          <div v-else-if="history.length === 0" class="history-empty">暂无历史</div>
+          <div v-else class="history-groups">
+            <div v-for="g in groupedHistory" :key="g.label" class="history-group">
+              <div class="history-group-label">{{ g.label }}</div>
+              <div v-for="it in g.items" :key="String(it.conversationId ?? it.createTime ?? it.title)" class="history-item"
+                @click="loadFromHistory(it)">
+                <div class="history-item-input">{{ truncate(it.title ?? it.inputText, 40) }}</div>
+                <div class="history-item-time">{{ formatTime(it.createTime) }}</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div class="landing">
+      <section class="main">
+        <div class="main-top">
+          <div class="conv-title">{{ displayConversationTitle }}</div>
+          <div class="agent-name">{{ agentTitle }}</div>
+        </div>
+        <div v-if="isLanding" class="landing">
         <div class="hello">
           <div class="h1">你好</div>
           <div class="h2">从哪里开始？</div>
@@ -264,7 +290,7 @@ function pickPrompt(p: string) {
         <div class="center">
           <div class="composer gem">
             <el-input v-model="input" type="textarea" :rows="2" resize="none"
-              placeholder="问点什么…（Enter 发送，Shift+Enter 换行）" @keydown.enter.exact.prevent="send"
+              placeholder="问点什么…" @keydown.enter.exact.prevent="send"
               @keydown.enter.shift.exact.stop />
             <div class="bar">
               <div class="tools">
@@ -284,52 +310,26 @@ function pickPrompt(p: string) {
             <button class="chip" type="button" @click="pickPrompt('先给出结论，再给出理由与步骤。')">结论优先</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div v-else class="chat-wrap">
-      <div v-if="memoryEnabled" class="history-panel">
-        <div class="history-head">
-          <div class="history-title">历史记录</div>
-          <div class="history-sub">{{ agentTitle }}</div>
         </div>
 
-        <div v-if="historyLoading" class="history-loading">加载中...</div>
-        <el-alert v-else-if="historyError" type="error" show-icon :title="historyError" />
-        <div v-else-if="history.length === 0" class="history-empty">暂无历史</div>
-        <div v-else class="history-groups">
-          <div v-for="g in groupedHistory" :key="g.label" class="history-group">
-            <div class="history-group-label">{{ g.label }}</div>
-            <div v-for="it in g.items" :key="String(it.conversationId ?? it.createTime ?? it.title)"
-              class="history-item" @click="loadFromHistory(it)">
-              <div class="history-item-input">{{ truncate(it.title ?? it.inputText, 40) }}</div>
-              <div class="history-item-time">{{ formatTime(it.createTime) }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="chat">
+        <div v-else class="chat">
         <div ref="listEl" class="stream">
-          <div v-for="m in msgs" :key="m.ts + m.role" class="row" :class="m.role">
+          <div v-for="(m, idx) in msgs" :key="m.ts + m.role" class="row" :class="m.role">
             <div class="bubble">
               <div class="who">{{ m.role === 'user' ? '你' : agentTitle }}</div>
               <div class="txt">{{ m.content }}</div>
-            </div>
-          </div>
-
-          <div v-if="loading && false" class="row assistant">
-            <div class="bubble">
-              <div class="who">{{ agentTitle }}</div>
-              <div class="txt typing">
-                <span></span><span></span><span></span>
+              <div v-if="loading && idx === msgs.length - 1 && m.role === 'assistant'" class="thinking">
+                <div class="thinking-line">
+                  <span class="think-dot"></span><span class="think-dot"></span><span class="think-dot"></span>
+                  <span class="think-txt">思考中…</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <div class="composer dock">
-          <el-input v-model="input" type="textarea" :rows="2" resize="none" placeholder="输入消息…（Enter 发送，Shift+Enter 换行）"
+          <el-input v-model="input" type="textarea" :rows="2" resize="none" placeholder="问点什么....."
             @keydown.enter.exact.prevent="send" @keydown.enter.shift.exact.stop />
           <div class="bar">
             <div class="tools">
@@ -342,6 +342,7 @@ function pickPrompt(p: string) {
           </div>
         </div>
       </div>
+      </section>
     </div>
   </div>
 </template>
@@ -350,26 +351,111 @@ function pickPrompt(p: string) {
 .g {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   height: min(78vh, 860px);
 }
 
-.topbar {
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 0;
+  min-height: 0;
+}
+
+.side {
+  border-radius: 0;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  padding: 14px 12px 14px;
+  overflow: auto;
+  min-height: 0;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.side-top {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-.ttl {
-  font-size: 16px;
+.side-title .st {
+  font-size: 15px;
   font-weight: 950;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.86);
 }
 
-.sub {
-  margin-top: 6px;
-  font-size: 12px;
+.side-actions {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.side-btn {
+  border: 0;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 10px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.bi {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.12);
+  font-weight: 950;
+}
+
+.bt {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.history {
+  margin-top: 4px;
+}
+
+.main {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 18px 14px;
+}
+
+.main-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 8px;
+  min-height: 34px;
+}
+
+.conv-title {
+  grid-column: 2;
+  justify-self: center;
+  font-size: 20px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.86);
+  max-width: min(520px, 60vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agent-name {
+  grid-column: 3;
+  justify-self: end;
+  font-size: 15px;
+  font-weight: 900;
   color: rgba(255, 255, 255, 0.62);
 }
 
@@ -378,31 +464,6 @@ function pickPrompt(p: string) {
   display: grid;
   place-items: center;
   padding: 14px 0;
-  min-height: 0;
-}
-
-.landing-wrap {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 12px;
-  min-height: 0;
-}
-
-.chat-wrap {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 12px;
-  min-height: 0;
-}
-
-.history-panel {
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  padding: 12px;
-  overflow: auto;
   min-height: 0;
 }
 
@@ -415,26 +476,26 @@ function pickPrompt(p: string) {
 }
 
 .history-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.92);
 }
 
 .history-sub {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.62);
   font-weight: 800;
 }
 
 .history-loading {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 12px;
+  font-size: 13px;
   padding: 12px 0;
 }
 
 .history-empty {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 12px;
+  font-size: 13px;
   padding: 12px 0;
 }
 
@@ -445,7 +506,7 @@ function pickPrompt(p: string) {
 }
 
 .history-group-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.72);
   margin-top: 4px;
@@ -469,7 +530,7 @@ function pickPrompt(p: string) {
 .history-item-input {
   color: rgba(255, 255, 255, 0.92);
   font-weight: 800;
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -477,7 +538,7 @@ function pickPrompt(p: string) {
 
 .history-item-time {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.62);
 }
 
@@ -515,7 +576,10 @@ function pickPrompt(p: string) {
 .stream {
   min-height: 0;
   overflow: auto;
-  padding: 10px 2px;
+  padding: 8px 0 10px;
+  max-width: min(920px, 92%);
+  width: 100%;
+  margin: 0 auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -535,19 +599,23 @@ function pickPrompt(p: string) {
 }
 
 .bubble {
-  width: min(860px, 92%);
-  border-radius: 22px;
-  padding: 12px 14px;
+  width: 100%;
+  border-radius: 0;
+  padding: 6px 2px;
+  background: transparent;
+  backdrop-filter: none;
+}
+
+.row.user .bubble {
+  width: min(720px, 92%);
+  border-radius: 18px;
+  padding: 10px 12px;
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
 }
 
-.row.user .bubble {
-  background: linear-gradient(145deg, rgba(146, 230, 202, 0.55), rgba(103, 181, 150, 0.22));
-}
-
 .who {
-  font-size: 11px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.68);
   font-weight: 850;
   margin-bottom: 8px;
@@ -557,7 +625,40 @@ function pickPrompt(p: string) {
   white-space: pre-wrap;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.92);
+  font-size: 15px;
+}
+
+.thinking {
+  margin-top: 10px;
+}
+
+.thinking-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
+  font-weight: 800;
+}
+
+.think-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  animation: dot 1.1s infinite ease-in-out;
+}
+
+.think-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.think-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.think-txt {
+  margin-left: 6px;
 }
 
 .composer {
@@ -570,6 +671,12 @@ function pickPrompt(p: string) {
 .composer.gem {
   border-radius: 28px;
   padding: 12px 12px 10px;
+}
+
+.composer.dock {
+  max-width: min(920px, 92%);
+  width: 100%;
+  margin: 0 auto;
 }
 
 .bar {
@@ -599,7 +706,7 @@ function pickPrompt(p: string) {
 }
 
 .tool-txt {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   opacity: 0.85;
 }
@@ -619,7 +726,7 @@ function pickPrompt(p: string) {
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
   color: rgba(255, 255, 255, 0.86);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
 }
 
@@ -651,8 +758,11 @@ function pickPrompt(p: string) {
 }
 
 @media (max-width: 860px) {
-  .bubble {
-    width: min(860px, 96%);
+  .layout {
+    grid-template-columns: 280px 1fr;
+  }
+  .main {
+    padding: 8px 12px 12px;
   }
 }
 
@@ -660,24 +770,6 @@ function pickPrompt(p: string) {
   .chip:hover {
     background: rgba(255, 255, 255, 0.06);
   }
-}
-
-.typing span {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  margin-right: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.55);
-  animation: dot 1.1s infinite ease-in-out;
-}
-
-.typing span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.typing span:nth-child(3) {
-  animation-delay: 0.3s;
 }
 
 @keyframes dot {

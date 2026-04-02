@@ -141,17 +141,19 @@ onMounted(() => {
 
 <template>
   <div class="page-wrap">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>我的收藏</span>
-          <div class="header-actions">
-            <el-button text @click="$router.push(`/user/${userId}/settings`)">设置</el-button>
-            <el-button @click="load" :loading="loading">刷新</el-button>
-          </div>
-        </div>
-      </template>
+    <header class="page-head">
+      <div>
+        <p class="kicker">星标</p>
+        <h1 class="title">我的收藏</h1>
+        <p class="sub">跨模块统一查看与管理</p>
+      </div>
+      <div class="header-actions">
+        <el-button round @click="$router.push(`/user/${userId}/settings`)">设置</el-button>
+        <el-button round :loading="loading" @click="load">刷新</el-button>
+      </div>
+    </header>
 
+    <div class="panel">
       <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
 
       <el-row v-if="stats" :gutter="12" class="mb-12">
@@ -165,7 +167,7 @@ onMounted(() => {
           <div class="stat-box">
             <div class="stat-label">类型分布</div>
             <div class="type-list">
-              <el-tag v-for="(v, k) in stats.typeCountMap" :key="k" effect="light">
+              <el-tag v-for="(v, k) in stats.typeCountMap" :key="k" effect="dark">
                 {{ k }}：{{ v }}
               </el-tag>
             </div>
@@ -192,7 +194,7 @@ onMounted(() => {
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
   </div>
 
   <el-dialog v-model="detailOpen" title="收藏详情" width="720px">
@@ -217,13 +219,51 @@ onMounted(() => {
 .page-wrap {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
+  max-width: 1100px;
+  margin: 0 auto;
+  animation: in 0.5s ease both;
 }
 
-.card-header {
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.kicker {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.sub {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .header-actions {
@@ -232,26 +272,35 @@ onMounted(() => {
   gap: 8px;
 }
 
+.panel {
+  border-radius: 22px;
+  padding: 16px 16px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .mb-12 {
   margin-bottom: 12px;
 }
 
 .stat-box {
-  border: 1px solid #e8efeb;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-label {
-  color: #6d7d74;
+  color: rgba(255, 255, 255, 0.55);
   font-size: 12px;
 }
 
 .stat-value {
-  margin-top: 6px;
-  font-size: 24px;
-  font-weight: 700;
-  color: #1f4337;
+  margin-top: 8px;
+  font-size: 28px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .type-list {

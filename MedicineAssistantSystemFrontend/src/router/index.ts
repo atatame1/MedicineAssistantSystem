@@ -22,12 +22,7 @@ const router = createRouter({
       component: () => import('@/pages/me/MyTasks.vue'),
       meta: { title: '我的任务', requiresAuth: true }
     },
-    {
-      path: '/me/profile',
-      name: 'me-profile',
-      component: () => import('@/pages/me/MyProfile.vue'),
-      meta: { title: '我的资料', requiresAuth: true }
-    },
+    { path: '/me/profile', redirect: '/me' },
     {
       path: '/projects',
       name: 'projects',

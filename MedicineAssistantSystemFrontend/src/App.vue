@@ -15,7 +15,6 @@ type NavItem = {
 
 const route = useRoute()
 const router = useRouter()
-const title = computed(() => String(route.meta?.title || '中药新药研发平台'))
 const loginOpen = ref(false)
 const auth = useAuthStore()
 const userMenuOpen = ref(false)
@@ -23,11 +22,11 @@ const displayName = computed(() => auth.user?.nickname || auth.user?.username ||
 const pendingTo = ref<string | null>(null)
 
 const navItems: NavItem[] = [
-  { path: '/portal', label: '门户', icon: '◉' },
-  { path: '/projects', label: '项目', icon: '△' },
-  { path: '/knowledge', label: '知识', icon: '◇' },
-  { path: '/agents', label: '智能体', icon: '▣' },
-  { path: '/me', label: '个人', icon: '★' }
+  { path: '/portal', label: '智研门户', icon: '◉' },
+  { path: '/knowledge', label: '知识枢库', icon: '◇' },
+  { path: '/agents', label: '灵智工坊', icon: '▣' },
+  { path: '/projects', label: '自由探索', icon: '△' },
+  { path: '/me', label: '我的空间', icon: '★' }
 ]
 
 const activeMenu = computed(() => {
@@ -86,15 +85,15 @@ onBeforeUnmount(() => {
     </div>
 
     <header class="hero">
-      <div class="brand">
+      <div class="hero-left">
         <div class="brand-badge">药</div>
-        <div>
-          <div class="brand-title">中药智研引擎</div>
-          <div class="brand-subtitle">记忆超群 · 定时执行 · 变身专家 · 迭代成长</div>
-        </div>
+      </div>
+
+      <div class="hero-center">
+        <div class="brand-title">药枢协研——中药新药研发人机协同决策与创新智能体多模态数据交互平台</div>
+        <div class="brand-subtitle">记忆超群 · 定时执行 · 变身专家 · 迭代成长</div>
       </div>
       <div class="hero-right">
-        <div class="hero-title">{{ title }}</div>
         <el-popover v-model:visible="userMenuOpen" placement="bottom-end" :width="220" trigger="click">
           <template #reference>
             <button class="user-chip" type="button">
@@ -203,18 +202,24 @@ onBeforeUnmount(() => {
 .hero {
   position: relative;
   z-index: 2;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 16px;
-  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 
-.brand {
+.hero-left {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
+  min-width: 0;
+}
+
+.hero-center {
+  min-width: 0;
+  text-align: center;
 }
 
 .brand-badge {
@@ -232,27 +237,28 @@ onBeforeUnmount(() => {
 
 .brand-title {
   color: #e9f4ef;
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.2;
+  max-width: min(860px, 74vw);
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .brand-subtitle {
   margin-top: 2px;
   color: #bdd4cc;
-  font-size: 12px;
-}
-
-.hero-title {
-  color: #f0fff8;
-  font-size: 22px;
-  font-weight: 700;
-  text-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  font-size: 14px;
 }
 
 .hero-right {
   display: flex;
   align-items: center;
   gap: 12px;
+  justify-content: flex-end;
 }
 
 .user-chip {
@@ -441,9 +447,27 @@ onBeforeUnmount(() => {
     padding: 7px 4px;
   }
 
+  .hero {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'left right'
+      'center center';
+    row-gap: 10px;
+  }
+
+  .hero-left {
+    grid-area: left;
+  }
+
   .hero-right {
-    width: 100%;
-    justify-content: space-between;
+    grid-area: right;
+    width: auto;
+    justify-content: flex-end;
+  }
+
+  .hero-center {
+    grid-area: center;
+    text-align: left;
   }
 }
 </style>

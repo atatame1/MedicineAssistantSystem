@@ -54,13 +54,6 @@ onMounted(load)
 
 <template>
   <div class="page-wrap">
-    <div class="page-header">
-      <div>
-        <div class="page-title">智能门户</div>
-        <div class="page-subtitle">中药新药研发人机协同总览</div>
-      </div>
-    </div>
-
     <el-alert v-if="error" :title="error" type="error" show-icon class="mb-16" />
 
     <div class="bento">
@@ -138,33 +131,7 @@ onMounted(load)
 .page-wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.page-title {
-  font-size: 24px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #153a2f;
-}
-
-.page-subtitle {
-  margin-top: 6px;
-  color: #5f7169;
-}
-
-.page-actions {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+  gap: 0;
 }
 
 .bento {
