@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { aiApi } from '@/api/ai'
 
@@ -17,7 +17,7 @@ const titleMap: Record<string, string> = {
   'report-generation': '报告生成智能体'
 }
 
-const callMap: Record<string, (input: string) => Promise<{ output: string }>> = {
+const callMap: Record<string, (input: string, conversationId?: number | null) => Promise<{ output: string }>> = {
   'project-evaluation': aiApi.projectEvaluation,
   'formula-compatibility': aiApi.formulaCompatibility,
   'mechanism-inference': aiApi.mechanismInference,
@@ -32,6 +32,17 @@ const input = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const output = ref('')
+const conversationId = ref<number>(Date.now())
+
+const memoryEnabled = computed(() => {
+  return agent.value !== 'project-evaluation' && agent.value !== 'report-generation'
+})
+
+watch(agent, () => {
+  conversationId.value = Date.now()
+  output.value = ''
+  error.value = null
+})
 
 async function run() {
   loading.value = true
@@ -40,7 +51,7 @@ async function run() {
   try {
     const fn = callMap[agent.value]
     if (!fn) throw new Error('unknown agent')
-    const res = await fn(input.value || '')
+    const res = await fn(input.value || '', memoryEnabled.value ? conversationId.value : null)
     output.value = res?.output ?? ''
   } catch (e: any) {
     error.value = String(e?.message || e)

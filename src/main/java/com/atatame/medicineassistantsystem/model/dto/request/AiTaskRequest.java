@@ -7,5 +7,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AiTaskRequest {
     private String input;
+    private Long conversationId;
 }
 
