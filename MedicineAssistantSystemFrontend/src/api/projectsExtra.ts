@@ -99,9 +99,14 @@ export const projectsExtraApi = {
   reportStreamUrl: (projectId: number) => `/api/projects/${projectId}/ai/report-stream`,
 
   postDraftEvaluateStream: async (body: DraftEvaluateReq) => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    try {
+      const t = localStorage.getItem('mas_token')
+      if (t) headers.Authorization = `Bearer ${t}`
+    } catch {}
     const res = await fetch(projectsExtraApi.draftEvaluateStreamUrl(), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body)
     })
     if (!res.ok) throw new Error('request failed')
@@ -109,9 +114,14 @@ export const projectsExtraApi = {
   },
 
   postReportStream: async (projectId: number, body?: AiTaskReq) => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+    try {
+      const t = localStorage.getItem('mas_token')
+      if (t) headers.Authorization = `Bearer ${t}`
+    } catch {}
     const res = await fetch(projectsExtraApi.reportStreamUrl(projectId), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(body || {})
     })
     if (!res.ok) throw new Error('request failed')

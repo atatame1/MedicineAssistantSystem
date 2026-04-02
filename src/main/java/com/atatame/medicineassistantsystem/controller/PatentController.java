@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,6 +31,16 @@ public class PatentController {
     @Operation(summary = "专利检索")
     public Result<List<Patent>> list(@RequestParam(required = false) String keyword) {
         return Result.ok(patentService.listByKeyword(keyword));
+    }
+
+    @GetMapping("/{patentId:\\d+}")
+    @Operation(summary = "专利详情（按ID）")
+    public Result<Patent> detail(@PathVariable Long patentId) {
+        Patent p = patentService.getById(patentId);
+        if (p == null) {
+            return Result.fail("专利不存在");
+        }
+        return Result.ok(p);
     }
 
     @PostMapping("/create")

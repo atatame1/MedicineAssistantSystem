@@ -40,12 +40,14 @@ onMounted(load)
 
     <el-card>
       <el-table v-loading="loading" :data="rows" stripe>
-        <el-table-column prop="projectId" label="项目ID" width="110" />
-        <el-table-column prop="projectName" label="项目名称" min-width="260" />
+        <el-table-column prop="id" label="项目ID" width="110" />
+        <el-table-column prop="projectName" label="项目名称" min-width="200" />
+        <el-table-column prop="herbName" label="药材" min-width="120" />
+        <el-table-column prop="formulaName" label="方剂" min-width="120" />
+        <el-table-column prop="indication" label="适应症" min-width="160" />
         <el-table-column prop="phase" label="阶段" width="140" />
         <el-table-column prop="status" label="状态" width="100" />
-        <el-table-column prop="role" label="角色" width="120" />
-        <el-table-column prop="joinTime" label="加入时间" width="180" />
+        <el-table-column prop="plannedEndTime" label="计划完成" width="180" />
       </el-table>
     </el-card>
   </div>

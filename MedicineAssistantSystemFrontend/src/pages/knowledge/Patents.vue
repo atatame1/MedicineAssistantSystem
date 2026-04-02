@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import CrudList from './CrudList.vue'
-import { knowledgeApi, type Patent } from '@/api/knowledge'
+import { knowledgeApi, type Patent, type PatentRisk, type PatentSimilarity } from '@/api/knowledge'
 
 const riskOpen = ref(false)
 const simOpen = ref(false)
 const current = ref<Patent | null>(null)
-const risk = ref<any>(null)
-const similar = ref<any[]>([])
+const risk = ref<PatentRisk | null>(null)
+const similar = ref<PatentSimilarity[]>([])
 const loadingExtra = ref(false)
 const errorExtra = ref<string | null>(null)
 
@@ -49,7 +49,7 @@ async function openSimilar(row: any) {
       placeholder="按关键词检索专利"
       :columns="[
         { prop: 'id', label: 'ID', width: 80 },
-        { prop: 'title', label: '标题', minWidth: 320 },
+        { prop: 'name', label: '名称', minWidth: 320 },
         { prop: 'patentNumber', label: '专利号', minWidth: 180 },
         { prop: 'applicant', label: '申请人', minWidth: 200 }
       ]"
@@ -58,10 +58,10 @@ async function openSimilar(row: any) {
       :update="knowledgeApi.patents.update"
       :del="knowledgeApi.patents.delete"
       :formSchema="[
-        { prop: 'title', label: '标题', type: 'textarea' },
+        { prop: 'name', label: '名称', type: 'textarea' },
         { prop: 'patentNumber', label: '专利号' },
         { prop: 'applicant', label: '申请人' },
-        { prop: 'summary', label: '摘要', type: 'textarea' }
+        { prop: 'abstractContent', label: '摘要', type: 'textarea' }
       ]"
     />
 
@@ -79,9 +79,10 @@ async function openSimilar(row: any) {
 
       <el-drawer v-model="simOpen" title="相似专利推荐" size="50%">
         <el-table v-loading="loadingExtra" :data="similar" stripe>
-          <el-table-column prop="similarPatentId" label="相似ID" width="110" />
-          <el-table-column prop="similarPatentTitle" label="标题" min-width="260" />
-          <el-table-column prop="similarityScore" label="相似度" width="110" />
+          <el-table-column prop="patentId" label="专利ID" width="100" />
+          <el-table-column prop="patentName" label="名称" min-width="240" />
+          <el-table-column prop="score" label="得分" width="90" />
+          <el-table-column prop="riskLevel" label="风险" width="100" />
         </el-table>
       </el-drawer>
 
@@ -89,7 +90,7 @@ async function openSimilar(row: any) {
         <div v-loading="loadingExtra">
           <el-descriptions :column="1" border>
             <el-descriptions-item label="风险等级">{{ risk?.riskLevel ?? '-' }}</el-descriptions-item>
-            <el-descriptions-item label="风险原因">{{ risk?.riskReason ?? '-' }}</el-descriptions-item>
+            <el-descriptions-item label="风险说明">{{ risk?.riskDescription ?? '-' }}</el-descriptions-item>
             <el-descriptions-item label="建议">{{ risk?.suggestion ?? '-' }}</el-descriptions-item>
           </el-descriptions>
         </div>

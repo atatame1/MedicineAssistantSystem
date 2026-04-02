@@ -68,6 +68,17 @@ public class UserCenterConstants {
          * 成分类型
          */
         public static final String COMPONENT = "COMPONENT";
+
+
+        /**
+         * 疾病类型
+         */
+        public static final String Disease="Disease";
+
+        /**
+         * 法规类型
+         */
+        public static final String Regulation="Regulation";
     }
 
     /**

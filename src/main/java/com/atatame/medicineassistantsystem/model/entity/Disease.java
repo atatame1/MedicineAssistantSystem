@@ -149,7 +149,7 @@ public class Disease {
      * 疾病严重程度
      */
     @TableField("severity")
-    private Integer severity;
+    private String severity;
 
     /**
      * 适用人群

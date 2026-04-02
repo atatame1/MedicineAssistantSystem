@@ -21,9 +21,10 @@ async function load() {
   }
 }
 
-function openUrl(row: DocumentResponse) {
-  if (!row.url) return
-  window.open(row.url, '_blank')
+function openFile(row: DocumentResponse) {
+  if (!row.projectId || !row.id) return
+  const url = `/api/projects/${encodeURIComponent(String(row.projectId))}/documents/${encodeURIComponent(String(row.id))}/file`
+  window.open(url, '_blank')
 }
 
 onMounted(load)
@@ -46,12 +47,19 @@ onMounted(load)
     <el-card>
       <el-table v-loading="loading" :data="rows" stripe>
         <el-table-column prop="id" label="ID" width="90" />
-        <el-table-column prop="name" label="名称" min-width="260" />
-        <el-table-column prop="type" label="类型" width="140" />
-        <el-table-column prop="createTime" label="时间" width="180" />
+        <el-table-column prop="docName" label="名称" min-width="220" />
+        <el-table-column prop="projectName" label="项目" min-width="160" />
+        <el-table-column prop="docType" label="类型" width="140" />
+        <el-table-column prop="uploadTime" label="上传时间" width="180" />
         <el-table-column label="操作" width="120" align="center">
           <template #default="{ row }">
-            <el-button link type="primary" @click="openUrl(row)" :disabled="!row.url">打开</el-button>
+            <el-button
+              link
+              type="primary"
+              @click="openFile(row)"
+              :disabled="!row.storageKey"
+              >下载</el-button
+            >
           </template>
         </el-table-column>
       </el-table>

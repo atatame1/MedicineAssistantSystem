@@ -30,15 +30,10 @@ export async function listLiteratures(keyword?: string) {
   return apiGet<Literature[]>(`/api/literatures${qs}`)
 }
 
-export async function createLiterature(
-  metadata: Literature,
-  file: File
-) {
+export async function createLiterature(metadata: Literature, file?: File | null) {
   const blob = new Blob([JSON.stringify(metadata)], { type: 'application/json' })
-  const res = await apiPostMultipart<void, any>(`/api/literatures/create`, {
-    file,
-    metadata: blob
-  })
-  return res
+  const form: Record<string, Blob | File> = { metadata: blob }
+  if (file) form.file = file
+  return apiPostMultipart<void, Record<string, Blob | File>>(`/api/literatures/create`, form)
 }
 

@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { apiGet } from '@/api/http'
 import {
   getUserFavoriteStatistics,
   listUserFavorites,
   type FavoriteResponse,
-  type FavoriteStatisticsResponse
+  type FavoriteStatisticsResponse,
+  removeFavorite,
+  type FavoriteOperationRequest
 } from '@/api/user'
 import { useAuthStore } from '@/stores/auth'
+import { ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,6 +22,100 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const items = ref<FavoriteResponse[]>([])
 const stats = ref<FavoriteStatisticsResponse | null>(null)
+const detailOpen = ref(false)
+const detailRow = ref<FavoriteResponse | null>(null)
+const detailLoading = ref(false)
+const detailError = ref<string | null>(null)
+const detailData = ref<any>(null)
+
+const typeLabelMap: Record<string, string> = {
+  TASK: '任务',
+  PROJECT: '项目',
+  DOCUMENT: '文档',
+  LITERATURE: '文献',
+  PATENT: '专利',
+  FORMULA: '方剂',
+  HERB: '中药材',
+  COMPONENT: '成分',
+  Disease: '疾病',
+  Regulation: '法规'
+}
+
+function typeLabel(t?: string | null) {
+  if (!t) return '-'
+  return typeLabelMap[t] || t
+}
+
+function stripIds(value: any): any {
+  if (value === null || value === undefined) return value
+  if (Array.isArray(value)) return value.map(stripIds)
+  if (typeof value !== 'object') return value
+  const out: Record<string, any> = {}
+  for (const [k, v] of Object.entries(value)) {
+    if (k === 'id' || k === 'favoriteId' || k.endsWith('Id')) continue
+    out[k] = stripIds(v)
+  }
+  return out
+}
+
+const detailText = computed(() => {
+  if (!detailData.value) return ''
+  const filtered = stripIds(detailData.value)
+  return JSON.stringify(filtered, null, 2)
+})
+
+async function openDetail(row: FavoriteResponse) {
+  detailRow.value = row
+  detailOpen.value = true
+  detailLoading.value = true
+  detailError.value = null
+  detailData.value = null
+  try {
+    const id = row.favoriteId
+    const type = row.favoriteType
+    let data: any = null
+    if (type === 'TASK') {
+      data = await apiGet(`/api/user/${userId.value}/tasks/${encodeURIComponent(String(id))}`)
+    } else if (type === 'PROJECT') {
+      data = await apiGet(`/api/projects/${encodeURIComponent(String(id))}`)
+    } else if (type === 'DOCUMENT') {
+      data = await apiGet(`/api/projects/documents/${encodeURIComponent(String(id))}`)
+    } else if (type === 'LITERATURE') {
+      data = await apiGet(`/api/literatures/${encodeURIComponent(String(id))}`)
+    } else if (type === 'PATENT') {
+      data = await apiGet(`/api/patents/${encodeURIComponent(String(id))}`)
+    } else if (type === 'FORMULA') {
+      data = await apiGet(`/api/formulas/${encodeURIComponent(String(id))}`)
+    } else if (type === 'HERB') {
+      data = await apiGet(`/api/herbs/${encodeURIComponent(String(id))}`)
+    } else if (type === 'COMPONENT') {
+      data = await apiGet(`/api/components/${encodeURIComponent(String(id))}`)
+    } else if (type === 'Disease') {
+      data = await apiGet(`/api/diseases/${encodeURIComponent(String(id))}`)
+    } else if (type === 'Regulation') {
+      data = await apiGet(`/api/regulations/${encodeURIComponent(String(id))}`)
+    }
+    detailData.value = data
+  } catch (e: any) {
+    detailError.value = String(e?.message || e)
+  } finally {
+    detailLoading.value = false
+  }
+}
+
+async function confirmRemove(row: FavoriteResponse) {
+  if (!row.id) return
+  const body: FavoriteOperationRequest = { favoriteId: row.id, favoriteType: row.favoriteType }
+  try {
+    await ElMessageBox.confirm('确定取消收藏吗？', '确认', {
+      type: 'warning',
+      confirmButtonText: '取消收藏',
+      cancelButtonText: '返回'
+    })
+    await removeFavorite(userId.value, body)
+    await load()
+  } catch {}
+}
 
 async function load() {
   loading.value = true
@@ -76,14 +174,43 @@ onMounted(() => {
       </el-row>
 
       <el-table v-loading="loading" :data="items" stripe>
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="favoriteId" label="对象ID" width="120" />
-        <el-table-column prop="favoriteType" label="类型" width="160" />
+        <el-table-column prop="favoriteType" label="类型" width="160">
+          <template #default="{ row }">
+            {{ typeLabel(row.favoriteType) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="entityName" label="名称" min-width="260" />
         <el-table-column prop="collectTime" label="收藏时间" width="180" />
+        <el-table-column label="操作" width="220" align="center">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="openDetail(row)">查看详细</el-button>
+            <el-button
+              link
+              type="danger"
+              @click="confirmRemove(row)"
+            >取消收藏</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
+
+  <el-dialog v-model="detailOpen" title="收藏详情" width="720px">
+    <el-alert v-if="detailError" type="error" show-icon :title="detailError" class="mb-12" />
+    <el-descriptions :column="1" border>
+      <el-descriptions-item label="类型">{{ detailRow ? typeLabel(detailRow.favoriteType) : '-' }}</el-descriptions-item>
+      <el-descriptions-item label="名称">{{ detailRow?.entityName ?? '-' }}</el-descriptions-item>
+      <el-descriptions-item label="收藏时间">{{ detailRow?.collectTime ?? '-' }}</el-descriptions-item>
+    </el-descriptions>
+
+    <div class="detail-box">
+      <el-input :model-value="detailText" type="textarea" :rows="12" readonly :disabled="detailLoading" />
+    </div>
+
+    <template #footer>
+      <el-button type="primary" @click="detailOpen = false">关闭</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <style scoped>
@@ -132,6 +259,10 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.detail-box {
+  margin-top: 12px;
 }
 </style>
 

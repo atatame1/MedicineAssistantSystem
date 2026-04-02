@@ -10,6 +10,7 @@ import com.atatame.medicineassistantsystem.model.dto.request.MemberCreateRequest
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectDocumentUploadRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDecision;
@@ -68,6 +69,16 @@ public class ProjectController {
         return Result.ok(projectService.list(q));
     }
 
+    @GetMapping("/{projectId:\\d+}")
+    @Operation(summary = "项目详情（按项目ID）")
+    public Result<Project> detail(@PathVariable Long projectId) {
+        Project p = projectService.getById(projectId);
+        if (p == null) {
+            return Result.fail("项目不存在");
+        }
+        return Result.ok(p);
+    }
+
     @PostMapping("/create")
     @Operation(summary = "创建项目（提交表单含 aiAssess；保存后异步生成立项报告写入 aiReport）")
     public Result<Void> create(@RequestBody Project request) {
@@ -87,6 +98,29 @@ public class ProjectController {
     public Result<Void> delete(@RequestBody DeleteByIdRequest request) {
         projectService.removeById(request.getId());
         return Result.ok();
+    }
+
+    @GetMapping("/documents/{docId:\\d+}")
+    @Operation(summary = "项目文档详情（按文档ID）")
+    public Result<DocumentResponse> documentDetail(@PathVariable Long docId) {
+        ProjectDocument doc = projectDocumentService.getById(docId);
+        if (doc == null) {
+            return Result.fail("文档不存在");
+        }
+        Project p = doc.getProjectId() != null ? projectService.getById(doc.getProjectId()) : null;
+        DocumentResponse r = new DocumentResponse();
+        r.setId(doc.getId());
+        r.setProjectId(doc.getProjectId());
+        r.setProjectName(p == null ? null : p.getProjectName());
+        r.setDocType(doc.getDocType());
+        r.setDocName(doc.getDocName());
+        r.setStorageKey(doc.getStorageKey());
+        r.setFileSize(doc.getFileSize());
+        r.setFileType(doc.getFileType());
+        r.setUploadTime(doc.getUploadTime());
+        r.setTags(doc.getTags());
+        r.setSummary(doc.getSummary());
+        return Result.ok(r);
     }
 
     @PostMapping(value = "/draft/evaluate-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -167,7 +201,7 @@ public class ProjectController {
     @Operation(summary = "上传项目文档")
     public Result<ProjectDocument> uploadDocument(@PathVariable Long projectId,
                                                   @RequestPart("file") MultipartFile file,
-                                                  @RequestBody ProjectDocumentUploadRequest metadata) throws IOException {
+                                                  @RequestPart("metadata") ProjectDocumentUploadRequest metadata) throws IOException {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("文件为空");
         }

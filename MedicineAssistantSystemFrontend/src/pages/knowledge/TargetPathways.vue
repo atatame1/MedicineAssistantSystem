@@ -10,8 +10,8 @@ import { knowledgeApi } from '@/api/knowledge'
     :columns="[
       { prop: 'id', label: 'ID', width: 80 },
       { prop: 'name', label: '靶点', minWidth: 220 },
-      { prop: 'pathway', label: '信号通路', minWidth: 260 },
-      { prop: 'diseaseRelation', label: '疾病关联', minWidth: 260 }
+      { prop: 'pathwayName', label: '信号通路', minWidth: 260 },
+      { prop: 'relatedDiseases', label: '关联疾病', minWidth: 260 }
     ]"
     :list="knowledgeApi.targetPathways.list"
     :create="knowledgeApi.targetPathways.create"
@@ -19,9 +19,9 @@ import { knowledgeApi } from '@/api/knowledge'
     :del="knowledgeApi.targetPathways.delete"
     :formSchema="[
       { prop: 'name', label: '靶点/名称' },
-      { prop: 'pathway', label: '信号通路', type: 'textarea' },
-      { prop: 'diseaseRelation', label: '疾病关联', type: 'textarea' },
-      { prop: 'description', label: '说明', type: 'textarea' }
+      { prop: 'pathwayName', label: '信号通路', type: 'textarea' },
+      { prop: 'relatedDiseases', label: '关联疾病', type: 'textarea' },
+      { prop: 'mechanismDescription', label: '机制说明', type: 'textarea' }
     ]"
   />
 </template>

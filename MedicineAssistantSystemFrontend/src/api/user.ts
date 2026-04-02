@@ -36,6 +36,11 @@ export type FavoriteStatisticsResponse = {
   typeCountMap: Record<string, number>
 }
 
+export type FavoriteOperationRequest = {
+  favoriteId: number
+  favoriteType: string
+}
+
 export async function listUserFavorites(userId: number) {
   return apiGet<FavoriteResponse[]>(`/api/user/${userId}/favorites`)
 }
@@ -43,6 +48,23 @@ export async function listUserFavorites(userId: number) {
 export async function getUserFavoriteStatistics(userId: number) {
   return apiGet<FavoriteStatisticsResponse>(
     `/api/user/${userId}/favorites/statistics`
+  )
+}
+
+export async function addFavorite(userId: number, body: FavoriteOperationRequest) {
+  return apiPostJson<void, FavoriteOperationRequest>(
+    `/api/user/${userId}/favorites/add`,
+    body
+  )
+}
+
+export async function removeFavorite(
+  userId: number,
+  body: FavoriteOperationRequest
+) {
+  return apiPostJson<void, FavoriteOperationRequest>(
+    `/api/user/${userId}/favorites/remove`,
+    body
   )
 }
 
@@ -62,29 +84,57 @@ export type TaskResponse = {
 }
 
 export type ProjectResponse = {
-  projectId: number
+  id: number
   projectName: string | null
+  herbName: string | null
+  formulaName: string | null
+  indication: string | null
   phase: string | null
   status: number | null
-  role: string | null
-  joinTime: string | null
+  priority: number | null
+  startTime: string | null
+  plannedEndTime: string | null
+  description: string | null
+  budget: number | null
+  createTime: string | null
+  updateTime: string | null
 }
 
 export type DocumentResponse = {
   id: number
-  name: string | null
-  type: string | null
-  url: string | null
-  createTime: string | null
+  projectId: number
+  projectName: string | null
+  docType: string | null
+  docName: string | null
+  storageKey: string | null
+  fileSize: number | null
+  fileType: string | null
+  uploadTime: string | null
+  tags: string | null
+  summary: string | null
+}
+
+export type UserStatisticsResponse = {
+  totalTasks: number | null
+  pendingTasks: number | null
+  inProgressTasks: number | null
+  completedTasks: number | null
+  totalProjects: number | null
+  activeProjects: number | null
+  totalFavorites: number | null
+  totalDocuments: number | null
 }
 
 export type UserProfileResponse = {
   userId: number
   username: string | null
-  role: string | null
-  taskCount: number | null
-  projectCount: number | null
-  favoriteCount: number | null
+  nickname: string | null
+  email: string | null
+  phone: string | null
+  gender: string | null
+  avatarUrl: string | null
+  status: string | null
+  statistics: UserStatisticsResponse | null
 }
 
 export async function listMyTasks(userId: number) {

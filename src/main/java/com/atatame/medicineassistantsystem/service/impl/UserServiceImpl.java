@@ -12,10 +12,12 @@ import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserProfileResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserStatisticsResponse;
 import com.atatame.medicineassistantsystem.model.entity.Component;
+import com.atatame.medicineassistantsystem.model.entity.Disease;
 import com.atatame.medicineassistantsystem.model.entity.Formula;
 import com.atatame.medicineassistantsystem.model.entity.Herb;
 import com.atatame.medicineassistantsystem.model.entity.Literature;
 import com.atatame.medicineassistantsystem.model.entity.Patent;
+import com.atatame.medicineassistantsystem.model.entity.Regulation;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
@@ -25,10 +27,12 @@ import com.atatame.medicineassistantsystem.model.entity.UserSettings;
 import com.atatame.medicineassistantsystem.model.entity.UserTask;
 import com.atatame.medicineassistantsystem.mapper.UserMapper;
 import com.atatame.medicineassistantsystem.service.IComponentService;
+import com.atatame.medicineassistantsystem.service.IDiseaseService;
 import com.atatame.medicineassistantsystem.service.IFormulaService;
 import com.atatame.medicineassistantsystem.service.IHerbService;
 import com.atatame.medicineassistantsystem.service.ILiteratureService;
 import com.atatame.medicineassistantsystem.service.IPatentService;
+import com.atatame.medicineassistantsystem.service.IRegulationService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
@@ -75,6 +79,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IFormulaService formulaService;
     private final IHerbService herbService;
     private final IComponentService componentService;
+    private final IDiseaseService diseaseService;
+    private final IRegulationService regulationService;
 
     @Override
     public List<TaskResponse> myTasks(Long userId) {
@@ -347,6 +353,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (UserCenterConstants.EntityType.COMPONENT.equals(favoriteType)) {
             Component component = componentService.getById(favoriteId);
             return component == null ? null : component.getName();
+        }
+        if (UserCenterConstants.EntityType.Disease.equals(favoriteType)) {
+            Disease disease = diseaseService.getById(favoriteId);
+            return disease == null ? null : disease.getName();
+        }
+        if (UserCenterConstants.EntityType.Regulation.equals(favoriteType)) {
+            Regulation regulation = regulationService.getById(favoriteId);
+            return regulation == null ? null : regulation.getName();
         }
         return favoriteType + "-" + favoriteId;
     }

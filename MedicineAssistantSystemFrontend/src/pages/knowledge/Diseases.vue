@@ -21,7 +21,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'name', label: '名称' },
       { prop: 'category', label: '分类' },
       { prop: 'tcmSyndrome', label: '中医证候', type: 'textarea' },
-      { prop: 'modernRelation', label: '现代医学关联', type: 'textarea' }
+      { prop: 'modernName', label: '现代医学名称', type: 'textarea' }
     ]"
   />
 </template>

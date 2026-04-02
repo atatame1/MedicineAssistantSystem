@@ -45,24 +45,27 @@ onMounted(load)
             <span>{{ (profile?.username || 'U').slice(0, 1).toUpperCase() }}</span>
           </div>
           <div class="meta">
-            <div class="name">{{ profile?.username ?? '未命名用户' }}</div>
+            <div class="name">{{ profile?.nickname || profile?.username || '未命名用户' }}</div>
             <div class="sub">
               <el-tag effect="light" type="success">用户ID {{ profile?.userId ?? '-' }}</el-tag>
-              <el-tag effect="light">{{ profile?.role ?? '未知角色' }}</el-tag>
+              <el-tag v-if="profile?.email" effect="light">{{ profile.email }}</el-tag>
+              <el-tag v-if="profile?.status != null && profile?.status !== ''" effect="light"
+                >状态 {{ profile.status }}</el-tag
+              >
             </div>
           </div>
         </div>
         <div class="stats">
           <div class="stat">
-            <div class="n">{{ profile?.taskCount ?? '-' }}</div>
+            <div class="n">{{ profile?.statistics?.totalTasks ?? '-' }}</div>
             <div class="k">任务</div>
           </div>
           <div class="stat">
-            <div class="n">{{ profile?.projectCount ?? '-' }}</div>
+            <div class="n">{{ profile?.statistics?.totalProjects ?? '-' }}</div>
             <div class="k">项目</div>
           </div>
           <div class="stat">
-            <div class="n">{{ profile?.favoriteCount ?? '-' }}</div>
+            <div class="n">{{ profile?.statistics?.totalFavorites ?? '-' }}</div>
             <div class="k">收藏</div>
           </div>
         </div>

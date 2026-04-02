@@ -39,6 +39,20 @@ public class UserController {
         return Result.ok(userService.myTasks(userId));
     }
 
+    @GetMapping("/{userId}/tasks/{taskId}")
+    @Operation(summary = "任务详情", description = "获取当前用户某条任务详情")
+    public Result<TaskResponse> taskDetail(
+            @Parameter(description = "用户 ID", required = true)
+            @PathVariable Long userId,
+            @PathVariable Long taskId
+    ) {
+        return userService.myTasks(userId).stream()
+                .filter(t -> t.getId() != null && t.getId().equals(taskId))
+                .findFirst()
+                .map(Result::ok)
+                .orElse(Result.fail("任务不存在"));
+    }
+
     @GetMapping("/{userId}/projects")
     @Operation(summary = "我的项目", description = "获取我创建或参与的项目")
     public Result<List<ProjectResponse>> myProjects(

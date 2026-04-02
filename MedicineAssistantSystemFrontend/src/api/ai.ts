@@ -1,7 +1,7 @@
 import { apiPostJson } from './http'
 
 export type AiTaskRequest = { input: string }
-export type AiTaskResponse = { output: string }
+export type AiTaskResponse = { agentCode?: string | null; output: string }
 
 export const aiApi = {
   projectEvaluation: (input: string) =>

@@ -10,7 +10,7 @@ import { knowledgeApi } from '@/api/knowledge'
     :columns="[
       { prop: 'id', label: 'ID', width: 80 },
       { prop: 'name', label: '名称', minWidth: 220 },
-      { prop: 'structure', label: '结构', minWidth: 220 },
+      { prop: 'chemicalStructure', label: '结构', minWidth: 220 },
       { prop: 'bioactivity', label: '生物活性', minWidth: 260 }
     ]"
     :list="knowledgeApi.components.list"
@@ -19,9 +19,9 @@ import { knowledgeApi } from '@/api/knowledge'
     :del="knowledgeApi.components.delete"
     :formSchema="[
       { prop: 'name', label: '名称' },
-      { prop: 'structure', label: '化学结构', type: 'textarea' },
+      { prop: 'chemicalStructure', label: '化学结构(SMILES)', type: 'textarea' },
       { prop: 'bioactivity', label: '生物活性', type: 'textarea' },
-      { prop: 'targetInfo', label: '靶点信息', type: 'textarea' }
+      { prop: 'potentialTargets', label: '潜在靶点', type: 'textarea' }
     ]"
   />
 </template>

@@ -11,7 +11,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'id', label: 'ID', width: 80 },
       { prop: 'name', label: '名称', minWidth: 200 },
       { prop: 'source', label: '来源', minWidth: 180 },
-      { prop: 'effect', label: '功效', minWidth: 240 }
+      { prop: 'effects', label: '功效', minWidth: 240 }
     ]"
     :list="knowledgeApi.herbs.list"
     :create="knowledgeApi.herbs.create"
@@ -20,10 +20,10 @@ import { knowledgeApi } from '@/api/knowledge'
     :formSchema="[
       { prop: 'name', label: '名称' },
       { prop: 'source', label: '来源' },
-      { prop: 'property', label: '性' },
+      { prop: 'nature', label: '性' },
       { prop: 'taste', label: '味' },
       { prop: 'meridian', label: '归经' },
-      { prop: 'effect', label: '功效', type: 'textarea' }
+      { prop: 'effects', label: '功效', type: 'textarea' }
     ]"
   />
 </template>

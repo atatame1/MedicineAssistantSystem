@@ -5,58 +5,60 @@ export type CrudEntity = { id?: number }
 export type Herb = CrudEntity & {
   name?: string | null
   source?: string | null
-  property?: string | null
+  nature?: string | null
   taste?: string | null
   meridian?: string | null
-  effect?: string | null
+  effects?: string | null
 }
 
 export type Formula = CrudEntity & {
   name?: string | null
   composition?: string | null
-  indication?: string | null
-  analysis?: string | null
+  indications?: string | null
+  effects?: string | null
 }
 
 export type Component = CrudEntity & {
   name?: string | null
-  structure?: string | null
+  chemicalStructure?: string | null
   bioactivity?: string | null
-  targetInfo?: string | null
+  potentialTargets?: string | null
 }
 
 export type Disease = CrudEntity & {
   name?: string | null
   category?: string | null
   tcmSyndrome?: string | null
-  modernRelation?: string | null
+  modernName?: string | null
 }
 
 export type TargetPathway = CrudEntity & {
   name?: string | null
-  pathway?: string | null
-  diseaseRelation?: string | null
-  description?: string | null
+  pathwayName?: string | null
+  relatedDiseases?: string | null
+  mechanismDescription?: string | null
 }
 
 export type Patent = CrudEntity & {
-  title?: string | null
+  name?: string | null
   patentNumber?: string | null
   applicant?: string | null
-  summary?: string | null
+  abstractContent?: string | null
 }
 
 export type PatentSimilarity = {
   patentId: number
-  similarPatentId: number
-  similarPatentTitle: string | null
-  similarityScore: number | null
+  patentName: string | null
+  score: number | null
+  reasons: string[] | null
+  riskLevel: string | null
 }
 
 export type PatentRisk = {
   patentId: number
+  patentName: string | null
   riskLevel: string | null
-  riskReason: string | null
+  riskDescription: string | null
   suggestion: string | null
 }
 

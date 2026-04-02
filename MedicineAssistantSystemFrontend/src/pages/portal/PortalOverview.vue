@@ -1,8 +1,16 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { getPortalOverview, type PortalOverview } from '@/api/portal'
+import { useAuthStore } from '@/stores/auth'
 
-const userId = ref(1)
+const auth = useAuthStore()
+const userId = ref(auth.user?.userId ?? 1)
+watch(
+  () => auth.user?.userId,
+  (id) => {
+    if (id != null) userId.value = id
+  }
+)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const overview = ref<PortalOverview | null>(null)
@@ -50,10 +58,6 @@ onMounted(load)
       <div>
         <div class="page-title">智能门户</div>
         <div class="page-subtitle">中药新药研发人机协同总览</div>
-      </div>
-      <div class="page-actions">
-        <el-input-number v-model="userId" :min="1" :step="1" style="width: 140px" />
-        <el-button type="primary" :loading="loading" @click="load">刷新</el-button>
       </div>
     </div>
 

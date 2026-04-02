@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,6 +37,16 @@ public class LiteratureController {
     @Operation(summary = "文献检索")
     public Result<List<Literature>> list(@RequestParam(required = false) String keyword) {
         return Result.ok(literatureService.listByKeyword(keyword));
+    }
+
+    @GetMapping("/{literatureId:\\d+}")
+    @Operation(summary = "文献详情（按ID）")
+    public Result<Literature> detail(@PathVariable Long literatureId) {
+        Literature l = literatureService.getById(literatureId);
+        if (l == null) {
+            return Result.fail("文献不存在");
+        }
+        return Result.ok(l);
     }
 
     @PostMapping(value = "/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

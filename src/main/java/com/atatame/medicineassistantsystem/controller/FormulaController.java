@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -28,6 +29,16 @@ public class FormulaController {
     @Operation(summary = "方剂检索")
     public Result<List<Formula>> list(@RequestParam(required = false) String keyword) {
         return Result.ok(formulaService.listByKeyword(keyword));
+    }
+
+    @GetMapping("/{id:\\d+}")
+    @Operation(summary = "方剂详情（按ID）")
+    public Result<Formula> detail(@PathVariable Long id) {
+        Formula f = formulaService.getById(id);
+        if (f == null) {
+            return Result.fail("方剂不存在");
+        }
+        return Result.ok(f);
     }
 
     @PostMapping("/create")

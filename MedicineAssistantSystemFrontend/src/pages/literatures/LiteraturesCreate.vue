@@ -28,9 +28,8 @@ async function submit() {
   loading.value = true
   error.value = null
   try {
-    if (!file.value) throw new Error('请选择文件')
     if (!form.title || !form.title.trim()) throw new Error('title必填')
-    await createLiterature(form, file.value)
+    await createLiterature(form, file.value || undefined)
     router.push('/literatures')
   } catch (e: any) {
     error.value = String(e?.message || e)
