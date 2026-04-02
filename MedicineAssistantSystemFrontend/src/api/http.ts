@@ -16,6 +16,10 @@ const LS_TOKEN = 'mas_token'
 
 client.interceptors.request.use((config) => {
   try {
+    const url = String(config.url || '')
+    if (url.startsWith('/api/ai/') || url.includes('Stream')) {
+      ;(config as any).timeout = 0
+    }
     const token = localStorage.getItem(LS_TOKEN)
     if (token) {
       config.headers = config.headers || {}
