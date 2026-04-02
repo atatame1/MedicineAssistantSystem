@@ -121,7 +121,7 @@ const router = createRouter({
     {
       path: '/regulations',
       name: 'regulations',
-      component: () => import('@/pages/regulations/RegulationsList.vue'),
+      component: () => import('@/pages/knowledge/RegulationsList.vue'),
       meta: { title: '法规库' }
     },
     {
