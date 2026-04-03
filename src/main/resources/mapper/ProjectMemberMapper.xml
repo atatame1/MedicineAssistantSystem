@@ -2,4 +2,17 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.atatame.medicineassistantsystem.mapper.ProjectMemberMapper">
 
+    <select id="selectListWithUserByProjectId" resultType="com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse">
+        SELECT pm.id,
+               pm.project_id AS projectId,
+               pm.user_id    AS userId,
+               pm.role,
+               pm.join_time  AS joinTime,
+               u.nickname    AS userNickname
+        FROM project_member pm
+                 LEFT JOIN `user` u ON pm.user_id = u.id
+        WHERE pm.project_id = #{projectId}
+        ORDER BY pm.join_time ASC
+    </select>
+
 </mapper>
