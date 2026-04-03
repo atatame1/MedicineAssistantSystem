@@ -3,8 +3,10 @@ package com.atatame.medicineassistantsystem.controller;
 import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.model.dto.response.PortalOverviewResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
+import com.atatame.medicineassistantsystem.model.entity.UserAiDialogSummary;
 import com.atatame.medicineassistantsystem.service.IProjectService;
 import com.atatame.medicineassistantsystem.service.IUserService;
+import com.atatame.medicineassistantsystem.service.IUserAiDialogSummaryService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,6 +26,7 @@ public class PortalController {
 
     private final IUserService userService;
     private final IProjectService projectService;
+    private final IUserAiDialogSummaryService userAiDialogSummaryService;
 
     @GetMapping("/overview")
     @Operation(summary = "门户总览")
@@ -36,6 +39,8 @@ public class PortalController {
         response.setTasks(userService.myRecentTasks(userId, 10));
         response.setMyProjects(projects);
         response.setRiskWarnings(projects.stream().filter(p -> p.getPriority() != null && p.getPriority() == 1).count());
+        UserAiDialogSummary summary = userAiDialogSummaryService.getById(userId);
+        response.setSummaryText(summary == null ? null : summary.getSummaryText());
         return Result.ok(response);
     }
 }

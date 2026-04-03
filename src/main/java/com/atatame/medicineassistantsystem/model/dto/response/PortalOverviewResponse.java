@@ -10,5 +10,6 @@ public class PortalOverviewResponse {
     private List<TaskResponse> tasks;
     private List<Project> myProjects;
     private Long riskWarnings;
+    private String summaryText;
 }
 
