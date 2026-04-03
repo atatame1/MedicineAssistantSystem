@@ -1,7 +1,11 @@
 package com.atatame.medicineassistantsystem.mapper;
 
+import com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +17,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface ProjectMemberMapper extends BaseMapper<ProjectMember> {
 
+    List<ProjectMemberResponse> selectListWithUserByProjectId(@Param("projectId") Long projectId);
 }

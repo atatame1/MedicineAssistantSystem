@@ -12,6 +12,7 @@ import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmen
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDecision;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
@@ -233,10 +234,9 @@ public class ProjectController {
     }
 
     @GetMapping("/{projectId}/members")
-    @Operation(summary = "项目成员列表")
-    public Result<List<ProjectMember>> members(@PathVariable Long projectId) {
-        return Result.ok(projectMemberService.list(new LambdaQueryWrapper<ProjectMember>()
-                .eq(ProjectMember::getProjectId, projectId)));
+    @Operation(summary = "项目成员列表（含用户昵称）")
+    public Result<List<ProjectMemberResponse>> members(@PathVariable Long projectId) {
+        return Result.ok(projectMemberService.listWithUserByProjectId(projectId));
     }
 
     @PostMapping("/{projectId}/members/create")

@@ -1,7 +1,10 @@
 package com.atatame.medicineassistantsystem.service;
 
+import com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IProjectMemberService extends IService<ProjectMember> {
 
+    List<ProjectMemberResponse> listWithUserByProjectId(Long projectId);
 }

@@ -1,10 +1,13 @@
 package com.atatame.medicineassistantsystem.service.impl;
 
+import com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
 import com.atatame.medicineassistantsystem.mapper.ProjectMemberMapper;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * <p>
@@ -17,4 +20,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class ProjectMemberServiceImpl extends ServiceImpl<ProjectMemberMapper, ProjectMember> implements IProjectMemberService {
 
+    @Override
+    public List<ProjectMemberResponse> listWithUserByProjectId(Long projectId) {
+        return baseMapper.selectListWithUserByProjectId(projectId);
+    }
 }
