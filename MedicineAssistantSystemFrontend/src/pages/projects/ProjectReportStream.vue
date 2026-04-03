@@ -48,7 +48,7 @@ function stop() {
     <div class="head">
       <div>
         <div class="t">项目报告生成（流式）</div>
-        <div class="s"></div>
+        <div class="s">哈哈哈</div>
       </div>
       <div class="act">
         <el-input-number v-model="projectId" :min="1" :step="1" style="width: 140px" />
