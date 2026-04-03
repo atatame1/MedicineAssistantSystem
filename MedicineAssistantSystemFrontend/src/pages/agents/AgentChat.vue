@@ -78,9 +78,7 @@ const displayConversationTitle = computed(() => {
   return v.length > 22 ? v.slice(0, 22) + '…' : v
 })
 
-const memoryEnabled = computed(() => {
-  return agent.value !== 'project-evaluation' && agent.value !== 'report-generation'
-})
+const memoryEnabled = computed(() => true)
 
 const conversationId = ref<number | null>(null)
 

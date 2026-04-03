@@ -47,10 +47,6 @@ public class AiAgentController {
         return null;
     }
 
-    private static boolean memoryEnabled(AgentCode code) {
-        return code != AgentCode.PROJECT_EVALUATION && code != AgentCode.REPORT_GENERATION;
-    }
-
     private static String buildTitle(String input) {
         if (input == null) return null;
         String v = input.trim();
@@ -69,9 +65,6 @@ public class AiAgentController {
     }
 
     private ConvCtx ensureConversation(HttpServletRequest servletRequest, AgentCode code, AiTaskRequest request) {
-        if (!memoryEnabled(code)) {
-            return new ConvCtx(null, false);
-        }
         Long userId = resolveUserId(servletRequest);
         if (userId == null) throw new BusinessException("未登录");
         Long cid = request.getConversationId();
@@ -133,7 +126,7 @@ public class AiAgentController {
         Long conversationId = ctx.id;
         String input = request.getInput() == null ? "" : request.getInput();
         SseEmitter emitter = new SseEmitter(600_000L);
-        if (memoryEnabled(code) && ctx.created && conversationId != null) {
+        if (ctx.created && conversationId != null) {
             try {
                 emitter.send(SseEmitter.event().name("meta").data(Map.of("conversationId", conversationId), MediaType.APPLICATION_JSON));
             } catch (IOException e) {

@@ -41,9 +41,7 @@ const error = ref<string | null>(null)
 const output = ref('')
 const conversationId = ref<number | null>(null)
 
-const memoryEnabled = computed(() => {
-  return agent.value !== 'project-evaluation' && agent.value !== 'report-generation'
-})
+const memoryEnabled = computed(() => true)
 
 watch(agent, () => {
   conversationId.value = null
