@@ -4,6 +4,7 @@
 -- 删除已存在的表（按依赖关系逆序）
 DROP TABLE IF EXISTS `user_task`;
 DROP TABLE IF EXISTS `user_favorite`;
+DROP TABLE IF EXISTS `ai_agent_message`;
 DROP TABLE IF EXISTS `ai_agent_conversation`;
 DROP TABLE IF EXISTS `user_settings`;
 DROP TABLE IF EXISTS `user`;
@@ -67,22 +68,28 @@ CREATE TABLE `user_favorite` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户收藏表';
 
 CREATE TABLE `ai_agent_conversation` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
-  `conversation_id` BIGINT NOT NULL COMMENT '会话 ID（前端传入/ChatMemory.CONVERSATION_ID）',
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID（与 ChatMemory.CONVERSATION_ID 一致）',
   `user_id` BIGINT NOT NULL COMMENT '用户 ID',
   `type` VARCHAR(50) NOT NULL COMMENT '智能体类型（AgentCode.name()）',
   `title` VARCHAR(200) COMMENT '会话标题',
-  `input_text` TEXT COMMENT '最近一次用户输入',
-  `output_text` MEDIUMTEXT COMMENT '最近一次智能体输出',
-  `messages_json` MEDIUMTEXT COMMENT '会话消息历史（JSON）',
+  `is_top` TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否置顶',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '最近活动时间',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_user_type_conversation` (`user_id`, `type`, `conversation_id`),
   KEY `idx_user_id` (`user_id`),
   KEY `idx_type` (`type`),
-  KEY `idx_conversation_id` (`conversation_id`),
   KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 智能体对话会话表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 智能体会话表';
+
+CREATE TABLE `ai_agent_message` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键 ID',
+  `conversation_id` BIGINT NOT NULL COMMENT '会话 ID，关联 ai_agent_conversation.id',
+  `role` VARCHAR(32) NOT NULL COMMENT 'user / assistant / system',
+  `content` MEDIUMTEXT COMMENT '消息内容',
+  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_conversation_id` (`conversation_id`),
+  CONSTRAINT `fk_ai_msg_conv` FOREIGN KEY (`conversation_id`) REFERENCES `ai_agent_conversation` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 智能体会话消息表';
 
 -- ============================================
 -- 中药材表

@@ -1,31 +1,34 @@
 package com.atatame.medicineassistantsystem.controller;
 
 import com.atatame.medicineassistantsystem.ai.AgentCode;
-import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.auth.AuthInterceptor;
+import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.exception.BusinessException;
+import com.atatame.medicineassistantsystem.model.dto.request.AiConversationTopRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.AiTaskRequest;
+import com.atatame.medicineassistantsystem.model.dto.response.AiAgentMessageResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.AiConversationHistoryResponse;
 import com.atatame.medicineassistantsystem.model.entity.AiAgentConversation;
-import com.atatame.medicineassistantsystem.service.IAiAgentService;
+import com.atatame.medicineassistantsystem.model.entity.AiAgentMessage;
 import com.atatame.medicineassistantsystem.service.IAiAgentConversationService;
+import com.atatame.medicineassistantsystem.service.IAiAgentMessageService;
+import com.atatame.medicineassistantsystem.service.IAiAgentService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-
 import jakarta.servlet.http.HttpServletRequest;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import java.time.LocalDateTime;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import reactor.core.scheduler.Schedulers;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -35,6 +38,7 @@ public class AiAgentController {
 
     private final IAiAgentService aiAgentService;
     private final IAiAgentConversationService aiAgentConversationService;
+    private final IAiAgentMessageService aiAgentMessageService;
 
     private Long resolveUserId(HttpServletRequest request) {
         Object v = request.getAttribute(AuthInterceptor.ATTR_USER_ID);
@@ -54,45 +58,89 @@ public class AiAgentController {
         return v.length() <= 12 ? v : v.substring(0, 12);
     }
 
-    private Long ensureConversationId(HttpServletRequest servletRequest, AgentCode code, AiTaskRequest request) {
-        if (!memoryEnabled(code)) return null;
+    private static final class ConvCtx {
+        final Long id;
+        final boolean created;
+
+        ConvCtx(Long id, boolean created) {
+            this.id = id;
+            this.created = created;
+        }
+    }
+
+    private ConvCtx ensureConversation(HttpServletRequest servletRequest, AgentCode code, AiTaskRequest request) {
+        if (!memoryEnabled(code)) {
+            return new ConvCtx(null, false);
+        }
         Long userId = resolveUserId(servletRequest);
         if (userId == null) throw new BusinessException("未登录");
-        Long conversationId = request.getConversationId();
-        if (conversationId == null) throw new BusinessException("conversationId必填");
-
-        LambdaQueryWrapper<AiAgentConversation> q = new LambdaQueryWrapper<AiAgentConversation>()
-                .eq(AiAgentConversation::getUserId, userId)
-                .eq(AiAgentConversation::getType, code.name())
-                .eq(AiAgentConversation::getConversationId, conversationId)
-                .last("LIMIT 1");
-        AiAgentConversation row = aiAgentConversationService.getOne(q);
-        if (row == null) {
-            row = new AiAgentConversation();
+        Long cid = request.getConversationId();
+        if (cid == null) {
+            AiAgentConversation row = new AiAgentConversation();
             row.setUserId(userId);
             row.setType(code.name());
-            row.setConversationId(conversationId);
             row.setTitle(buildTitle(request.getInput()));
-            row.setInputText(request.getInput());
-            row.setOutputText(null);
-            row.setMessagesJson(null);
+            row.setIsTop(Boolean.FALSE);
             row.setCreateTime(LocalDateTime.now());
             aiAgentConversationService.save(row);
-            return conversationId;
+            return new ConvCtx(row.getId(), true);
         }
-
+        AiAgentConversation row = aiAgentConversationService.getById(cid);
+        if (row == null || !userId.equals(row.getUserId()) || !code.name().equals(row.getType())) {
+            throw new BusinessException("会话不存在");
+        }
         if (row.getTitle() == null || row.getTitle().isBlank()) {
             row.setTitle(buildTitle(request.getInput()));
+            aiAgentConversationService.updateById(row);
         }
-        row.setInputText(request.getInput());
-        aiAgentConversationService.updateById(row);
-        return conversationId;
+        return new ConvCtx(row.getId(), false);
+    }
+
+    private void fillPreview(AiAgentConversation c, AiConversationHistoryResponse dto) {
+        List<AiAgentMessage> msgs = aiAgentMessageService.list(
+                new LambdaQueryWrapper<AiAgentMessage>()
+                        .eq(AiAgentMessage::getConversationId, c.getId())
+                        .orderByDesc(AiAgentMessage::getId)
+                        .last("LIMIT 120")
+        );
+        String lastUser = null;
+        String lastAssistant = null;
+        for (AiAgentMessage m : msgs) {
+            if ("user".equals(m.getRole()) && lastUser == null) {
+                lastUser = m.getContent();
+            }
+            if ("assistant".equals(m.getRole()) && lastAssistant == null) {
+                lastAssistant = m.getContent();
+            }
+            if (lastUser != null && lastAssistant != null) {
+                break;
+            }
+        }
+        dto.setInputText(lastUser);
+        dto.setOutputText(lastAssistant);
+    }
+
+    private AiAgentConversation requireOwnedConversation(Long userId, Long id) {
+        AiAgentConversation c = aiAgentConversationService.getById(id);
+        if (c == null || !userId.equals(c.getUserId())) {
+            throw new BusinessException("会话不存在");
+        }
+        return c;
     }
 
     private SseEmitter stream(AgentCode code, AiTaskRequest request, HttpServletRequest servletRequest) {
-        Long conversationId = ensureConversationId(servletRequest, code, request);
+        ConvCtx ctx = ensureConversation(servletRequest, code, request);
+        Long conversationId = ctx.id;
         String input = request.getInput() == null ? "" : request.getInput();
         SseEmitter emitter = new SseEmitter(600_000L);
+        if (memoryEnabled(code) && ctx.created && conversationId != null) {
+            try {
+                emitter.send(SseEmitter.event().name("meta").data(Map.of("conversationId", conversationId), MediaType.APPLICATION_JSON));
+            } catch (IOException e) {
+                emitter.completeWithError(e);
+                return emitter;
+            }
+        }
         aiAgentService.stream(code, input, conversationId)
                 .subscribeOn(Schedulers.boundedElastic())
                 .subscribe(
@@ -173,20 +221,79 @@ public class AiAgentController {
                 new LambdaQueryWrapper<AiAgentConversation>()
                         .eq(AiAgentConversation::getUserId, userId)
                         .eq(AiAgentConversation::getType, agentType)
+                        .orderByDesc(AiAgentConversation::getIsTop)
                         .orderByDesc(AiAgentConversation::getCreateTime)
                         .last("LIMIT " + limit)
         );
 
-        return Result.ok(rows.stream().map(r -> {
+        List<AiConversationHistoryResponse> out = new ArrayList<>();
+        for (AiAgentConversation r : rows) {
             AiConversationHistoryResponse dto = new AiConversationHistoryResponse();
             dto.setType(r.getType());
-            dto.setConversationId(r.getConversationId());
+            dto.setConversationId(r.getId());
             dto.setTitle(r.getTitle());
-            dto.setInputText(r.getInputText());
-            dto.setOutputText(r.getOutputText());
+            dto.setIsTop(r.getIsTop());
             dto.setCreateTime(r.getCreateTime());
-            return dto;
+            fillPreview(r, dto);
+            out.add(dto);
+        }
+        return Result.ok(out);
+    }
+
+    @GetMapping("/conversations/{id}/messages")
+    @Operation(summary = "会话消息列表")
+    public Result<List<AiAgentMessageResponse>> conversationMessages(
+            @PathVariable Long id,
+            HttpServletRequest servletRequest
+    ) {
+        Long userId = resolveUserId(servletRequest);
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        requireOwnedConversation(userId, id);
+        List<AiAgentMessage> list = aiAgentMessageService.list(
+                new LambdaQueryWrapper<AiAgentMessage>()
+                        .eq(AiAgentMessage::getConversationId, id)
+                        .orderByAsc(AiAgentMessage::getId)
+        );
+        return Result.ok(list.stream().map(m -> {
+            AiAgentMessageResponse d = new AiAgentMessageResponse();
+            d.setRole(m.getRole());
+            d.setContent(m.getContent());
+            d.setCreateTime(m.getCreateTime());
+            return d;
         }).collect(Collectors.toList()));
     }
-}
 
+    @PutMapping("/conversations/{id}/top")
+    @Operation(summary = "会话置顶")
+    public Result<Void> setConversationTop(
+            @PathVariable Long id,
+            @RequestBody AiConversationTopRequest body,
+            HttpServletRequest servletRequest
+    ) {
+        Long userId = resolveUserId(servletRequest);
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        AiAgentConversation c = requireOwnedConversation(userId, id);
+        c.setIsTop(Boolean.TRUE.equals(body.getIsTop()));
+        aiAgentConversationService.updateById(c);
+        return Result.ok();
+    }
+
+    @DeleteMapping("/conversations/{id}")
+    @Operation(summary = "删除会话")
+    public Result<Void> deleteConversation(@PathVariable Long id, HttpServletRequest servletRequest) {
+        Long userId = resolveUserId(servletRequest);
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        requireOwnedConversation(userId, id);
+        aiAgentMessageService.remove(
+                new LambdaQueryWrapper<AiAgentMessage>().eq(AiAgentMessage::getConversationId, id)
+        );
+        aiAgentConversationService.removeById(id);
+        return Result.ok();
+    }
+}

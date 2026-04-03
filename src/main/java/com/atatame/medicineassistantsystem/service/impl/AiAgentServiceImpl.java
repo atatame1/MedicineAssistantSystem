@@ -45,6 +45,9 @@ public class AiAgentServiceImpl implements IAiAgentService {
         }
         AiAgent agent = cache.get(code);
         if (agent == null) return Flux.just("未找到对应智能体");
+        if (conversationId == null) {
+            return agent.stream(input);
+        }
         return agent.stream(input, conversationId);
     }
 }

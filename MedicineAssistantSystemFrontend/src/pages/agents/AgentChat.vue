@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { getAiConversationHistory, postAiStreamText, type AiConversationHistoryItem } from '@/api/ai'
+import { ElMessageBox } from 'element-plus'
+import {
+  deleteAiConversation,
+  getAiConversationHistory,
+  getAiConversationMessages,
+  postAiStreamText,
+  setAiConversationTop,
+  type AiConversationHistoryItem
+} from '@/api/ai'
 
 type Msg = { role: 'user' | 'assistant'; content: string; ts: number }
 
@@ -107,11 +115,27 @@ function truncate(s: string | null | undefined, n = 60) {
   return v.slice(0, n) + '...'
 }
 
+const sortedHistory = computed(() => {
+  const arr = [...history.value]
+  arr.sort((a, b) => {
+    const ta = a.isTop ? 1 : 0
+    const tb = b.isTop ? 1 : 0
+    if (ta !== tb) return tb - ta
+    return new Date(b.createTime || 0).getTime() - new Date(a.createTime || 0).getTime()
+  })
+  return arr
+})
+
 const groupedHistory = computed(() => {
   const groups: { label: string; items: AiConversationHistoryItem[] }[] = []
-  for (const it of history.value) {
+  const pinned = sortedHistory.value.filter((i) => i.isTop)
+  const rest = sortedHistory.value.filter((i) => !i.isTop)
+  if (pinned.length) {
+    groups.push({ label: '置顶', items: pinned })
+  }
+  for (const it of rest) {
     const label = bucketLabel(it.createTime)
-    let g = groups.find(x => x.label === label)
+    let g = groups.find((x) => x.label === label)
     if (!g) {
       g = { label, items: [] }
       groups.push(g)
@@ -121,22 +145,72 @@ const groupedHistory = computed(() => {
   return groups
 })
 
-function loadFromHistory(item: AiConversationHistoryItem) {
+async function loadFromHistory(item: AiConversationHistoryItem) {
   if (memoryEnabled.value) {
     conversationId.value = item.conversationId ?? null
   }
-  const greeting = `你已进入「${agentTitle.value || '智能体'}」。把需求/上下文发给我。`
-  msgs.value = [
-    { role: 'assistant', content: greeting, ts: Date.now() },
-    { role: 'user', content: item.inputText ?? '', ts: Date.now() + 1 },
-    { role: 'assistant', content: item.outputText ?? '', ts: Date.now() + 2 }
-  ]
+  conversationTitle.value = truncate(item.title ?? item.inputText, 22)
   error.value = null
   input.value = ''
-  conversationTitle.value = truncate(item.title ?? item.inputText, 22)
+  const greeting = `你已进入「${agentTitle.value || '智能体'}」。把需求/上下文发给我。`
+  if (memoryEnabled.value && item.conversationId != null) {
+    try {
+      const list = await getAiConversationMessages(item.conversationId)
+      const rows: Msg[] = [{ role: 'assistant', content: greeting, ts: Date.now() }]
+      for (const m of list) {
+        const r = String(m.role || '').toLowerCase()
+        if (r === 'user' || r === 'assistant') {
+          rows.push({ role: r, content: m.content ?? '', ts: Date.now() })
+        }
+      }
+      msgs.value = rows
+    } catch {
+      msgs.value = [
+        { role: 'assistant', content: greeting, ts: Date.now() },
+        { role: 'user', content: item.inputText ?? '', ts: Date.now() + 1 },
+        { role: 'assistant', content: item.outputText ?? '', ts: Date.now() + 2 }
+      ]
+    }
+  } else {
+    msgs.value = [
+      { role: 'assistant', content: greeting, ts: Date.now() },
+      { role: 'user', content: item.inputText ?? '', ts: Date.now() + 1 },
+      { role: 'assistant', content: item.outputText ?? '', ts: Date.now() + 2 }
+    ]
+  }
   nextTick(() => {
     listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
   })
+}
+
+async function toggleTop(it: AiConversationHistoryItem, e?: Event) {
+  e?.stopPropagation()
+  if (it.conversationId == null) return
+  try {
+    await setAiConversationTop(it.conversationId, !it.isTop)
+    await refreshHistory()
+  } catch (err: any) {
+    error.value = String(err?.message || err)
+  }
+}
+
+async function removeConv(it: AiConversationHistoryItem, e?: Event) {
+  e?.stopPropagation()
+  if (it.conversationId == null) return
+  try {
+    await ElMessageBox.confirm('确定删除该会话？', '提示', { type: 'warning' })
+  } catch {
+    return
+  }
+  try {
+    await deleteAiConversation(it.conversationId)
+    if (conversationId.value === it.conversationId) {
+      clearChat()
+    }
+    await refreshHistory()
+  } catch (err: any) {
+    error.value = String(err?.message || err)
+  }
 }
 
 async function refreshHistory() {
@@ -186,9 +260,7 @@ async function send() {
     const path = pathMap[agent.value]
     if (!path) throw new Error('unknown agent')
 
-    if (memoryEnabled.value) {
-      if (conversationId.value == null) conversationId.value = Date.now()
-    } else {
+    if (!memoryEnabled.value) {
       conversationId.value = null
     }
 
@@ -202,7 +274,12 @@ async function send() {
         : { input: text },
       (chunk) => {
         assistantMsg.content += chunk
-      }
+      },
+      memoryEnabled.value
+        ? (meta) => {
+            if (meta.conversationId != null) conversationId.value = meta.conversationId
+          }
+        : undefined
     )
 
     if (memoryEnabled.value) {
@@ -218,7 +295,7 @@ async function send() {
 }
 
 function clearChat() {
-  conversationId.value = memoryEnabled.value ? Date.now() : null
+  conversationId.value = null
   conversationTitle.value = ''
   msgs.value = [
     {
@@ -266,11 +343,22 @@ function pickPrompt(p: string) {
           <div v-else class="history-groups">
             <div v-for="g in groupedHistory" :key="g.label" class="history-group">
               <div class="history-group-label">{{ g.label }}</div>
-              <div v-for="it in g.items" :key="String(it.conversationId ?? it.createTime ?? it.title)" class="history-item"
-                @click="loadFromHistory(it)">
+              <div
+              v-for="it in g.items"
+              :key="String(it.conversationId ?? it.createTime ?? it.title)"
+              class="history-item"
+            >
+              <div class="history-item-main" @click="loadFromHistory(it)">
                 <div class="history-item-input">{{ truncate(it.title ?? it.inputText, 40) }}</div>
                 <div class="history-item-time">{{ formatTime(it.createTime) }}</div>
               </div>
+              <div class="history-item-ops">
+                <button type="button" class="hi-btn" :title="it.isTop ? '取消置顶' : '置顶'" @click="toggleTop(it, $event)">
+                  {{ it.isTop ? '取消置顶' : '置顶' }}
+                </button>
+                <button type="button" class="hi-btn danger" title="删除" @click="removeConv(it, $event)">删除</button>
+              </div>
+            </div>
             </div>
           </div>
         </div>
@@ -513,9 +601,11 @@ function pickPrompt(p: string) {
 }
 
 .history-item {
-  cursor: pointer;
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
   border-radius: 16px;
-  padding: 10px 10px 9px;
+  padding: 8px 8px 7px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.03);
   margin-top: 8px;
@@ -525,6 +615,36 @@ function pickPrompt(p: string) {
 .history-item:hover {
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.history-item-main {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.history-item-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+
+.hi-btn {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 8px;
+  font-size: 11px;
+  padding: 2px 6px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.hi-btn.danger {
+  border-color: rgba(255, 120, 120, 0.45);
+  color: #ffb4b4;
 }
 
 .history-item-input {

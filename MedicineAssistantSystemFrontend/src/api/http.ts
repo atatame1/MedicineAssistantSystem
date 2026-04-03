@@ -71,6 +71,18 @@ export async function apiPostJson<T, B = unknown>(
   })
 }
 
+export async function apiPutJson<T, B = unknown>(path: string, body: B): Promise<T> {
+  return requestJson<T>(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    data: body
+  })
+}
+
+export async function apiDelete<T>(path: string): Promise<T> {
+  return requestJson<T>(path, { method: 'DELETE' })
+}
+
 export async function apiPostMultipart<T, B extends Record<string, any>>(
   path: string,
   form: B

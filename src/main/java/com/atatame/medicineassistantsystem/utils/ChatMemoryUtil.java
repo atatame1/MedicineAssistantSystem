@@ -2,7 +2,9 @@ package com.atatame.medicineassistantsystem.utils;
 
 import com.atatame.medicineassistantsystem.mapper.AiAgentConversationMapper;
 import com.atatame.medicineassistantsystem.model.entity.AiAgentConversation;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.atatame.medicineassistantsystem.model.entity.AiAgentMessage;
+import com.atatame.medicineassistantsystem.service.IAiAgentMessageService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
@@ -16,19 +18,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-
 @Component
 @RequiredArgsConstructor
 public class ChatMemoryUtil implements ChatMemory {
 
     private final AiAgentConversationMapper aiAgentConversationMapper;
-    private final ObjectMapper objectMapper;
-
-    private static class MemMsg {
-        public String role;
-        public String content;
-    }
+    private final IAiAgentMessageService aiAgentMessageService;
 
     private static String safePrefixTitle(String s, int maxChars) {
         if (!StringUtils.hasText(s)) return null;
@@ -36,106 +31,85 @@ public class ChatMemoryUtil implements ChatMemory {
         return v.length() <= maxChars ? v : v.substring(0, maxChars);
     }
 
-    private AiAgentConversation findByConversationId(String conversationId) {
+    private AiAgentConversation findConversation(String conversationId) {
         if (!StringUtils.hasText(conversationId)) return null;
         try {
-            Long cid = Long.valueOf(conversationId);
-            return aiAgentConversationMapper.selectOne(
-                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<AiAgentConversation>()
-                            .eq(AiAgentConversation::getConversationId, cid)
-                            .last("LIMIT 1")
-            );
+            Long id = Long.valueOf(conversationId);
+            return aiAgentConversationMapper.selectById(id);
         } catch (Exception e) {
             return null;
         }
     }
 
-    private static List<MemMsg> toMemMsgs(List<Message> messages) {
-        List<MemMsg> out = new ArrayList<>();
-        for (Message m : messages) {
-            MemMsg mm = new MemMsg();
-            if (m instanceof UserMessage) {
-                mm.role = "user";
-                mm.content = ((UserMessage) m).getText();
-            } else if (m instanceof AssistantMessage) {
-                mm.role = "assistant";
-                mm.content = ((AssistantMessage) m).getText();
-            } else if (m instanceof SystemMessage) {
-                mm.role = "system";
-                mm.content = ((SystemMessage) m).getText();
-            } else {
-                mm.role = "unknown";
-                mm.content = m.toString();
-            }
-            out.add(mm);
-        }
-        return out;
+    private static String roleOf(Message m) {
+        if (m instanceof UserMessage) return "user";
+        if (m instanceof AssistantMessage) return "assistant";
+        if (m instanceof SystemMessage) return "system";
+        return "unknown";
     }
 
-    private static List<Message> fromMemMsgs(List<MemMsg> mem) {
-        List<Message> out = new ArrayList<>();
-        for (MemMsg mm : mem) {
-            if ("user".equals(mm.role)) out.add(new UserMessage(mm.content == null ? "" : mm.content));
-            else if ("assistant".equals(mm.role)) out.add(new AssistantMessage(mm.content == null ? "" : mm.content));
-            else if ("system".equals(mm.role)) out.add(new SystemMessage(mm.content == null ? "" : mm.content));
-        }
-        return out;
+    private static String textOf(Message m) {
+        if (m instanceof UserMessage) return ((UserMessage) m).getText();
+        if (m instanceof AssistantMessage) return ((AssistantMessage) m).getText();
+        if (m instanceof SystemMessage) return ((SystemMessage) m).getText();
+        return m.toString();
     }
 
     @Override
     public void add(String conversationId, List<Message> messages) {
-        AiAgentConversation row = findByConversationId(conversationId);
-        if (row == null) return;
-        List<MemMsg> mem = toMemMsgs(messages);
-        try {
-            row.setMessagesJson(objectMapper.writeValueAsString(mem));
-        } catch (Exception e) {
-            row.setMessagesJson(null);
+        AiAgentConversation conv = findConversation(conversationId);
+        if (conv == null || messages == null || messages.isEmpty()) return;
+        LocalDateTime now = LocalDateTime.now();
+        for (Message m : messages) {
+            AiAgentMessage row = new AiAgentMessage();
+            row.setConversationId(conv.getId());
+            row.setRole(roleOf(m));
+            row.setContent(textOf(m));
+            row.setCreateTime(now);
+            aiAgentMessageService.save(row);
         }
-
         String firstUser = null;
-        String lastUser = null;
-        String lastAssistant = null;
         for (Message m : messages) {
             if (m instanceof UserMessage) {
-                String text = ((UserMessage) m).getText();
-                if (firstUser == null) firstUser = text;
-                lastUser = text;
-            }
-            if (m instanceof AssistantMessage) {
-                lastAssistant = ((AssistantMessage) m).getText();
+                firstUser = ((UserMessage) m).getText();
+                break;
             }
         }
-
-        if (!StringUtils.hasText(row.getTitle()) && firstUser != null) {
-            row.setTitle(safePrefixTitle(firstUser, 12));
+        if (!StringUtils.hasText(conv.getTitle()) && firstUser != null) {
+            conv.setTitle(safePrefixTitle(firstUser, 12));
         }
-        row.setInputText(lastUser);
-        row.setOutputText(lastAssistant);
-        row.setCreateTime(LocalDateTime.now());
-        aiAgentConversationMapper.updateById(row);
+        conv.setCreateTime(now);
+        aiAgentConversationMapper.updateById(conv);
     }
 
     @Override
     public List<Message> get(String conversationId) {
-        AiAgentConversation row = findByConversationId(conversationId);
-        if (row == null || !StringUtils.hasText(row.getMessagesJson())) return List.of();
-        try {
-            List<MemMsg> mem = objectMapper.readValue(row.getMessagesJson(), new TypeReference<List<MemMsg>>() {});
-            return fromMemMsgs(mem);
-        } catch (Exception e) {
-            return List.of();
+        AiAgentConversation conv = findConversation(conversationId);
+        if (conv == null) return List.of();
+        List<AiAgentMessage> rows = aiAgentMessageService.list(
+                new LambdaQueryWrapper<AiAgentMessage>()
+                        .eq(AiAgentMessage::getConversationId, conv.getId())
+                        .orderByAsc(AiAgentMessage::getId)
+        );
+        List<Message> out = new ArrayList<>();
+        for (AiAgentMessage r : rows) {
+            String role = r.getRole();
+            String c = r.getContent() == null ? "" : r.getContent();
+            if ("user".equals(role)) out.add(new UserMessage(c));
+            else if ("assistant".equals(role)) out.add(new AssistantMessage(c));
+            else if ("system".equals(role)) out.add(new SystemMessage(c));
         }
+        return out;
     }
 
     @Override
     public void clear(String conversationId) {
-        AiAgentConversation row = findByConversationId(conversationId);
-        if (row == null) return;
-        row.setMessagesJson(null);
-        row.setInputText(null);
-        row.setOutputText(null);
-        row.setCreateTime(LocalDateTime.now());
-        aiAgentConversationMapper.updateById(row);
+        AiAgentConversation conv = findConversation(conversationId);
+        if (conv == null) return;
+        aiAgentMessageService.remove(
+                new LambdaQueryWrapper<AiAgentMessage>().eq(AiAgentMessage::getConversationId, conv.getId())
+        );
+        conv.setCreateTime(LocalDateTime.now());
+        aiAgentConversationMapper.updateById(conv);
     }
 }

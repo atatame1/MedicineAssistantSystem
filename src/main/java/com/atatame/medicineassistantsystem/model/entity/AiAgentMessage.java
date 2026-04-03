@@ -1,33 +1,28 @@
 package com.atatame.medicineassistantsystem.model.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 @Data
-@TableName("ai_agent_conversation")
-public class AiAgentConversation {
-
+@TableName("ai_agent_message")
+public class AiAgentMessage {
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    @TableField("user_id")
-    private Long userId;
+    @TableField("conversation_id")
+    private Long conversationId;
 
-    @TableField("type")
-    private String type;
+    @TableField("content")
+    private String content;
 
-    @TableField("title")
-    private String title;
-
-    @TableField("is_top")
-    private Boolean isTop;
+    @TableField("role")
+    private String role;
 
     @TableField("create_time")
     private LocalDateTime createTime;
 }
-

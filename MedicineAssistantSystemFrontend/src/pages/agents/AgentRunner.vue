@@ -17,7 +17,14 @@ const titleMap: Record<string, string> = {
   'report-generation': '报告生成智能体'
 }
 
-const callMap: Record<string, (input: string, conversationId?: number | null) => Promise<{ output: string }>> = {
+const callMap: Record<
+  string,
+  (
+    input: string,
+    conversationId?: number | null,
+    onMeta?: (meta: { conversationId: number }) => void
+  ) => Promise<{ output: string }>
+> = {
   'project-evaluation': aiApi.projectEvaluation,
   'formula-compatibility': aiApi.formulaCompatibility,
   'mechanism-inference': aiApi.mechanismInference,
@@ -32,14 +39,14 @@ const input = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const output = ref('')
-const conversationId = ref<number>(Date.now())
+const conversationId = ref<number | null>(null)
 
 const memoryEnabled = computed(() => {
   return agent.value !== 'project-evaluation' && agent.value !== 'report-generation'
 })
 
 watch(agent, () => {
-  conversationId.value = Date.now()
+  conversationId.value = null
   output.value = ''
   error.value = null
 })
@@ -51,7 +58,15 @@ async function run() {
   try {
     const fn = callMap[agent.value]
     if (!fn) throw new Error('unknown agent')
-    const res = await fn(input.value || '', memoryEnabled.value ? conversationId.value : null)
+    const res = await fn(
+      input.value || '',
+      memoryEnabled.value ? conversationId.value : null,
+      memoryEnabled.value
+        ? (meta) => {
+            if (meta.conversationId != null) conversationId.value = meta.conversationId
+          }
+        : undefined
+    )
     output.value = res?.output ?? ''
   } catch (e: any) {
     error.value = String(e?.message || e)

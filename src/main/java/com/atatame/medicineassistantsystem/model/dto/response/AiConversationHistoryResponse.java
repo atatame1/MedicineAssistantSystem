@@ -9,6 +9,7 @@ public class AiConversationHistoryResponse {
     private String type;
     private Long conversationId;
     private String title;
+    private Boolean isTop;
     private String inputText;
     private String outputText;
     private LocalDateTime createTime;
