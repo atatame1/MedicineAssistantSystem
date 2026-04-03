@@ -92,12 +92,10 @@ CREATE TABLE `ai_agent_message` (
   CONSTRAINT `fk_ai_msg_conv` FOREIGN KEY (`conversation_id`) REFERENCES `ai_agent_conversation` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='AI 智能体会话消息表';
 
+# 总结=(当前时间到更新时间之间的消息+总结)
 CREATE TABLE `user_ai_dialog_summary` (
   `user_id` BIGINT NOT NULL COMMENT '用户 ID',
   `summary_text` MEDIUMTEXT COMMENT '汇总各智能体会话中用户提问与回复上下文后，由 AI 归纳的常问主题等',
-  `last_summarized_message_id` BIGINT NOT NULL DEFAULT 0 COMMENT '增量水位：上次已纳入总结的 ai_agent_message.id',
-  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '0-有效 1-生成中 2-失败',
-  `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '首次写入',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '总结更新时间',
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户智能体对话 AI 总结（全站每用户一行）';
