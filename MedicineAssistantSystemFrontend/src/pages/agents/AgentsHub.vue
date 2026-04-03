@@ -75,7 +75,6 @@ function openAgent(key: string) {
         @click="openAgent(a.key)"
       >
         <span class="halo" aria-hidden="true" />
-        <span class="sweep" aria-hidden="true" />
         <span class="idx">{{ String(i + 1).padStart(2, '0') }}</span>
         <div class="icon" aria-hidden="true">{{ a.icon }}</div>
         <div class="name">{{ a.name }}</div>
@@ -186,22 +185,23 @@ function openAgent(key: string) {
 .links {
   position: absolute;
   inset: 12px 6px 0;
+  z-index: 0;
   width: calc(100% - 12px);
   height: calc(100% - 12px);
   pointer-events: none;
-  opacity: 0.72;
+  opacity: 0.78;
 }
 
 .link {
   fill: none;
-  stroke: rgba(158, 228, 202, 0.42);
+  stroke: rgba(158, 228, 202, 0.48);
   stroke-width: 1.4;
   stroke-dasharray: 5 10;
   animation: flow 7.5s linear infinite;
 }
 
 .link.soft {
-  stroke: rgba(212, 184, 125, 0.26);
+  stroke: rgba(212, 184, 125, 0.32);
   stroke-width: 1;
   stroke-dasharray: 4 12;
 }
@@ -228,9 +228,16 @@ function openAgent(key: string) {
   text-align: left;
   cursor: pointer;
   overflow: hidden;
-  background: rgba(19, 51, 47, 0.35);
-  backdrop-filter: blur(16px);
-  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  z-index: 1;
+  background: linear-gradient(
+    145deg,
+    rgba(19, 51, 47, 0.5) 0%,
+    rgba(12, 38, 34, 0.38) 48%,
+    rgba(22, 56, 50, 0.46) 100%
+  );
+  box-shadow:
+    0 6px 22px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
   transform: translateY(var(--offset));
   transition: transform 0.25s ease, box-shadow 0.25s ease;
   animation:
@@ -253,15 +260,6 @@ function openAgent(key: string) {
   inset: -60%;
   background: radial-gradient(circle at 18% 20%, rgba(146, 230, 202, 0.24), transparent 32%);
   animation: halo 9s linear infinite;
-  pointer-events: none;
-}
-
-.sweep {
-  position: absolute;
-  inset: -120% -24%;
-  background: linear-gradient(110deg, transparent 44%, rgba(255, 255, 255, 0.22) 50%, transparent 56%);
-  transform: translateX(-55%);
-  animation: sweep 4.6s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -426,17 +424,6 @@ function openAgent(key: string) {
   }
 }
 
-@keyframes sweep {
-  0%,
-  20% {
-    transform: translateX(-55%);
-  }
-  55%,
-  100% {
-    transform: translateX(40%);
-  }
-}
-
 @keyframes blobA {
   0%,
   100% {
@@ -511,7 +498,6 @@ function openAgent(key: string) {
   .link,
   .node,
   .halo,
-  .sweep,
   .icon {
     animation: none !important;
   }

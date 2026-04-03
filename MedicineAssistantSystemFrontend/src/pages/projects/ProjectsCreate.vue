@@ -1,124 +1,78 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { createProject, type Project } from '@/api/projects'
 import { useRouter } from 'vue-router'
+import ProjectCreateForm from './ProjectCreateForm.vue'
 
 const router = useRouter()
-const loading = ref(false)
-const error = ref<string | null>(null)
 
-const form = reactive<Project>({
-  projectName: '',
-  herbName: null,
-  formulaName: null,
-  indication: null,
-  phase: null,
-  projectorId: null,
-  status: null,
-  description: null,
-  budget: null,
-  priority: null,
-  aiAssess: '',
-  aiReport: null
-})
-
-async function submit() {
-  loading.value = true
-  error.value = null
-  try {
-    if (!form.projectName || !form.projectName.trim()) {
-      throw new Error('项目名称必填')
-    }
-    if (!form.aiAssess || !form.aiAssess.trim()) {
-      throw new Error('aiAssess必填')
-    }
-    await createProject(form)
-    router.push('/projects')
-  } catch (e: any) {
-    error.value = String(e?.message || e)
-  } finally {
-    loading.value = false
-  }
+function onSuccess() {
+  router.push('/projects')
 }
 </script>
 
 <template>
-  <div class="page-wrap">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>新建项目</span>
-          <el-button text @click="$router.push('/projects')">返回列表</el-button>
+  <div class="pc-page">
+    <div class="pc-inner">
+      <header class="pc-head">
+        <div>
+          <div class="pc-t">新建项目</div>
+          <div class="pc-s">填写立项信息并提交</div>
         </div>
-      </template>
-
-      <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
-
-      <el-form :model="form" label-width="120px" @submit.prevent>
-        <el-form-item label="项目名称">
-          <el-input v-model="form.projectName" placeholder="必填" />
-        </el-form-item>
-        <el-form-item label="药材名称">
-          <el-input v-model="form.herbName" />
-        </el-form-item>
-        <el-form-item label="方剂名称">
-          <el-input v-model="form.formulaName" />
-        </el-form-item>
-        <el-form-item label="适应症">
-          <el-input v-model="form.indication" />
-        </el-form-item>
-        <el-form-item label="阶段">
-          <el-select v-model="form.phase" placeholder="请选择阶段" clearable>
-            <el-option label="探索期" value="EXPLORATION" />
-            <el-option label="验证期" value="VERIFICATION" />
-            <el-option label="优化期" value="OPTIMIZATION" />
-            <el-option label="申报期" value="DECLARATION" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="项目负责人用户ID">
-          <el-input-number v-model="form.projectorId" :min="0" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select v-model="form.status" placeholder="请选择状态" clearable>
-            <el-option label="立项中" :value="1" />
-            <el-option label="进行中" :value="2" />
-            <el-option label="已完成" :value="3" />
-            <el-option label="已取消" :value="4" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="form.description" type="textarea" rows="3" />
-        </el-form-item>
-        <el-form-item label="预算">
-          <el-input-number v-model="form.budget" :min="0" :step="1" />
-        </el-form-item>
-        <el-form-item label="优先级">
-          <el-input-number v-model="form.priority" :min="0" />
-        </el-form-item>
-        <el-form-item label="AI立项评估">
-          <el-input v-model="form.aiAssess" type="textarea" rows="6" placeholder="必填" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" @click="submit">提交</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+        <el-button text class="pc-back" @click="router.push('/projects')">返回列表</el-button>
+      </header>
+      <div class="pc-card">
+        <ProjectCreateForm @success="onSuccess" />
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.page-wrap {
-  max-width: 920px;
+.pc-page {
+  max-width: min(1680px, 98vw);
+  margin: 0 auto;
+  padding: 10px 8px 28px;
+  box-sizing: border-box;
 }
 
-.card-header {
+.pc-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.pc-head {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-.mb-12 {
-  margin-bottom: 12px;
+.pc-t {
+  font-size: 22px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.pc-s {
+  margin-top: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.52);
+  font-weight: 700;
+}
+
+.pc-back {
+  color: rgba(146, 230, 202, 0.95) !important;
+  font-weight: 850;
+}
+
+.pc-card {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  padding: 18px 20px 22px;
 }
 </style>
-

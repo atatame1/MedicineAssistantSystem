@@ -1,0 +1,264 @@
+.pt-tool {
+  max-width: min(1200px, 96vw);
+  margin: 0 auto;
+  padding: 8px 6px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+
+.pt-tool .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pt-tool .t {
+  font-size: 20px;
+  font-weight: 950;
+  color: rgba(255, 255, 255, 0.94);
+  letter-spacing: 0.02em;
+}
+
+.pt-tool .s {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 600;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.pt-tool .act {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pt-panel {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 16px 18px;
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.22);
+}
+
+.pt-tool .ot,
+.pt-tool .ct {
+  font-size: 14px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 10px;
+}
+
+.pt-tool .compare {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.pt-tool .mb {
+  margin-bottom: 10px;
+}
+
+.pt-tool .el-form-item__label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pt-tool .el-input__wrapper,
+.pt-tool .el-textarea__inner {
+  background: rgba(0, 0, 0, 0.22) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool .el-input__inner,
+.pt-tool .el-textarea__inner {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pt-tool .el-input__wrapper:hover,
+.pt-tool .el-textarea__inner:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.pt-tool .el-input.is-disabled .el-input__wrapper {
+  opacity: 0.88;
+}
+
+.pt-tool .el-input-number .el-input__wrapper {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.pt-tool .el-select .el-select__wrapper {
+  background: rgba(0, 0, 0, 0.22) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool .el-select .el-select__placeholder,
+.pt-tool .el-select .el-select__selected-item {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pt-tool .el-date-editor .el-input__wrapper {
+  background: rgba(0, 0, 0, 0.22) !important;
+}
+
+.pt-tool .pt-table {
+  --el-table-bg-color: rgba(255, 255, 255, 0.04);
+  --el-table-tr-bg-color: rgba(255, 255, 255, 0.04);
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.28);
+  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.08);
+  --el-table-text-color: rgba(255, 255, 255, 0.88);
+  --el-table-header-text-color: rgba(255, 255, 255, 0.78);
+  --el-table-border-color: rgba(255, 255, 255, 0.1);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.03);
+  background: transparent;
+}
+
+.pt-tool .pt-table .el-table__inner-wrapper::before {
+  display: none;
+}
+
+.pt-tool .el-descriptions {
+  --el-descriptions-item-bordered-label-background: rgba(0, 0, 0, 0.22);
+  --el-descriptions-table-border: rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool .el-descriptions__label,
+.pt-tool .el-descriptions__content {
+  color: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+.pt-tool .el-descriptions__label {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.pt-tool .el-alert {
+  background: rgba(180, 40, 40, 0.2);
+  border: 1px solid rgba(255, 120, 120, 0.38);
+}
+
+.pt-tool .el-alert__title {
+  color: rgba(255, 220, 220, 0.96);
+}
+
+.pt-tool .el-upload {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.pt-tool-dialog.el-dialog {
+  background: rgba(18, 42, 36, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.pt-tool-dialog .el-dialog__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-right: 0;
+  padding-bottom: 14px;
+}
+
+.pt-tool-dialog .el-dialog__title {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+}
+
+.pt-tool-dialog .el-dialog__body {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pt-tool-dialog .el-form-item__label {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.pt-tool-dialog .el-input__wrapper,
+.pt-tool-dialog .el-textarea__inner {
+  background: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool-dialog .el-input__inner,
+.pt-tool-dialog .el-textarea__inner {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pt-tool-dialog .el-select .el-select__wrapper {
+  background: rgba(0, 0, 0, 0.25) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool-dialog .el-select .el-select__placeholder,
+.pt-tool-dialog .el-select .el-select__selected-item {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pt-tool-dialog .el-input-number .el-input__wrapper {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.pt-tool-dialog .el-date-editor .el-input__wrapper {
+  background: rgba(0, 0, 0, 0.25) !important;
+}
+
+.pt-tool-drawer.el-drawer {
+  background: rgba(14, 36, 30, 0.94);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.35);
+}
+
+.pt-tool-drawer .el-drawer__header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 0;
+  padding-bottom: 14px;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.pt-tool-drawer .el-drawer__title {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+}
+
+.pt-tool-drawer .el-drawer__body {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pt-tool-drawer .el-input__wrapper,
+.pt-tool-drawer .el-textarea__inner {
+  background: rgba(0, 0, 0, 0.22) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.pt-tool-drawer .el-input__inner,
+.pt-tool-drawer .el-textarea__inner {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.pt-tool-drawer .pt-panel {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pt-tool-drawer .el-alert {
+  background: rgba(180, 40, 40, 0.2);
+  border: 1px solid rgba(255, 120, 120, 0.38);
+}
+
+.pt-tool-drawer .el-alert__title {
+  color: rgba(255, 220, 220, 0.96);
+}
+
+.pt-tool-drawer .mb {
+  margin-bottom: 10px;
+}

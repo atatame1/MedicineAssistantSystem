@@ -53,6 +53,7 @@ export type ProjectMember = {
   userId: number
   role: string | null
   joinTime: string | null
+  userNickname?: string | null
 }
 
 export type MemberCreate = {

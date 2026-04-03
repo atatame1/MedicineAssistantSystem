@@ -41,7 +41,7 @@ load()
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">项目成员</div>
@@ -56,16 +56,21 @@ load()
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
-      <el-table v-loading="loading" :data="rows" stripe>
+    <div class="pt-panel">
+      <el-table v-loading="loading" class="pt-table" :data="rows" stripe>
         <el-table-column prop="id" label="ID" width="90" />
+        <el-table-column label="昵称" min-width="140">
+          <template #default="{ row }">
+            {{ row.userNickname?.trim() || '—' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="userId" label="用户ID" width="120" />
         <el-table-column prop="role" label="角色" width="140" />
         <el-table-column prop="joinTime" label="加入时间" width="200" />
       </el-table>
-    </el-card>
+    </div>
 
-    <el-dialog v-model="createOpen" title="新增成员" width="660px">
+    <el-dialog v-model="createOpen" class="pt-tool-dialog" title="新增成员" width="660px">
       <el-form :model="createForm" label-width="110px">
         <el-form-item label="用户ID">
           <el-input-number v-model="createForm.userId" :min="1" />
@@ -90,33 +95,4 @@ load()
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-</style>
+<style src="./projectToolPage.css"></style>

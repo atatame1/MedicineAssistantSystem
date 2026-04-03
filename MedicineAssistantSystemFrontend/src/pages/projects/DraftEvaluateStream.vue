@@ -53,11 +53,11 @@ function stop() {
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">立项评估（流式）</div>
-        <div class="s">POST `/api/projects/draft/evaluate-stream`</div>
+        <div class="s"></div>
       </div>
       <div class="act">
         <el-button type="primary" :disabled="running" @click="start">开始</el-button>
@@ -67,7 +67,7 @@ function stop() {
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
+    <div class="pt-panel">
       <el-form :model="form" label-width="110px">
         <el-form-item label="项目名称"><el-input v-model="form.projectName" /></el-form-item>
         <el-form-item label="药材"><el-input v-model="form.herbName" /></el-form-item>
@@ -77,47 +77,14 @@ function stop() {
         <el-form-item label="预算"><el-input-number v-model="form.budget" :min="0" /></el-form-item>
         <el-form-item label="优先级"><el-input v-model="form.priority" /></el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
-    <el-card>
+    <div class="pt-panel">
       <div class="ot">流式输出</div>
       <el-input :model-value="chunks.join('')" type="textarea" :rows="14" readonly />
-    </el-card>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.ot {
-  font-weight: 900;
-  color: #123b30;
-  margin-bottom: 8px;
-}
-</style>
+<style src="./projectToolPage.css"></style>
 

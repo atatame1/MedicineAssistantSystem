@@ -72,7 +72,7 @@ load()
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">文档管理</div>
@@ -88,8 +88,8 @@ load()
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
-      <el-table v-loading="loading" :data="rows" stripe>
+    <div class="pt-panel">
+      <el-table v-loading="loading" class="pt-table" :data="rows" stripe>
         <el-table-column prop="id" label="ID" width="90" />
         <el-table-column prop="docType" label="类型" width="120" />
         <el-table-column prop="docName" label="名称" min-width="240" />
@@ -101,9 +101,9 @@ load()
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </div>
 
-    <el-dialog v-model="uploadOpen" title="上传项目文档" width="780px">
+    <el-dialog v-model="uploadOpen" class="pt-tool-dialog" title="上传项目文档" width="780px">
       <el-form :model="uploadMeta" label-width="110px">
         <el-form-item label="文件">
           <el-upload :auto-upload="false" :limit="1" :on-change="onPick">
@@ -128,33 +128,4 @@ load()
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-</style>
+<style src="./projectToolPage.css"></style>

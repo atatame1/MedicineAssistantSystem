@@ -77,7 +77,7 @@ load()
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">决策记录</div>
@@ -92,23 +92,23 @@ load()
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
+    <div class="pt-panel">
       <div class="compare">
         <el-input-number v-model="compareId1" :min="1" :step="1" placeholder="版本ID1" style="width: 160px" />
         <el-input-number v-model="compareId2" :min="1" :step="1" placeholder="版本ID2" style="width: 160px" />
         <el-button :disabled="!canCompare" @click="openCompare">对比</el-button>
       </div>
 
-      <el-table v-loading="loading" :data="rows" stripe>
+      <el-table v-loading="loading" class="pt-table" :data="rows" stripe>
         <el-table-column prop="id" label="ID" width="90" />
         <el-table-column prop="decisionType" label="类型" width="140" />
         <el-table-column prop="title" label="标题" min-width="220" />
         <el-table-column prop="version" label="版本" width="90" />
         <el-table-column prop="createTime" label="创建时间" width="180" />
       </el-table>
-    </el-card>
+    </div>
 
-    <el-dialog v-model="createOpen" title="新增决策记录" width="860px">
+    <el-dialog v-model="createOpen" class="pt-tool-dialog" title="新增决策记录" width="860px">
       <el-form :model="createForm" label-width="110px">
         <el-form-item label="类型">
           <el-select v-model="createForm.decisionType">
@@ -143,21 +143,21 @@ load()
       </template>
     </el-dialog>
 
-    <el-drawer v-model="compareOpen" title="版本对比" size="60%">
+    <el-drawer v-model="compareOpen" class="pt-tool-drawer" title="版本对比" size="60%">
       <el-alert v-if="compareError" :title="compareError" type="error" show-icon class="mb" />
       <div v-loading="compareLoading">
         <el-row :gutter="12">
           <el-col :span="12">
-            <el-card>
+            <div class="pt-panel">
               <div class="ct">版本A</div>
               <el-input :model-value="JSON.stringify(compareResult?.first || null, null, 2)" type="textarea" :rows="18" readonly />
-            </el-card>
+            </div>
           </el-col>
           <el-col :span="12">
-            <el-card>
+            <div class="pt-panel">
               <div class="ct">版本B</div>
               <el-input :model-value="JSON.stringify(compareResult?.second || null, null, 2)" type="textarea" :rows="18" readonly />
-            </el-card>
+            </div>
           </el-col>
         </el-row>
       </div>
@@ -165,47 +165,4 @@ load()
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.compare {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-.ct {
-  font-weight: 900;
-  color: #123b30;
-  margin-bottom: 8px;
-}
-.mb {
-  margin-bottom: 10px;
-}
-</style>
+<style src="./projectToolPage.css"></style>

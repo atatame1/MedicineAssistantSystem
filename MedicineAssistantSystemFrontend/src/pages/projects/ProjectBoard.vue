@@ -40,7 +40,7 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">项目看板</div>
@@ -54,43 +54,15 @@ onMounted(load)
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card v-loading="loading">
+    <div v-loading="loading" class="pt-panel">
       <el-descriptions :column="2" border>
         <el-descriptions-item label="项目ID">{{ board?.projectId ?? '-' }}</el-descriptions-item>
         <el-descriptions-item label="阶段">{{ phaseText(board?.currentPhase) }}</el-descriptions-item>
         <el-descriptions-item label="状态">{{ statusText(board?.status) }}</el-descriptions-item>
         <el-descriptions-item label="进度(%)">{{ board?.progressPercent ?? '-' }}</el-descriptions-item>
       </el-descriptions>
-    </el-card>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-</style>
+<style src="./projectToolPage.css"></style>

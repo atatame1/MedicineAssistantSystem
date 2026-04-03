@@ -44,11 +44,11 @@ function stop() {
 </script>
 
 <template>
-  <div class="page">
+  <div class="pt-tool">
     <div class="head">
       <div>
         <div class="t">项目报告生成（流式）</div>
-        <div class="s">POST `/api/projects/{projectId}/ai/report-stream`</div>
+        <div class="s"></div>
       </div>
       <div class="act">
         <el-input-number v-model="projectId" :min="1" :step="1" style="width: 140px" />
@@ -59,54 +59,20 @@ function stop() {
 
     <el-alert v-if="error" :title="error" type="error" show-icon />
 
-    <el-card>
+    <div class="pt-panel">
       <el-form label-width="110px">
         <el-form-item label="补充说明">
           <el-input v-model="input" type="textarea" :rows="4" />
         </el-form-item>
       </el-form>
-    </el-card>
+    </div>
 
-    <el-card>
+    <div class="pt-panel">
       <div class="ot">流式输出</div>
       <el-input :model-value="chunks.join('')" type="textarea" :rows="14" readonly />
-    </el-card>
+    </div>
   </div>
 </template>
 
-<style scoped>
-.page {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-.t {
-  font-size: 18px;
-  font-weight: 900;
-  color: #123b30;
-}
-.s {
-  margin-top: 6px;
-  font-size: 12px;
-  color: #5c736b;
-}
-.act {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.ot {
-  font-weight: 900;
-  color: #123b30;
-  margin-bottom: 8px;
-}
-</style>
+<style src="./projectToolPage.css"></style>
 
