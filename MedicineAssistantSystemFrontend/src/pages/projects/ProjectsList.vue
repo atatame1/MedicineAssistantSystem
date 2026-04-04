@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { listMyProjects, type MyProjectItem } from '@/api/projects'
+import {
+  listMyProjects,
+  updateProjectPhase,
+  updateProjectStatus,
+  type MyProjectItem
+} from '@/api/projects'
 import { useAuthStore } from '@/stores/auth'
 import ProjectCreateForm from './ProjectCreateForm.vue'
 import {
@@ -26,6 +31,27 @@ const documents = ref<ProjectDocument[]>([])
 const members = ref<ProjectMember[]>([])
 
 const createDrawerOpen = ref(false)
+
+const statusEditOpen = ref(false)
+const phaseEditOpen = ref(false)
+const editStatus = ref<number | null>(null)
+const editPhase = ref<string | null>(null)
+const savingStatus = ref(false)
+const savingPhase = ref(false)
+
+const STATUS_EDIT_OPTIONS = [
+  { value: 1, label: '立项中' },
+  { value: 2, label: '进行中' },
+  { value: 3, label: '已完成' },
+  { value: 4, label: '已取消' }
+] as const
+
+const PHASE_EDIT_OPTIONS = [
+  { value: 'EXPLORATION', label: '探索期' },
+  { value: 'VERIFICATION', label: '验证期' },
+  { value: 'OPTIMIZATION', label: '优化期' },
+  { value: 'DECLARATION', label: '申报期' }
+] as const
 
 let extraLoadSeq = 0
 
@@ -82,7 +108,13 @@ function statusText(status?: number | null) {
 
 function phaseText(phase?: string | null) {
   if (!phase) return '-'
-  return phase
+  const m: Record<string, string> = {
+    EXPLORATION: '探索期',
+    VERIFICATION: '验证期',
+    OPTIMIZATION: '优化期',
+    DECLARATION: '申报期'
+  }
+  return m[phase] ?? phase
 }
 
 function priorityText(p?: number | null) {
@@ -96,6 +128,13 @@ function priorityText(p?: number | null) {
 const activeProject = computed(() =>
   projects.value.find(p => p.id === activeId.value) || null
 )
+
+const dashboardProgressPercent = computed(() => {
+  const s = activeProject.value?.status
+  if (s == null) return 0
+  const m: Record<number, number> = { 4: 0, 1: 25, 2: 50, 3: 100 }
+  return m[s] ?? 0
+})
 
 function myRoleText(role?: string | null) {
   if (role === 'LEADER') return '负责人'
@@ -118,6 +157,61 @@ function onCreateSuccess() {
   loadList()
 }
 
+function patchActiveProject(partial: Partial<MyProjectItem>) {
+  const id = activeId.value
+  if (id == null) return
+  const i = projects.value.findIndex(p => p.id === id)
+  if (i >= 0) {
+    projects.value[i] = { ...projects.value[i], ...partial } as MyProjectItem
+  }
+}
+
+function openStatusEdit() {
+  if (!activeProject.value?.id) return
+  editStatus.value = activeProject.value.status ?? null
+  statusEditOpen.value = true
+}
+
+function openPhaseEdit() {
+  if (!activeProject.value?.id) return
+  editPhase.value = activeProject.value.phase ?? null
+  phaseEditOpen.value = true
+}
+
+async function saveStatus() {
+  const pid = activeId.value
+  if (pid == null || editStatus.value == null) return
+  savingStatus.value = true
+  error.value = null
+  try {
+    await updateProjectStatus(pid, editStatus.value)
+    patchActiveProject({ status: editStatus.value })
+    statusEditOpen.value = false
+    await loadExtra(pid)
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  } finally {
+    savingStatus.value = false
+  }
+}
+
+async function savePhase() {
+  const pid = activeId.value
+  if (pid == null || editPhase.value == null || editPhase.value === '') return
+  savingPhase.value = true
+  error.value = null
+  try {
+    await updateProjectPhase(pid, editPhase.value)
+    patchActiveProject({ phase: editPhase.value })
+    phaseEditOpen.value = false
+    await loadExtra(pid)
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  } finally {
+    savingPhase.value = false
+  }
+}
+
 function memberDisplayName(m: ProjectMember) {
   const n = m.userNickname?.trim()
   if (n) return n
@@ -129,8 +223,7 @@ const toolLinks = [
   { to: '/projects/decisions', label: '决策' },
   { to: '/projects/documents', label: '文档' },
   { to: '/projects/members', label: '成员' },
-  { to: '/projects/draft-evaluate', label: '立项评估流' },
-  { to: '/projects/report-stream', label: '报告流' }
+  { to: '/projects/draft-evaluate', label: '立项评估' }
 ] as const
 
 onMounted(loadList)
@@ -342,8 +435,20 @@ onMounted(loadList)
                 </div>
               </div>
               <div class="right-header-tags">
-                <span class="tag-chip">{{ statusText(activeProject.status) }}</span>
-                <span class="tag-chip soft">{{ phaseText(activeProject.phase) }}</span>
+                <span
+                  class="tag-chip tag-chip--click"
+                  role="button"
+                  tabindex="0"
+                  @click="openStatusEdit"
+                  @keydown.enter.prevent="openStatusEdit"
+                >{{ statusText(activeProject.status) }}</span>
+                <span
+                  class="tag-chip tag-chip--click soft"
+                  role="button"
+                  tabindex="0"
+                  @click="openPhaseEdit"
+                  @keydown.enter.prevent="openPhaseEdit"
+                >{{ phaseText(activeProject.phase) }}</span>
                 <span v-if="activeProject.budget != null" class="tag-chip ghost">
                   预算 {{ activeProject.budget }} 万
                 </span>
@@ -358,7 +463,7 @@ onMounted(loadList)
                     <el-progress
                       class="dash-progress"
                       type="dashboard"
-                      :percentage="board?.progressPercent || 0"
+                      :percentage="dashboardProgressPercent"
                       :width="144"
                       color="#92e6ca"
                     />
@@ -366,7 +471,7 @@ onMounted(loadList)
                   <ul class="progress-meta">
                     <li>
                       <span class="meta-label">当前阶段</span>
-                      <span class="meta-value">{{ board?.currentPhase || phaseText(activeProject.phase) }}</span>
+                      <span class="meta-value">{{ phaseText(board?.currentPhase ?? activeProject.phase) }}</span>
                     </li>
                     <li>
                       <span class="meta-label">状态</span>
@@ -434,6 +539,58 @@ onMounted(loadList)
           </div>
         </section>
       </main>
+
+      <el-dialog
+        v-model="statusEditOpen"
+        title="修改状态"
+        width="420px"
+        append-to-body
+        class="proj-field-dialog"
+      >
+        <el-select
+          v-model="editStatus"
+          placeholder="请选择状态"
+          class="proj-field-dialog-select"
+          popper-class="proj-status-dropdown"
+        >
+          <el-option
+            v-for="o in STATUS_EDIT_OPTIONS"
+            :key="o.value"
+            :label="o.label"
+            :value="o.value"
+          />
+        </el-select>
+        <template #footer>
+          <el-button @click="statusEditOpen = false">取消</el-button>
+          <el-button type="primary" :loading="savingStatus" @click="saveStatus">确定</el-button>
+        </template>
+      </el-dialog>
+
+      <el-dialog
+        v-model="phaseEditOpen"
+        title="修改阶段"
+        width="420px"
+        append-to-body
+        class="proj-field-dialog"
+      >
+        <el-select
+          v-model="editPhase"
+          placeholder="请选择阶段"
+          class="proj-field-dialog-select"
+          popper-class="proj-status-dropdown"
+        >
+          <el-option
+            v-for="o in PHASE_EDIT_OPTIONS"
+            :key="o.value"
+            :label="o.label"
+            :value="o.value"
+          />
+        </el-select>
+        <template #footer>
+          <el-button @click="phaseEditOpen = false">取消</el-button>
+          <el-button type="primary" :loading="savingPhase" @click="savePhase">确定</el-button>
+        </template>
+      </el-dialog>
 
       <el-drawer
         v-model="createDrawerOpen"
@@ -879,6 +1036,19 @@ onMounted(loadList)
 .tag-chip.ghost {
   color: rgba(255, 255, 255, 0.78);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.tag-chip--click {
+  cursor: pointer;
+}
+
+.tag-chip--click:focus-visible {
+  outline: 2px solid rgba(146, 230, 202, 0.55);
+  outline-offset: 2px;
+}
+
+:deep(.proj-field-dialog-select) {
+  width: 100%;
 }
 
 .right-grid {

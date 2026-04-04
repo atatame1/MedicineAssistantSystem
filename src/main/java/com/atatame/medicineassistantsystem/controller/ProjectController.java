@@ -9,6 +9,8 @@ import com.atatame.medicineassistantsystem.model.dto.request.DeleteByIdRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.MemberCreateRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectDocumentUploadRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.ProjectPhaseUpdateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.ProjectStatusUpdateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemResponse;
@@ -101,6 +103,36 @@ public class ProjectController {
     @Operation(summary = "更新项目")
     public Result<Void> update(@RequestBody Project request) {
         projectService.updateById(request);
+        return Result.ok();
+    }
+
+    @PostMapping("/{projectId:\\d+}/status")
+    @Operation(summary = "更新项目状态")
+    public Result<Void> updateStatus(@PathVariable Long projectId, @RequestBody ProjectStatusUpdateRequest req) {
+        if (req.getStatus() == null) {
+            throw new BusinessException("状态不能为空");
+        }
+        Project p = projectService.getById(projectId);
+        if (p == null) {
+            throw new BusinessException("项目不存在");
+        }
+        p.setStatus(req.getStatus());
+        projectService.updateById(p);
+        return Result.ok();
+    }
+
+    @PostMapping("/{projectId:\\d+}/phase")
+    @Operation(summary = "更新项目阶段")
+    public Result<Void> updatePhase(@PathVariable Long projectId, @RequestBody ProjectPhaseUpdateRequest req) {
+        if (req.getPhase() == null || req.getPhase().isBlank()) {
+            throw new BusinessException("阶段不能为空");
+        }
+        Project p = projectService.getById(projectId);
+        if (p == null) {
+            throw new BusinessException("项目不存在");
+        }
+        p.setPhase(req.getPhase().trim());
+        projectService.updateById(p);
         return Result.ok();
     }
 

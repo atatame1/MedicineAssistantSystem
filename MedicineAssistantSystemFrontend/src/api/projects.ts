@@ -37,6 +37,14 @@ export async function createProject(body: Project) {
   return apiPostJson<Project, Project>('/api/projects/create', body)
 }
 
+export async function updateProjectStatus(projectId: number, status: number) {
+  return apiPostJson<void, { status: number }>(`/api/projects/${projectId}/status`, { status })
+}
+
+export async function updateProjectPhase(projectId: number, phase: string) {
+  return apiPostJson<void, { phase: string }>(`/api/projects/${projectId}/phase`, { phase })
+}
+
 export type ProjectDocument = {
   id: number
   projectId: number
