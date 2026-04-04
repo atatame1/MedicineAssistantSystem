@@ -262,6 +262,17 @@ public class ProjectController {
         return Result.ok();
     }
 
+    @DeleteMapping("/{projectId}/members/{memberId}")
+    @Operation(summary = "删除项目成员")
+    public Result<Void> deleteMember(@PathVariable Long projectId, @PathVariable Long memberId) {
+        ProjectMember row = projectMemberService.getById(memberId);
+        if (row == null || !projectId.equals(row.getProjectId())) {
+            throw new BusinessException("成员不存在");
+        }
+        projectMemberService.removeById(memberId);
+        return Result.ok();
+    }
+
     @PostMapping(value = "/{projectId}/ai/report-stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "立项/阶段报告流式生成")
     public SseEmitter reportStream(@PathVariable Long projectId, @RequestBody(required = false) AiTaskRequest extra) {

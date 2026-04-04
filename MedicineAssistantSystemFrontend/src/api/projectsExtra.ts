@@ -1,4 +1,4 @@
-import { apiGet, apiPostJson } from './http'
+import { apiDelete, apiGet, apiPostJson } from './http'
 
 export type ProjectBoard = {
   projectId: number
@@ -95,6 +95,8 @@ export const projectsExtraApi = {
     apiGet<ProjectMember[]>(`/api/projects/${projectId}/members`),
   createMember: (projectId: number, body: MemberCreate) =>
     apiPostJson<void, MemberCreate>(`/api/projects/${projectId}/members/create`, body),
+  deleteMember: (projectId: number, memberRowId: number) =>
+    apiDelete<void>(`/api/projects/${projectId}/members/${memberRowId}`),
 
   draftEvaluateStreamUrl: () => `/api/projects/draft/evaluate-stream`,
   reportStreamUrl: (projectId: number) => `/api/projects/${projectId}/ai/report-stream`,
