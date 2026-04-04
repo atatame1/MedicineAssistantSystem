@@ -387,7 +387,7 @@ onMounted(loadList)
               </div>
 
               <div class="cell">
-                <div class="cell-label">决策摘要</div>
+                <div class="cell-label">AI评估结果</div>
                 <div class="cell-body ai-body">
                   <div class="ai-text">
                     {{ activeProject.aiAssess || '尚未生成 AI 评估，可在立项评估中触发。' }}

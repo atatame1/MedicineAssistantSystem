@@ -9,6 +9,7 @@ import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatistics
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.UserListItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserProfileResponse;
 import com.atatame.medicineassistantsystem.service.IUserService;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,6 +30,12 @@ import java.util.List;
 public class UserController {
 
     private final IUserService userService;
+
+    @GetMapping("/list")
+    @Operation(summary = "用户列表", description = "全部正常状态用户，用于下拉选择")
+    public Result<List<UserListItemResponse>> listUsers() {
+        return Result.ok(userService.listAllUsers());
+    }
 
     @GetMapping("/{userId}/tasks")
     @Operation(summary = "我的任务", description = "获取当前用户的任务列表")

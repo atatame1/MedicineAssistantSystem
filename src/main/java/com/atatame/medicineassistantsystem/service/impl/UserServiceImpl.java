@@ -10,6 +10,7 @@ import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemRespo
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.UserListItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserProfileResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserStatisticsResponse;
 import com.atatame.medicineassistantsystem.model.entity.Component;
@@ -82,6 +83,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IComponentService componentService;
     private final IDiseaseService diseaseService;
     private final IRegulationService regulationService;
+
+    @Override
+    public List<UserListItemResponse> listAllUsers() {
+        return list(new LambdaQueryWrapper<User>().eq(User::getStatus, 0).orderByAsc(User::getId))
+                .stream()
+                .map(u -> {
+                    UserListItemResponse r = new UserListItemResponse();
+                    r.setId(u.getId());
+                    r.setUsername(u.getUsername());
+                    r.setNickname(u.getNickname());
+                    return r;
+                })
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<TaskResponse> myTasks(Long userId) {

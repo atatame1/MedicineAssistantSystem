@@ -34,7 +34,7 @@ export async function listMyProjects(userId: number, status?: number) {
 }
 
 export async function createProject(body: Project) {
-  return apiPostJson<void, Project>('/api/projects/create', body)
+  return apiPostJson<Project, Project>('/api/projects/create', body)
 }
 
 export type ProjectDocument = {

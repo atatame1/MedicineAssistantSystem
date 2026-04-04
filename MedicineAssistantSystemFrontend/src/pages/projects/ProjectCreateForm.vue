@@ -1,11 +1,21 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { createProject, type Project } from '@/api/projects'
+import { aiApi } from '@/api/ai'
+import { listUsers, type UserListItem } from '@/api/user'
+import { projectsExtraApi } from '@/api/projectsExtra'
 
 const emit = defineEmits<{ success: [] }>()
 
 const loading = ref(false)
 const error = ref<string | null>(null)
+const users = ref<UserListItem[]>([])
+const usersLoading = ref(false)
+const memberUserIds = ref<number[]>([])
+
+const aiEvalProgress = ref(0)
+const aiEvalRunning = ref(false)
+let aiEvalRaf = 0
 
 const form = reactive<Project>({
   projectName: '',
@@ -22,6 +32,62 @@ const form = reactive<Project>({
   aiReport: null
 })
 
+function userLabel(u: UserListItem) {
+  const n = u.nickname?.trim()
+  if (n) return n
+  if (u.username?.trim()) return u.username
+  return `用户 ${u.id}`
+}
+
+function buildEvaluationInput() {
+  const sb: string[] = []
+  sb.push(`项目名称:${form.projectName || ''}`)
+  sb.push(`药材:${form.herbName ?? ''}`)
+  sb.push(`方剂:${form.formulaName ?? ''}`)
+  sb.push(`适应症:${form.indication ?? ''}`)
+  sb.push(`描述:${form.description ?? ''}`)
+  sb.push(`预算:${form.budget != null ? String(form.budget) : ''}`)
+  sb.push(`优先级:${form.priority != null ? String(form.priority) : ''}`)
+  return sb.join('\n')
+}
+
+async function runAiEvaluate() {
+  if (aiEvalRunning.value) return
+  error.value = null
+  aiEvalRunning.value = true
+  aiEvalProgress.value = 0
+  const start = Date.now()
+  const duration = 12000
+  let finished = false
+
+  const tick = () => {
+    if (finished) return
+    const elapsed = Date.now() - start
+    if (elapsed < duration) {
+      aiEvalProgress.value = Math.min(99, (elapsed / duration) * 99)
+      aiEvalRaf = requestAnimationFrame(tick)
+    } else {
+      aiEvalProgress.value = 99
+    }
+  }
+  aiEvalRaf = requestAnimationFrame(tick)
+
+  try {
+    const { output } = await aiApi.projectEvaluation(buildEvaluationInput(), null)
+    form.aiAssess = output
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  } finally {
+    finished = true
+    cancelAnimationFrame(aiEvalRaf)
+    aiEvalProgress.value = 100
+    aiEvalRunning.value = false
+    setTimeout(() => {
+      aiEvalProgress.value = 0
+    }, 500)
+  }
+}
+
 function reset() {
   error.value = null
   form.projectName = ''
@@ -36,6 +102,7 @@ function reset() {
   form.priority = null
   form.aiAssess = ''
   form.aiReport = null
+  memberUserIds.value = []
 }
 
 async function submit() {
@@ -48,7 +115,19 @@ async function submit() {
     if (!form.aiAssess || !form.aiAssess.trim()) {
       throw new Error('AI 立项评估必填')
     }
-    await createProject(form)
+    const created = await createProject(form)
+    const pid = created.id
+    if (pid != null && memberUserIds.value.length > 0) {
+      for (const uid of memberUserIds.value) {
+        if (form.projectorId != null && uid === form.projectorId) continue
+        try {
+          await projectsExtraApi.createMember(pid, { userId: uid, role: 'MEMBER' })
+        } catch (e: any) {
+          error.value = `项目已创建（ID ${pid}），成员添加失败：${e?.message || e}`
+          return
+        }
+      }
+    }
     reset()
     emit('success')
   } catch (e: any) {
@@ -57,6 +136,17 @@ async function submit() {
     loading.value = false
   }
 }
+
+onMounted(async () => {
+  usersLoading.value = true
+  try {
+    users.value = await listUsers()
+  } catch {
+    users.value = []
+  } finally {
+    usersLoading.value = false
+  }
+})
 
 defineExpose({ reset })
 </script>
@@ -107,8 +197,43 @@ defineExpose({ reset })
             <el-option label="已取消" :value="4" />
           </el-select>
         </el-form-item>
-        <el-form-item label="负责人用户 ID">
-          <el-input-number v-model="form.projectorId" :min="0" class="pcf-num" controls-position="right" />
+        <el-form-item label="负责人">
+          <el-select
+            v-model="form.projectorId"
+            placeholder="请选择负责人"
+            clearable
+            filterable
+            class="pcf-full"
+            popper-class="proj-status-dropdown"
+            :loading="usersLoading"
+          >
+            <el-option
+              v-for="u in users"
+              :key="u.id"
+              :label="userLabel(u)"
+              :value="u.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="项目成员">
+          <el-select
+            v-model="memberUserIds"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="可选多名成员"
+            filterable
+            class="pcf-full"
+            popper-class="proj-status-dropdown"
+            :loading="usersLoading"
+          >
+            <el-option
+              v-for="u in users"
+              :key="u.id"
+              :label="userLabel(u)"
+              :value="u.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="预算（万）">
           <el-input-number v-model="form.budget" :min="0" :step="1" class="pcf-num" controls-position="right" />
@@ -120,7 +245,28 @@ defineExpose({ reset })
           <el-input v-model="form.description" type="textarea" :rows="3" placeholder="选填" />
         </el-form-item>
         <el-form-item label="AI 立项评估" class="pcf-span2" required>
-          <el-input v-model="form.aiAssess" type="textarea" :rows="5" placeholder="必填" />
+          <div class="pcf-ai-block">
+            <div class="pcf-ai-actions">
+              <el-button
+                type="primary"
+                plain
+                :loading="aiEvalRunning"
+                :disabled="aiEvalRunning"
+                @click="runAiEvaluate"
+              >
+                触发 AI 评估
+              </el-button>
+            </div>
+            <el-progress
+              v-if="aiEvalRunning || aiEvalProgress > 0"
+              class="pcf-ai-progress"
+              :percentage="Math.round(aiEvalProgress)"
+              :stroke-width="10"
+              striped
+              striped-flow
+            />
+            <el-input v-model="form.aiAssess" type="textarea" :rows="5" placeholder="必填，可点击上方生成" />
+          </div>
         </el-form-item>
       </div>
       <div class="pcf-actions">
@@ -176,6 +322,32 @@ defineExpose({ reset })
 .pcf-actions {
   margin-top: 8px;
   padding-top: 4px;
+}
+
+.pcf-ai-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pcf-ai-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pcf-ai-progress {
+  width: 100%;
+}
+
+.pcf-ai-progress :deep(.el-progress-bar__outer) {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pcf-ai-progress :deep(.el-progress-bar__inner) {
+  border-radius: 8px;
 }
 
 :deep(.el-input__wrapper),

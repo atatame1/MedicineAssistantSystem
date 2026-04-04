@@ -137,6 +137,16 @@ export type UserProfileResponse = {
   statistics: UserStatisticsResponse | null
 }
 
+export type UserListItem = {
+  id: number
+  username: string | null
+  nickname: string | null
+}
+
+export async function listUsers() {
+  return apiGet<UserListItem[]>('/api/user/list')
+}
+
 export async function listMyTasks(userId: number) {
   return apiGet<TaskResponse[]>(`/api/user/${userId}/tasks`)
 }

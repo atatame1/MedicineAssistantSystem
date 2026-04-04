@@ -92,9 +92,9 @@ public class ProjectController {
 
     @PostMapping("/create")
     @Operation(summary = "创建项目（提交表单含 aiAssess；保存后异步生成立项报告写入 aiReport）")
-    public Result<Void> create(@RequestBody Project request) {
+    public Result<Project> create(@RequestBody Project request) {
         projectService.save(request);
-        return Result.ok();
+        return Result.ok(request);
     }
 
     @PostMapping("/update")

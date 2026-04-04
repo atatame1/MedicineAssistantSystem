@@ -7,6 +7,7 @@ import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.UserListItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.UserProfileResponse;
@@ -35,4 +36,5 @@ public interface IUserService extends IService<User> {
     SettingsResponse settings(Long userId);
     void updateSettings(Long userId, SettingsUpdateRequest request);
     UserProfileResponse profile(Long userId);
+    List<UserListItemResponse> listAllUsers();
 }

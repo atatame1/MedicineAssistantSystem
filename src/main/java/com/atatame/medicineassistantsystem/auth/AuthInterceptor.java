@@ -53,6 +53,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     private static boolean needsAuth(String path, String method) {
         if (path == null) return false;
         if (path.startsWith("/api/ai/")) return true;
+        if ("/api/user/list".equals(path)) return true;
         if (path.startsWith("/api/user/")) {
             if (path.contains("/favorites")) return true;
             if (path.contains("/settings")) return true;

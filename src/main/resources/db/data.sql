@@ -73,11 +73,11 @@ INSERT INTO `regulation` (`id`, `name`, `name_english`, `regulation_number`, `is
 -- 用户数据
 -- ========================
 INSERT INTO `user` (`id`, `username`, `password`, `nickname`, `email`, `gender`, `status`, `create_time`, `update_time`) VALUES
-(1, 'admin', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '系统管理员', 'admin@medicine.com', 'MALE', 0, NOW(), NOW()),
-(2, 'wangwei', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '王伟', 'wangwei@medicine.com', 'MALE', 0, NOW(), NOW()),
-(3, 'lixia', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '李华', 'lixia@medicine.com', 'FEMALE', 0, NOW(), NOW()),
-(4, 'zhangming', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '张明', 'zhangming@medicine.com', 'MALE', 0, NOW(), NOW()),
-(5, 'chenjing', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iwK8pJ5C', '陈静', 'chenjing@medicine.com', 'FEMALE', 0, NOW(), NOW());
+(1, 'admin', '123456', '系统管理员', 'admin@medicine.com', 'MALE', 0, NOW(), NOW()),
+(2, 'wangwei', '123456', '王伟', 'wangwei@medicine.com', 'MALE', 0, NOW(), NOW()),
+(3, 'lixia', '123456', '李华', 'lixia@medicine.com', 'FEMALE', 0, NOW(), NOW()),
+(4, 'zhangming', '123456', '张明', 'zhangming@medicine.com', 'MALE', 0, NOW(), NOW()),
+(5, 'chenjing', '123456', '陈静', 'chenjing@medicine.com', 'FEMALE', 0, NOW(), NOW());
 
 -- ========================
 -- 项目数据
