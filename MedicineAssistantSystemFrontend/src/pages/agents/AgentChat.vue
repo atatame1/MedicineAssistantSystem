@@ -262,8 +262,32 @@ async function send() {
       conversationId.value = null
     }
 
-    const assistantMsg: Msg = { role: 'assistant', content: '', ts: Date.now() }
-    msgs.value.push(assistantMsg)
+    msgs.value.push({ role: 'assistant', content: '', ts: Date.now() })
+    const assistantIndex = msgs.value.length - 1
+
+    const pending: string[] = []
+    let draining = false
+
+    async function drainChars() {
+      if (draining) return
+      draining = true
+      try {
+        while (pending.length > 0) {
+          const n = Math.min(20, pending.length)
+          let piece = ''
+          for (let i = 0; i < n; i++) piece += pending.shift()!
+          const msg = msgs.value[assistantIndex]
+          if (!msg) break
+          msg.content += piece
+          await nextTick()
+          await new Promise<void>((r) => requestAnimationFrame(() => r()))
+          listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
+        }
+      } finally {
+        draining = false
+        if (pending.length > 0) void drainChars()
+      }
+    }
 
     await postAiStreamText(
       path,
@@ -271,7 +295,8 @@ async function send() {
         ? { input: text, conversationId: conversationId.value }
         : { input: text },
       (chunk) => {
-        assistantMsg.content += chunk
+        pending.push(...[...chunk])
+        void drainChars()
       },
       memoryEnabled.value
         ? (meta) => {
@@ -279,6 +304,10 @@ async function send() {
           }
         : undefined
     )
+
+    while (pending.length > 0 || draining) {
+      await new Promise<void>((r) => requestAnimationFrame(() => r()))
+    }
 
     if (memoryEnabled.value) {
       await refreshHistory()
@@ -403,8 +432,17 @@ function pickPrompt(p: string) {
           <div v-for="(m, idx) in msgs" :key="m.ts + m.role" class="row" :class="m.role">
             <div class="bubble">
               <div class="who">{{ m.role === 'user' ? '你' : agentTitle }}</div>
-              <div class="txt">{{ m.content }}</div>
-              <div v-if="loading && idx === msgs.length - 1 && m.role === 'assistant'" class="thinking">
+              <div class="txt">
+                {{ m.content }}<span
+                  v-if="loading && idx === msgs.length - 1 && m.role === 'assistant'"
+                  class="caret"
+                  aria-hidden="true"
+                />
+              </div>
+              <div
+                v-if="loading && idx === msgs.length - 1 && m.role === 'assistant' && !m.content"
+                class="thinking"
+              >
                 <div class="thinking-line">
                   <span class="think-dot"></span><span class="think-dot"></span><span class="think-dot"></span>
                   <span class="think-txt">思考中…</span>
@@ -746,6 +784,16 @@ function pickPrompt(p: string) {
   font-size: 15px;
 }
 
+.caret {
+  display: inline-block;
+  width: 0.55ch;
+  height: 1em;
+  margin-left: 1px;
+  vertical-align: -0.12em;
+  background: rgba(146, 230, 202, 0.92);
+  animation: caretBlink 1s step-end infinite;
+}
+
 .thinking {
   margin-top: 10px;
 }
@@ -888,6 +936,11 @@ function pickPrompt(p: string) {
   .chip:hover {
     background: rgba(255, 255, 255, 0.06);
   }
+
+  .caret {
+    animation: none;
+    opacity: 0.85;
+  }
 }
 
 @keyframes dot {
@@ -902,6 +955,18 @@ function pickPrompt(p: string) {
   40% {
     transform: translateY(-4px);
     opacity: 1;
+  }
+}
+
+@keyframes caretBlink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
   }
 }
 </style>

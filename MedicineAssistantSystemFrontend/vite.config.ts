@@ -22,7 +22,17 @@ export default defineConfig({
         changeOrigin: true,
         timeout: 0,
         proxyTimeout: 0,
-      }
-    }
-  }
+        configure(proxy) {
+          proxy.on('proxyRes', (proxyRes, _req, res) => {
+            const ct = proxyRes.headers['content-type']
+            if (ct && String(ct).includes('text/event-stream')) {
+              res.setHeader('cache-control', 'no-cache, no-transform')
+              res.setHeader('x-accel-buffering', 'no')
+              res.setHeader('connection', 'keep-alive')
+            }
+          })
+        },
+      },
+    },
+  },
 })

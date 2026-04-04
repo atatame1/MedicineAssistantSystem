@@ -20,10 +20,21 @@ export type AiAgentMessageItem = {
 }
 
 function buildHeaders() {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'text/event-stream',
+    'Cache-Control': 'no-cache',
+  }
   const t = localStorage.getItem('mas_token')
   if (t) headers.Authorization = `Bearer ${t}`
   return headers
+}
+
+function resolveSseUrl(path: string): string {
+  const b = (import.meta.env.VITE_API_BASE as string | undefined)?.trim()
+  if (b) return `${b.replace(/\/$/, '')}${path}`
+  if (import.meta.env.DEV) return `http://localhost:8080${path}`
+  return path
 }
 
 function parseSseEvents(
@@ -66,10 +77,11 @@ export async function postAiStreamText(
   onData: (s: string) => void,
   onMeta?: (meta: { conversationId: number }) => void
 ) {
-  const res = await fetch(path, {
+  const res = await fetch(resolveSseUrl(path), {
     method: 'POST',
     headers: buildHeaders(),
-    body: JSON.stringify(body)
+    body: JSON.stringify(body),
+    cache: 'no-store',
   })
   if (!res.ok) throw new Error('request failed')
   const reader = res.body?.getReader()
@@ -78,7 +90,12 @@ export async function postAiStreamText(
   let buffer = ''
   while (true) {
     const { done, value } = await reader.read()
-    if (done) break
+    if (done) {
+      if (buffer.trim()) {
+        buffer = parseSseEvents(`${buffer}\n\n`, onData, onMeta)
+      }
+      break
+    }
     buffer += dec.decode(value, { stream: true })
     buffer = parseSseEvents(buffer, onData, onMeta)
   }
