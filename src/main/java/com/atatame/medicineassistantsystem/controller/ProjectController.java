@@ -11,6 +11,7 @@ import com.atatame.medicineassistantsystem.model.dto.request.ProjectDocumentUplo
 import com.atatame.medicineassistantsystem.model.dto.request.ProjectEstablishmentDraftRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DecisionCompareResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectBoardResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectMemberResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
@@ -21,6 +22,7 @@ import com.atatame.medicineassistantsystem.service.IProjectDecisionService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
+import com.atatame.medicineassistantsystem.service.IUserService;
 import com.atatame.medicineassistantsystem.utils.FileStorageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +60,14 @@ public class ProjectController {
     private final ProjectEvaluationAgent projectEvaluationAgent;
     private final ReportGenerationAgent reportGenerationAgent;
     private final FileStorageUtil fileStorageUtil;
+    private final IUserService userService;
+
+    @GetMapping("/mine")
+    @Operation(summary = "当前用户相关项目（负责人或成员）")
+    public Result<List<MyProjectItemResponse>> mine(@RequestParam(required = false) Integer status,
+                                                    @RequestParam Long userId) {
+        return Result.ok(userService.myProjectsForCurrentUser(userId, status));
+    }
 
     @GetMapping
     @Operation(summary = "项目列表")

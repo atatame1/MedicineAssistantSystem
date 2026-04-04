@@ -6,6 +6,7 @@ import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateReque
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
@@ -139,6 +140,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
                 .sorted((a, b) -> b.getCreateTime().compareTo(a.getCreateTime()))
                 .map(this::toProjectResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MyProjectItemResponse> myProjectsForCurrentUser(Long userId, Integer status) {
+        List<Project> createdProjects = projectService.list(new LambdaQueryWrapper<Project>()
+                .eq(Project::getProjectorId, userId));
+        List<ProjectMember> joinedMembers = projectMemberService.list(new LambdaQueryWrapper<ProjectMember>()
+                .eq(ProjectMember::getUserId, userId));
+        List<Long> joinedProjectIds = joinedMembers.stream()
+                .map(ProjectMember::getProjectId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        List<Project> joinedProjects = joinedProjectIds.isEmpty() ? Collections.emptyList() : projectService.listByIds(joinedProjectIds);
+
+        Map<Long, Project> merged = new HashMap<>();
+        for (Project item : createdProjects) {
+            merged.put(item.getId(), item);
+        }
+        for (Project item : joinedProjects) {
+            merged.put(item.getId(), item);
+        }
+        List<Project> list = merged.values().stream()
+                .sorted((a, b) -> b.getCreateTime().compareTo(a.getCreateTime()))
+                .collect(Collectors.toList());
+        if (status != null) {
+            list = list.stream().filter(p -> status.equals(p.getStatus())).collect(Collectors.toList());
+        }
+        Set<Long> projectorIds = list.stream().map(Project::getProjectorId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Map<Long, String> projectorNames = new HashMap<>();
+        if (!projectorIds.isEmpty()) {
+            for (User u : listByIds(projectorIds)) {
+                String n = u.getNickname();
+                if (n == null || n.isBlank()) {
+                    n = u.getUsername();
+                }
+                projectorNames.put(u.getId(), n != null ? n : "");
+            }
+        }
+        return list.stream().map(p -> toMyProjectItemResponse(p, userId, projectorNames)).collect(Collectors.toList());
     }
 
     @Override
@@ -293,6 +334,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         response.setCreateTime(project.getCreateTime());
         response.setUpdateTime(project.getUpdateTime());
         return response;
+    }
+
+    private static MyProjectItemResponse toMyProjectItemResponse(Project p, Long userId, Map<Long, String> projectorNames) {
+        MyProjectItemResponse r = new MyProjectItemResponse();
+        r.setId(p.getId());
+        r.setProjectName(p.getProjectName());
+        r.setHerbName(p.getHerbName());
+        r.setFormulaName(p.getFormulaName());
+        r.setIndication(p.getIndication());
+        r.setPhase(p.getPhase());
+        r.setProjectorId(p.getProjectorId());
+        if (p.getProjectorId() != null) {
+            r.setProjectorName(projectorNames.get(p.getProjectorId()));
+        }
+        r.setCurrentUserRole(userId != null && userId.equals(p.getProjectorId()) ? "LEADER" : "MEMBER");
+        r.setStatus(p.getStatus());
+        r.setStartTime(p.getStartTime());
+        r.setPlannedEndTime(p.getPlannedEndTime());
+        r.setActualEndTime(p.getActualEndTime());
+        r.setDescription(p.getDescription());
+        r.setBudget(p.getBudget());
+        r.setPriority(p.getPriority());
+        r.setAiAssess(p.getAiAssess());
+        r.setAiReport(p.getAiReport());
+        r.setCreateTime(p.getCreateTime());
+        r.setUpdateTime(p.getUpdateTime());
+        return r;
     }
 
     private DocumentResponse toDocumentResponse(ProjectDocument doc, String projectName) {

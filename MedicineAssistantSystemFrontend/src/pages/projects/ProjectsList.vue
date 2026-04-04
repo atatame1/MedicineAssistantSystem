@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { listProjects, type Project } from '@/api/projects'
+import { listMyProjects, type MyProjectItem } from '@/api/projects'
+import { useAuthStore } from '@/stores/auth'
 import ProjectCreateForm from './ProjectCreateForm.vue'
 import {
   projectsExtraApi,
@@ -9,12 +10,15 @@ import {
   type ProjectMember
 } from '@/api/projectsExtra'
 
+const auth = useAuthStore()
+const userId = computed(() => auth.user?.userId ?? 0)
+
 const statusFilter = ref<number | ''>('')
 const loadingList = ref(false)
 const loadingRight = ref(false)
 const error = ref<string | null>(null)
 
-const projects = ref<Project[]>([])
+const projects = ref<MyProjectItem[]>([])
 const activeId = ref<number | null>(null)
 
 const board = ref<ProjectBoard | null>(null)
@@ -29,7 +33,14 @@ async function loadList() {
   loadingList.value = true
   error.value = null
   try {
-    projects.value = await listProjects(statusFilter.value === '' ? undefined : statusFilter.value)
+    if (!userId.value) {
+      projects.value = []
+      return
+    }
+    projects.value = await listMyProjects(
+      userId.value,
+      statusFilter.value === '' ? undefined : statusFilter.value
+    )
     if (!activeId.value && projects.value.length > 0) {
       const first = projects.value.find(p => p.id != null)
       if (first && first.id != null) {
@@ -86,7 +97,13 @@ const activeProject = computed(() =>
   projects.value.find(p => p.id === activeId.value) || null
 )
 
-function handleSelect(p: Project) {
+function myRoleText(role?: string | null) {
+  if (role === 'LEADER') return '负责人'
+  if (role === 'MEMBER') return '成员'
+  return '-'
+}
+
+function handleSelect(p: MyProjectItem) {
   if (!p.id || p.id === activeId.value) return
   activeId.value = p.id
   loadExtra(p.id)
@@ -193,6 +210,7 @@ onMounted(loadList)
               <div class="pill-meta">
                 <span class="pill-tag phase">{{ phaseText(p.phase) }}</span>
                 <span class="pill-tag">{{ statusText(p.status) }}</span>
+                <span class="pill-tag">{{ myRoleText(p.currentUserRole) }}</span>
                 <span v-if="p.priority != null" class="pill-tag ghost">
                   优先级 {{ priorityText(p.priority) }}
                 </span>
@@ -357,8 +375,12 @@ onMounted(loadList)
                     <li>
                       <span class="meta-label">负责人</span>
                       <span class="meta-value">
-                        {{ activeProject.projectorId != null ? activeProject.projectorId : '-' }}
+                        {{ activeProject.projectorName?.trim() || '-' }}
                       </span>
+                    </li>
+                    <li>
+                      <span class="meta-label">我在本项目</span>
+                      <span class="meta-value">{{ myRoleText(activeProject.currentUserRole) }}</span>
                     </li>
                   </ul>
                 </div>

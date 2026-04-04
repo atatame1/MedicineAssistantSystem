@@ -5,6 +5,7 @@ import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateReque
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
+import com.atatame.medicineassistantsystem.model.dto.response.MyProjectItemResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.ProjectResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.SettingsResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.TaskResponse;
@@ -25,6 +26,7 @@ public interface IUserService extends IService<User> {
     List<TaskResponse> myTasks(Long userId);
     List<TaskResponse> myRecentTasks(Long userId, int limit);
     List<ProjectResponse> myProjects(Long userId);
+    List<MyProjectItemResponse> myProjectsForCurrentUser(Long userId, Integer status);
     List<DocumentResponse> myReports(Long userId);
     List<FavoriteResponse> myFavorites(Long userId);
     void addFavorite(Long userId, FavoriteOperationRequest request);

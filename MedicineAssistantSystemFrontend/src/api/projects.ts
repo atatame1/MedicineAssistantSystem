@@ -16,9 +16,21 @@ export type Project = {
   aiReport?: string | null
 }
 
+export type MyProjectItem = Project & {
+  projectorName?: string | null
+  currentUserRole?: string | null
+}
+
 export async function listProjects(status?: number) {
   const qs = status != null ? `?status=${encodeURIComponent(String(status))}` : ''
   return apiGet<Project[]>(`/api/projects${qs}`)
+}
+
+export async function listMyProjects(userId: number, status?: number) {
+  const p = new URLSearchParams()
+  p.set('userId', String(userId))
+  if (status != null) p.set('status', String(status))
+  return apiGet<MyProjectItem[]>(`/api/projects/mine?${p.toString()}`)
 }
 
 export async function createProject(body: Project) {
