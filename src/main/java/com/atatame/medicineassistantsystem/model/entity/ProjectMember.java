@@ -40,7 +40,7 @@ public class ProjectMember {
     /**
      * 加入时间
      */
-    @TableField(value = "join_time", fill = FieldFill.INSERT)
+    @TableField(value = "join_time")
     private LocalDateTime joinTime;
 
 }
