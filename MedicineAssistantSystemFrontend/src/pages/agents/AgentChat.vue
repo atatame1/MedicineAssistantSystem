@@ -113,6 +113,18 @@ function truncate(s: string | null | undefined, n = 60) {
   return v.slice(0, n) + '...'
 }
 
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function formatAiBoldText(s: string) {
+  return escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+}
+
 const sortedHistory = computed(() => {
   const arr = [...history.value]
   arr.sort((a, b) => {
@@ -433,7 +445,11 @@ function pickPrompt(p: string) {
             <div class="bubble">
               <div class="who">{{ m.role === 'user' ? '你' : agentTitle }}</div>
               <div class="txt">
-                {{ m.content }}<span
+                <template v-if="m.role === 'assistant'">
+                  <span v-html="formatAiBoldText(m.content)" />
+                </template>
+                <template v-else>{{ m.content }}</template>
+                <span
                   v-if="loading && idx === msgs.length - 1 && m.role === 'assistant'"
                   class="caret"
                   aria-hidden="true"
@@ -782,6 +798,10 @@ function pickPrompt(p: string) {
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.92);
   font-size: 15px;
+}
+
+.txt :deep(strong) {
+  font-weight: 800;
 }
 
 .caret {
