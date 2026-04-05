@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { getPortalOverview, type PortalOverview } from '@/api/portal'
+import { getPortalOverview, triggerPortalSummary, type PortalOverview } from '@/api/portal'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
-const userId = ref(auth.user?.userId ?? 1)
+const userId = ref(auth.user?.userId ?? 0)
 watch(
   () => auth.user?.userId,
   (id) => {
@@ -15,9 +15,19 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const overview = ref<PortalOverview | null>(null)
 
+const summarizing = ref(false)
+const summaryProgress = ref(0)
+let summaryRaf = 0
+
 const projectCount = computed(() => overview.value?.myProjects?.length ?? 0)
 const taskCount = computed(() => overview.value?.tasks?.length ?? 0)
 const riskCount = computed(() => overview.value?.riskWarnings ?? 0)
+
+const displaySummary = computed(() => {
+  const t = overview.value?.summaryText?.trim()
+  if (t) return t
+  return '暂无总结，点击「手动生成总结」可基于近期智能体对话生成摘要。'
+})
 
 const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'success' | 'danger' }> = {
   1: { text: '立项中', type: 'warning' },
@@ -27,6 +37,7 @@ const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'succ
 }
 
 async function load() {
+  if (!userId.value) return
   loading.value = true
   error.value = null
   try {
@@ -35,6 +46,50 @@ async function load() {
     error.value = String(e?.message || e)
   } finally {
     loading.value = false
+  }
+}
+
+async function runSummary() {
+  if (!userId.value || summarizing.value) return
+  summarizing.value = true
+  summaryProgress.value = 0
+  error.value = null
+  const start = Date.now()
+  const duration = 12000
+  let finished = false
+  const tick = () => {
+    if (finished) return
+    const elapsed = Date.now() - start
+    if (elapsed < duration) {
+      summaryProgress.value = Math.min(99, (elapsed / duration) * 99)
+      summaryRaf = requestAnimationFrame(tick)
+    } else {
+      summaryProgress.value = 99
+    }
+  }
+  summaryRaf = requestAnimationFrame(tick)
+  try {
+    const text = await triggerPortalSummary(userId.value)
+    if (overview.value) {
+      overview.value = { ...overview.value, summaryText: text ?? null }
+    } else {
+      overview.value = {
+        tasks: [],
+        myProjects: [],
+        riskWarnings: 0,
+        summaryText: text ?? null
+      }
+    }
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  } finally {
+    finished = true
+    cancelAnimationFrame(summaryRaf)
+    summaryProgress.value = 100
+    summarizing.value = false
+    setTimeout(() => {
+      summaryProgress.value = 0
+    }, 450)
   }
 }
 
@@ -49,6 +104,12 @@ function phaseText(phase?: string | null) {
   return m[phase] || phase
 }
 
+watch(
+  () => userId.value,
+  (id) => {
+    if (id) load()
+  }
+)
 onMounted(load)
 </script>
 
@@ -57,6 +118,31 @@ onMounted(load)
     <el-alert v-if="error" :title="error" type="error" show-icon class="mb-16" />
 
     <div class="bento">
+      <div class="section section-summary">
+        <div class="section-head">
+          <div class="section-title">近期用户任务摘要</div>
+          <el-button
+            type="primary"
+            plain
+            size="small"
+            :loading="summarizing"
+            :disabled="summarizing || !userId"
+            @click="runSummary"
+          >
+            重新生成总结
+          </el-button>
+        </div>
+        <el-progress
+          v-if="summarizing || summaryProgress > 0"
+          class="summary-progress"
+          :percentage="Math.round(summaryProgress)"
+          :stroke-width="8"
+          striped
+          striped-flow
+        />
+        <div class="summary-text">{{ displaySummary }}</div>
+      </div>
+
       <div class="kpi kpi-a">
         <div class="kpi-label">我的项目</div>
         <div class="kpi-value">{{ projectCount }}</div>
@@ -138,6 +224,29 @@ onMounted(load)
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 12px;
+}
+
+.section-summary {
+  grid-column: span 12;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 12px 14px 14px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.section-summary .section-head {
+  justify-content: space-between;
+}
+
+.summary-progress {
+  margin: 10px 0 8px;
+}
+
+.summary-text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+  white-space: pre-wrap;
 }
 
 .kpi {

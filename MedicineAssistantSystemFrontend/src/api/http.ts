@@ -17,7 +17,7 @@ const LS_TOKEN = 'mas_token'
 client.interceptors.request.use((config) => {
   try {
     const url = String(config.url || '')
-    if (url.startsWith('/api/ai/') || url.includes('Stream')) {
+    if (url.startsWith('/api/ai/') || url.includes('Stream') || url.includes('/api/portal/summarize')) {
       ;(config as any).timeout = 0
     }
     const token = localStorage.getItem(LS_TOKEN)

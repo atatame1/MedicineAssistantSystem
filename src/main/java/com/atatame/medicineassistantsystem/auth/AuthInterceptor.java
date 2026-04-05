@@ -54,6 +54,7 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path == null) return false;
         if ("OPTIONS".equalsIgnoreCase(method)) return false;
         if (path.startsWith("/api/ai/")) return true;
+        if (path.startsWith("/api/portal/")) return true;
         if ("/api/user/list".equals(path)) return true;
         if (path.startsWith("/api/user/")) {
             if (path.contains("/favorites")) return true;
