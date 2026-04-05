@@ -63,10 +63,10 @@ public class ProjectDecision {
     private Long projectorId;
 
     /**
-     * 版本号
+     * 版本号（自定义字符串，如 1.0）
      */
     @TableField("version")
-    private Integer version;
+    private String version;
 
     /**
      * 创建时间

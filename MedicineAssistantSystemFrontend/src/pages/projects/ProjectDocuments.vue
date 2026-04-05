@@ -272,7 +272,7 @@ onMounted(async () => {
             <el-option v-for="d in DOC_TYPES" :key="d.value" :label="d.label" :value="d.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="summary">
+        <el-form-item label="摘要">
           <el-input v-model="uploadMeta.summary" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>

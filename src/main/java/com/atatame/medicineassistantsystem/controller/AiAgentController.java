@@ -231,6 +231,12 @@ public class AiAgentController {
         return stream(AgentCode.REPORT_GENERATION, request, servletRequest);
     }
 
+    @PostMapping(value = "/decision-support", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "研发决策支持智能体")
+    public SseEmitter decisionSupport(@RequestBody AiTaskRequest request, HttpServletRequest servletRequest) {
+        return stream(AgentCode.DECISION_SUPPORT, request, servletRequest);
+    }
+
     @GetMapping("/history")
     @Operation(summary = "智能体对话历史")
     public Result<List<AiConversationHistoryResponse>> history(

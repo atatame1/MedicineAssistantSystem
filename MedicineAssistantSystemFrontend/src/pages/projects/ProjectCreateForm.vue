@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { createProject, type Project } from '@/api/projects'
+import { aiBoldToHtml } from '@/utils/aiBoldHtml'
 import { aiApi } from '@/api/ai'
 import { listUsers, type UserListItem } from '@/api/user'
 import { projectsExtraApi } from '@/api/projectsExtra'
@@ -265,6 +266,7 @@ defineExpose({ reset })
               striped
               striped-flow
             />
+            <div class="pcf-ai-rich" v-html="aiBoldToHtml(form.aiAssess)" />
             <el-input v-model="form.aiAssess" type="textarea" :rows="5" placeholder="必填，可点击上方生成" />
           </div>
         </el-form-item>
@@ -348,6 +350,25 @@ defineExpose({ reset })
 
 .pcf-ai-progress :deep(.el-progress-bar__inner) {
   border-radius: 8px;
+}
+
+.pcf-ai-rich {
+  margin-bottom: 10px;
+  min-height: 40px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.pcf-ai-rich :deep(strong) {
+  font-weight: 750;
+  color: rgba(255, 255, 255, 0.96);
 }
 
 :deep(.el-input__wrapper),

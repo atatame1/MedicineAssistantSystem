@@ -16,7 +16,7 @@ export type ProjectDecision = {
   aiRecommendation?: string | null
   expertConclusion?: string | null
   projectorId?: number | null
-  version?: number | null
+  version?: string | null
   createTime?: string | null
   updateTime?: string | null
 }

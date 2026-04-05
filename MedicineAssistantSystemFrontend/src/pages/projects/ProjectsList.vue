@@ -219,7 +219,6 @@ function memberDisplayName(m: ProjectMember) {
 }
 
 const toolLinks = [
-  { to: '/projects/board', label: '看板' },
   { to: '/projects/decisions', label: '决策' },
   { to: '/projects/documents', label: '文档' },
   { to: '/projects/members', label: '成员' },

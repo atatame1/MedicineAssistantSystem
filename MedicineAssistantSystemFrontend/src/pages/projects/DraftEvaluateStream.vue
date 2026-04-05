@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { projectsExtraApi, type DraftEvaluateReq } from '@/api/projectsExtra'
+import { aiBoldToHtml } from '@/utils/aiBoldHtml'
 
 const form = ref<DraftEvaluateReq>({
   projectName: '',
@@ -81,7 +82,7 @@ function stop() {
 
     <div class="pt-panel">
       <div class="ot">流式输出</div>
-      <el-input :model-value="chunks.join('')" type="textarea" :rows="14" readonly />
+      <div class="ai-rich-body ai-stream-out" v-html="aiBoldToHtml(chunks.join(''))" />
     </div>
   </div>
 </template>

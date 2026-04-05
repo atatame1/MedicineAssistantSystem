@@ -33,6 +33,10 @@ export async function listMyProjects(userId: number, status?: number) {
   return apiGet<MyProjectItem[]>(`/api/projects/mine?${p.toString()}`)
 }
 
+export async function getProjectDetail(projectId: number) {
+  return apiGet<Project>(`/api/projects/${projectId}`)
+}
+
 export async function createProject(body: Project) {
   return apiPostJson<Project, Project>('/api/projects/create', body)
 }

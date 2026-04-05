@@ -158,7 +158,12 @@ export const aiApi = {
     input: string,
     conversationId?: number | null,
     onMeta?: (meta: { conversationId: number }) => void
-  ) => postAiRun('/api/ai/report-generation', { input, conversationId }, onMeta)
+  ) => postAiRun('/api/ai/report-generation', { input, conversationId }, onMeta),
+  decisionSupport: (
+    input: string,
+    conversationId?: number | null,
+    onMeta?: (meta: { conversationId: number }) => void
+  ) => postAiRun('/api/ai/decision-support', { input, conversationId }, onMeta)
 }
 
 export async function getAiConversationHistory(agentType: string, limit = 100) {

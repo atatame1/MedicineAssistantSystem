@@ -262,3 +262,26 @@
 .pt-tool-drawer .mb {
   margin-bottom: 10px;
 }
+
+.ai-rich-body {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ai-rich-body strong {
+  font-weight: 750;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.pt-tool .ai-stream-out {
+  min-height: 280px;
+  max-height: min(520px, 55vh);
+  overflow: auto;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.88);
+}

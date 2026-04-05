@@ -508,7 +508,7 @@ CREATE TABLE `project_decision` (
   `ai_recommendation` TEXT COMMENT 'AI 分析建议',
   `expert_conclusion` TEXT COMMENT '专家结论',
   `projector_id` BIGINT COMMENT '决策人用户 ID',
-  `version` INT DEFAULT 1 COMMENT '版本号',
+  `version` VARCHAR(50) NOT NULL DEFAULT '1.0' COMMENT '版本号',
   `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`id`),
