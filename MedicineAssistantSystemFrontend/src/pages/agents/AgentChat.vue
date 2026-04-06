@@ -121,8 +121,107 @@ function escapeHtml(s: string) {
     .replace(/"/g, '&quot;')
 }
 
-function formatAiBoldText(s: string) {
-  return escapeHtml(s).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+function formatInlineMd(s: string) {
+  return escapeHtml(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+}
+
+function parseTableRow(line: string) {
+  let v = line.trim()
+  if (v.startsWith('|')) v = v.slice(1)
+  if (v.endsWith('|')) v = v.slice(0, -1)
+  return v.split('|').map((x) => x.trim())
+}
+
+function isTableSeparator(line: string) {
+  const cells = parseTableRow(line)
+  if (cells.length < 2) return false
+  return cells.every((c) => /^:?-{3,}:?$/.test(c))
+}
+
+function formatAiMarkdown(s: string) {
+  const lines = String(s || '').replace(/\r\n/g, '\n').split('\n')
+  let i = 0
+  const out: string[] = []
+
+  while (i < lines.length) {
+    const line = lines[i] ?? ''
+    const t = line.trim()
+
+    if (!t) {
+      i++
+      continue
+    }
+
+    const h = t.match(/^(#{1,6})\s+(.+)$/)
+    if (h) {
+      const marks = h[1] ?? ''
+      const title = h[2] ?? ''
+      const lv = marks.length || 1
+      out.push(`<h${lv}>${formatInlineMd(title)}</h${lv}>`)
+      i++
+      continue
+    }
+
+    if (t.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1] ?? '')) {
+      const head = parseTableRow(lines[i] ?? '')
+      const body: string[][] = []
+      i += 2
+      while (i < lines.length && (lines[i] ?? '').includes('|') && (lines[i] ?? '').trim()) {
+        body.push(parseTableRow(lines[i] ?? ''))
+        i++
+      }
+      out.push('<div class="md-table-wrap"><table class="md-table"><thead><tr>')
+      out.push(head.map((c) => `<th>${formatInlineMd(c)}</th>`).join(''))
+      out.push('</tr></thead><tbody>')
+      for (const r of body) {
+        out.push('<tr>')
+        out.push(r.map((c) => `<td>${formatInlineMd(c)}</td>`).join(''))
+        out.push('</tr>')
+      }
+      out.push('</tbody></table></div>')
+      continue
+    }
+
+    if (/^[-*]\s+/.test(t)) {
+      const items: string[] = []
+      while (i < lines.length && /^[-*]\s+/.test((lines[i] ?? '').trim())) {
+        items.push((lines[i] ?? '').trim().replace(/^[-*]\s+/, ''))
+        i++
+      }
+      out.push('<ul>')
+      out.push(items.map((x) => `<li>${formatInlineMd(x)}</li>`).join(''))
+      out.push('</ul>')
+      continue
+    }
+
+    if (/^\d+\.\s+/.test(t)) {
+      const items: string[] = []
+      while (i < lines.length && /^\d+\.\s+/.test((lines[i] ?? '').trim())) {
+        items.push((lines[i] ?? '').trim().replace(/^\d+\.\s+/, ''))
+        i++
+      }
+      out.push('<ol>')
+      out.push(items.map((x) => `<li>${formatInlineMd(x)}</li>`).join(''))
+      out.push('</ol>')
+      continue
+    }
+
+    const ps: string[] = []
+    while (i < lines.length) {
+      const p = (lines[i] ?? '').trim()
+      if (!p) break
+      if (/^(#{1,6})\s+/.test(p)) break
+      if ((p.includes('|') && i + 1 < lines.length && isTableSeparator(lines[i + 1] ?? '')) || /^[-*]\s+/.test(p) || /^\d+\.\s+/.test(p)) break
+      ps.push(p)
+      i++
+    }
+    out.push(`<p>${formatInlineMd(ps.join('<br/>'))}</p>`)
+  }
+
+  return out.join('')
 }
 
 const sortedHistory = computed(() => {
@@ -277,38 +376,17 @@ async function send() {
     msgs.value.push({ role: 'assistant', content: '', ts: Date.now() })
     const assistantIndex = msgs.value.length - 1
 
-    const pending: string[] = []
-    let draining = false
-
-    async function drainChars() {
-      if (draining) return
-      draining = true
-      try {
-        while (pending.length > 0) {
-          const n = Math.min(20, pending.length)
-          let piece = ''
-          for (let i = 0; i < n; i++) piece += pending.shift()!
-          const msg = msgs.value[assistantIndex]
-          if (!msg) break
-          msg.content += piece
-          await nextTick()
-          await new Promise<void>((r) => requestAnimationFrame(() => r()))
-          listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
-        }
-      } finally {
-        draining = false
-        if (pending.length > 0) void drainChars()
-      }
-    }
-
     await postAiStreamText(
       path,
       memoryEnabled.value
         ? { input: text, conversationId: conversationId.value }
         : { input: text },
       (chunk) => {
-        pending.push(...[...chunk])
-        void drainChars()
+        const msg = msgs.value[assistantIndex]
+        if (msg) msg.content += chunk
+        void nextTick(() => {
+          listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
+        })
       },
       memoryEnabled.value
         ? (meta) => {
@@ -316,10 +394,6 @@ async function send() {
           }
         : undefined
     )
-
-    while (pending.length > 0 || draining) {
-      await new Promise<void>((r) => requestAnimationFrame(() => r()))
-    }
 
     if (memoryEnabled.value) {
       await refreshHistory()
@@ -446,7 +520,7 @@ function pickPrompt(p: string) {
               <div class="who">{{ m.role === 'user' ? '你' : agentTitle }}</div>
               <div class="txt">
                 <template v-if="m.role === 'assistant'">
-                  <span v-html="formatAiBoldText(m.content)" />
+                  <div class="md" v-html="formatAiMarkdown(m.content)" />
                 </template>
                 <template v-else>{{ m.content }}</template>
                 <span
@@ -801,6 +875,70 @@ function pickPrompt(p: string) {
 }
 
 .txt :deep(strong) {
+  font-weight: 800;
+}
+
+.txt :deep(.md) {
+  display: block;
+}
+
+.txt :deep(.md h1),
+.txt :deep(.md h2),
+.txt :deep(.md h3),
+.txt :deep(.md h4),
+.txt :deep(.md h5),
+.txt :deep(.md h6) {
+  margin: 10px 0 6px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.txt :deep(.md p) {
+  margin: 8px 0;
+}
+
+.txt :deep(.md ul),
+.txt :deep(.md ol) {
+  margin: 8px 0 8px 20px;
+  padding: 0;
+}
+
+.txt :deep(.md li) {
+  margin: 4px 0;
+}
+
+.txt :deep(.md code) {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+}
+
+.txt :deep(.md-table-wrap) {
+  width: 100%;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.txt :deep(.md-table) {
+  width: 100%;
+  min-width: 520px;
+  border-collapse: collapse;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.txt :deep(.md-table th),
+.txt :deep(.md-table td) {
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  text-align: left;
+  vertical-align: top;
+}
+
+.txt :deep(.md-table th) {
+  background: rgba(255, 255, 255, 0.08);
   font-weight: 800;
 }
 
