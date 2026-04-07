@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-import reactor.core.publisher.Flux;
 import reactor.core.scheduler.Schedulers;
 
 import java.io.IOException;
@@ -125,31 +124,6 @@ public class AiAgentController {
         return c;
     }
 
-    private static List<String> splitByCodePoints(String chunk, int maxChars) {
-        if (chunk == null || chunk.isEmpty()) {
-            return List.of();
-        }
-        if (maxChars < 1) {
-            return List.of(chunk);
-        }
-        List<String> parts = new ArrayList<>();
-        StringBuilder cur = new StringBuilder();
-        int count = 0;
-        for (int cp : chunk.codePoints().toArray()) {
-            cur.appendCodePoint(cp);
-            count++;
-            if (count >= maxChars) {
-                parts.add(cur.toString());
-                cur.setLength(0);
-                count = 0;
-            }
-        }
-        if (cur.length() > 0) {
-            parts.add(cur.toString());
-        }
-        return parts;
-    }
-
     private SseEmitter stream(AgentCode code, AiTaskRequest request, HttpServletRequest servletRequest) {
         ConvCtx ctx = ensureConversation(servletRequest, code, request);
         Long conversationId = ctx.id;
@@ -165,17 +139,10 @@ public class AiAgentController {
         }
         aiAgentService.stream(code, input, conversationId)
                 .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(chunk -> {
-                    List<String> pieces = splitByCodePoints(chunk, 16);
-                    if (pieces.isEmpty()) {
-                        return Flux.empty();
-                    }
-                    return Flux.fromIterable(pieces);
-                })
                 .subscribe(
-                        piece -> {
+                        chunk -> {
                             try {
-                                emitter.send(SseEmitter.event().data(piece));
+                                emitter.send(SseEmitter.event().data(chunk));
                             } catch (IOException e) {
                                 emitter.completeWithError(e);
                             }
