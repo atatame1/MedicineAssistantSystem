@@ -6,6 +6,7 @@ import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.request.AiConversationTopRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.AiTaskRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.ExpertChatClientRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.AiAgentMessageResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.AiConversationHistoryResponse;
 import com.atatame.medicineassistantsystem.model.entity.AiAgentConversation;
@@ -13,6 +14,7 @@ import com.atatame.medicineassistantsystem.model.entity.AiAgentMessage;
 import com.atatame.medicineassistantsystem.service.IAiAgentConversationService;
 import com.atatame.medicineassistantsystem.service.IAiAgentMessageService;
 import com.atatame.medicineassistantsystem.service.IAiAgentService;
+import com.atatame.medicineassistantsystem.service.IAiExpertChatClientService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -40,6 +42,7 @@ public class AiAgentController {
     private final IAiAgentService aiAgentService;
     private final IAiAgentConversationService aiAgentConversationService;
     private final IAiAgentMessageService aiAgentMessageService;
+    private final IAiExpertChatClientService aiExpertChatClientService;
 
     private Long resolveUserId(HttpServletRequest request) {
         Object v = request.getAttribute(AuthInterceptor.ATTR_USER_ID);
@@ -181,6 +184,12 @@ public class AiAgentController {
                         emitter::complete
                 );
         return emitter;
+    }
+
+    @PostMapping(value = "/expert/chatclient", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "专家对话（chatclient，内存记忆，流式）")
+    public SseEmitter expertChatClient(@RequestBody ExpertChatClientRequest request) {
+        return aiExpertChatClientService.stream(request);
     }
 
     @PostMapping(value = "/project-evaluation", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
