@@ -120,6 +120,12 @@ const router = createRouter({
       meta: { title: '法规库' }
     },
     {
+      path: '/knowledge/expert/:expert',
+      name: 'knowledge-expert',
+      component: () => import('@/pages/knowledge/ExpertChat.vue'),
+      meta: { title: '专家对话' }
+    },
+    {
       path: '/knowledge',
       name: 'knowledge',
       component: () => import('@/pages/knowledge/KnowledgeHub.vue'),

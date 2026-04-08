@@ -1,6 +1,8 @@
 import { apiDelete, apiGet, apiPutJson } from './http'
 
 export type AiTaskRequest = { input: string; conversationId?: number | null }
+export type ExpertChatClientRequest = { expert: string; input: string; conversationId?: number | null }
+export type AiStreamPostBody = AiTaskRequest | ExpertChatClientRequest
 export type AiTaskResponse = { agentCode?: string | null; output: string }
 
 export type AiConversationHistoryItem = {
@@ -73,7 +75,7 @@ function parseSseEvents(
 
 export async function postAiStreamText(
   path: string,
-  body: AiTaskRequest,
+  body: AiStreamPostBody,
   onData: (s: string) => void,
   onMeta?: (meta: { conversationId: number }) => void
 ) {
@@ -181,4 +183,12 @@ export async function setAiConversationTop(conversationId: number, isTop: boolea
 
 export async function deleteAiConversation(conversationId: number) {
   return apiDelete<void>(`/api/ai/conversations/${conversationId}`)
+}
+
+export async function postExpertChatStream(
+  body: ExpertChatClientRequest,
+  onData: (s: string) => void,
+  onMeta?: (meta: { conversationId: number }) => void
+) {
+  return postAiStreamText('/api/ai/expert/chatclient', body, onData, onMeta)
 }
