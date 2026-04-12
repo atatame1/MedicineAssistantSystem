@@ -77,7 +77,8 @@ onMounted(() => {
 
 <style scoped>
 .page-wrap {
-  max-width: 720px;
+  max-width: 980px;
+  width: 100%;
   margin: 0 auto;
   animation: in 0.5s ease both;
 }
@@ -126,13 +127,35 @@ onMounted(() => {
 .panel {
   border-radius: 22px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.06);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(10, 38, 32, 0.36));
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(115, 209, 180, 0.2);
 }
 
 .mb-12 {
   margin-bottom: 12px;
+}
+
+.panel :deep(.el-form-item__label) {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.panel :deep(.el-input__wrapper),
+.panel :deep(.el-textarea__inner) {
+  background: rgba(0, 0, 0, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: none !important;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.panel :deep(.el-textarea__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.panel :deep(.el-tag.el-tag--success.el-tag--dark) {
+  background: rgba(14, 42, 36, 0.76);
+  border-color: rgba(115, 209, 180, 0.32);
+  color: rgba(255, 255, 255, 0.9);
 }
 </style>
 

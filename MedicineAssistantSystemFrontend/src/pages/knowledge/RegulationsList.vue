@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { getRegulationDetail, listRegulations, type Regulation } from '@/api/regulations'
+import { addFavorite, listUserFavorites, removeFavorite } from '@/api/user'
+import { useAuthStore } from '@/stores/auth'
 
 const keyword = ref('')
 const items = ref<Regulation[]>([])
@@ -11,6 +13,8 @@ const selectedId = ref<number | null>(null)
 const detailLoading = ref(false)
 const detailError = ref<string | null>(null)
 const detail = ref<Regulation | null>(null)
+const auth = useAuthStore()
+const favoriteIds = ref<Set<number>>(new Set())
 
 const hasDetail = computed(() => !!detail.value)
 
@@ -19,10 +23,45 @@ async function load() {
   error.value = null
   try {
     items.value = await listRegulations(keyword.value.trim() || undefined)
+    if (auth.user?.userId) {
+      const favs = await listUserFavorites(auth.user.userId)
+      favoriteIds.value = new Set(
+        favs.filter((f) => f.favoriteType === 'Regulation' && f.favoriteId != null).map((f) => Number(f.favoriteId))
+      )
+    } else {
+      favoriteIds.value = new Set()
+    }
   } catch (e: any) {
     error.value = String(e?.message || e)
   } finally {
     loading.value = false
+  }
+}
+
+function isFavorited(id?: number | null) {
+  return !!id && favoriteIds.value.has(Number(id))
+}
+
+async function toggleFavorite(row: Regulation) {
+  if (!row.id) return
+  if (!auth.user?.userId) {
+    try {
+      window.dispatchEvent(new CustomEvent('auth:required'))
+    } catch {}
+    return
+  }
+  try {
+    const id = Number(row.id)
+    if (favoriteIds.value.has(id)) {
+      await removeFavorite(auth.user.userId, { favoriteId: id, favoriteType: 'Regulation' })
+      favoriteIds.value.delete(id)
+    } else {
+      await addFavorite(auth.user.userId, { favoriteId: id, favoriteType: 'Regulation' })
+      favoriteIds.value.add(id)
+    }
+    favoriteIds.value = new Set(favoriteIds.value)
+  } catch (e: any) {
+    error.value = String(e?.message || e)
   }
 }
 
@@ -89,6 +128,14 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
                   <el-button link type="primary" :disabled="!row.id" @click.stop="openDetail(row)">
                     查看详细
                   </el-button>
+                  <el-button
+                    link
+                    :type="isFavorited(row.id) ? 'warning' : 'info'"
+                    :disabled="!row.id"
+                    @click.stop="toggleFavorite(row)"
+                  >
+                    {{ isFavorited(row.id) ? '★ 收藏中' : '☆ 收藏' }}
+                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -105,17 +152,44 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
           <div v-if="detailLoading" class="skeleton">加载中...</div>
 
           <div v-else-if="hasDetail" class="desc-wrap">
-            <el-descriptions :column="1" border class="kb-desc">
-              <el-descriptions-item label="名称">{{ detail?.name ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="文号">{{ detail?.regulationNumber ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="发布机构">{{ detail?.issuingAuthority ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="发布机构类型">{{ detail?.issuingAuthorityType ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="法规类型">{{ detail?.regulationType ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="分类">{{ detail?.category ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="亚类">{{ detail?.subCategory ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="生效日期">{{ detail?.effectiveDate ?? '-' }}</el-descriptions-item>
-              <el-descriptions-item label="摘要">{{ detail?.summary ?? '-' }}</el-descriptions-item>
-            </el-descriptions>
+            <div class="detail-grid">
+              <div class="detail-row">
+                <div class="detail-k">名称</div>
+                <div class="detail-v">{{ detail?.name ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">文号</div>
+                <div class="detail-v">{{ detail?.regulationNumber ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">发布机构</div>
+                <div class="detail-v">{{ detail?.issuingAuthority ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">发布机构类型</div>
+                <div class="detail-v">{{ detail?.issuingAuthorityType ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">法规类型</div>
+                <div class="detail-v">{{ detail?.regulationType ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">分类</div>
+                <div class="detail-v">{{ detail?.category ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">亚类</div>
+                <div class="detail-v">{{ detail?.subCategory ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-k">生效日期</div>
+                <div class="detail-v">{{ detail?.effectiveDate ?? '暂无' }}</div>
+              </div>
+              <div class="detail-row detail-row-summary">
+                <div class="detail-k">摘要</div>
+                <div class="detail-v">{{ detail?.summary ?? '暂无' }}</div>
+              </div>
+            </div>
           </div>
 
           <div v-else class="empty">请选择左侧某条法规查看详情</div>
@@ -215,17 +289,42 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
   margin-top: 4px;
 }
 
-:deep(.kb-desc.el-descriptions) {
-  --el-descriptions-item-bordered-label-background: rgba(14, 42, 36, 0.75);
-  --el-text-color-primary: rgba(233, 244, 239, 0.92);
+.detail-grid {
+  border: 1px solid rgba(115, 209, 180, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-:deep(.kb-desc .el-descriptions__label) {
-  color: rgba(158, 228, 207, 0.9) !important;
+.detail-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  border-bottom: 1px solid rgba(115, 209, 180, 0.14);
 }
 
-:deep(.kb-desc .el-descriptions__content) {
-  color: rgba(233, 244, 239, 0.88) !important;
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-k {
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  color: rgba(158, 228, 207, 0.92);
+  background: rgba(14, 42, 36, 0.72);
+}
+
+.detail-v {
+  padding: 10px 12px;
+  font-size: 13px;
+  color: rgba(233, 244, 239, 0.9);
+  background: rgba(10, 34, 31, 0.42);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.detail-row-summary .detail-v {
+  min-height: 72px;
 }
 
 .skeleton {
@@ -241,6 +340,10 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
 
 @media (max-width: 980px) {
   .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-row {
     grid-template-columns: 1fr;
   }
 }

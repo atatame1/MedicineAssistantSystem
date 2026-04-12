@@ -13,6 +13,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'indications', label: '适应症', minWidth: 260 }
     ]"
     :list="knowledgeApi.formulas.list"
+    favoriteType="FORMULA"
     :create="knowledgeApi.formulas.create"
     :update="knowledgeApi.formulas.update"
     :del="knowledgeApi.formulas.delete"

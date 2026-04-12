@@ -14,6 +14,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'bioactivity', label: '生物活性', minWidth: 260 }
     ]"
     :list="knowledgeApi.components.list"
+    favoriteType="COMPONENT"
     :create="knowledgeApi.components.create"
     :update="knowledgeApi.components.update"
     :del="knowledgeApi.components.delete"

@@ -242,7 +242,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void removeFavorite(Long userId, FavoriteOperationRequest request) {
         userFavoriteService.remove(new LambdaQueryWrapper<UserFavorite>()
                 .eq(UserFavorite::getFavoriteType,request.getFavoriteType())
-                .eq(UserFavorite::getId, request.getFavoriteId())
+                .eq(UserFavorite::getFavoriteId, request.getFavoriteId())
                 .eq(UserFavorite::getUserId, userId));
     }
 

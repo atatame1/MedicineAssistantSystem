@@ -60,7 +60,8 @@ onMounted(load)
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 1100px;
+  max-width: 1320px;
+  width: 100%;
   margin: 0 auto;
   animation: in 0.5s ease both;
 }
@@ -113,9 +114,30 @@ onMounted(load)
 .panel {
   border-radius: 22px;
   padding: 4px 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(10, 38, 32, 0.36));
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(115, 209, 180, 0.2);
+}
+
+.panel :deep(.el-table) {
+  --el-table-bg-color: rgba(255, 255, 255, 0.03);
+  --el-table-tr-bg-color: rgba(255, 255, 255, 0.03);
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.28);
+  --el-table-row-hover-bg-color: rgba(255, 255, 255, 0.07);
+  --el-table-text-color: rgba(255, 255, 255, 0.9);
+  --el-table-header-text-color: rgba(255, 255, 255, 0.76);
+  --el-table-border-color: rgba(255, 255, 255, 0.1);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.03);
+  background: transparent;
+}
+
+.panel :deep(.el-table__inner-wrapper::before) {
+  display: none;
+}
+
+.panel :deep(.el-alert) {
+  background: rgba(180, 40, 40, 0.2);
+  border: 1px solid rgba(255, 120, 120, 0.38);
 }
 </style>
 

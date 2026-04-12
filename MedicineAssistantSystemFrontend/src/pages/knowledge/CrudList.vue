@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { addFavorite, listUserFavorites, removeFavorite } from '@/api/user'
 
 type Row = Record<string, any>
 
@@ -12,12 +14,15 @@ const props = defineProps<{
   update: (body: Row) => Promise<void>
   del: (id: number) => Promise<void>
   formSchema: { prop: string; label: string; type?: 'text' | 'textarea' }[]
+  favoriteType?: string
 }>()
 
 const keyword = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const rows = ref<Row[]>([])
+const auth = useAuthStore()
+const favoriteIds = ref<Set<number>>(new Set())
 
 const dialogOpen = ref(false)
 const saving = ref(false)
@@ -43,6 +48,16 @@ async function load() {
   error.value = null
   try {
     rows.value = await props.list(keyword.value.trim() || undefined)
+    if (auth.user?.userId && props.favoriteType) {
+      const favs = await listUserFavorites(auth.user.userId)
+      favoriteIds.value = new Set(
+        favs
+          .filter((f) => f.favoriteType === props.favoriteType && f.favoriteId != null)
+          .map((f) => Number(f.favoriteId))
+      )
+    } else {
+      favoriteIds.value = new Set()
+    }
   } catch (e: any) {
     error.value = String(e?.message || e)
   } finally {
@@ -94,6 +109,36 @@ async function remove(row: Row) {
   }
 }
 
+function isFavorited(row: Row) {
+  return favoriteIds.value.has(Number(row.id))
+}
+
+async function toggleFavorite(row: Row) {
+  if (!auth.user?.userId || !props.favoriteType || !row?.id) {
+    try {
+      window.dispatchEvent(new CustomEvent('auth:required'))
+    } catch {}
+    return
+  }
+  saving.value = true
+  error.value = null
+  try {
+    const id = Number(row.id)
+    if (favoriteIds.value.has(id)) {
+      await removeFavorite(auth.user.userId, { favoriteId: id, favoriteType: props.favoriteType })
+      favoriteIds.value.delete(id)
+    } else {
+      await addFavorite(auth.user.userId, { favoriteId: id, favoriteType: props.favoriteType })
+      favoriteIds.value.add(id)
+    }
+    favoriteIds.value = new Set(favoriteIds.value)
+  } catch (e: any) {
+    error.value = String(e?.message || e)
+  } finally {
+    saving.value = false
+  }
+}
+
 load()
 </script>
 
@@ -119,7 +164,20 @@ load()
           <article v-for="row in rows" :key="row.id" class="kb-tile">
             <div class="kb-tile-accent" aria-hidden="true" />
             <div class="kb-tile-hd">
-              <span class="kb-tile-id">#{{ row.id }}</span>
+              <div class="kb-tile-topline">
+                <span class="kb-tile-id">#{{ row.id }}</span>
+                <button
+                  v-if="favoriteType"
+                  type="button"
+                  class="kb-fav"
+                  :class="{ active: isFavorited(row) }"
+                  :disabled="saving"
+                  :title="isFavorited(row) ? '取消收藏' : '加入收藏'"
+                  @click="toggleFavorite(row)"
+                >
+                  {{ isFavorited(row) ? '★' : '☆' }}
+                </button>
+              </div>
               <h3 class="kb-tile-name">{{ row[titleProp] ?? '—' }}</h3>
             </div>
             <div class="kb-tile-body">
@@ -258,6 +316,13 @@ load()
   border-bottom: 1px solid rgba(115, 209, 180, 0.12);
 }
 
+.kb-tile-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
 .kb-tile-id {
   display: inline-block;
   font-size: 11px;
@@ -265,6 +330,20 @@ load()
   color: rgba(200, 169, 103, 0.95);
   letter-spacing: 0.06em;
   margin-bottom: 6px;
+}
+
+.kb-fav {
+  border: 0;
+  background: transparent;
+  color: rgba(200, 169, 103, 0.86);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+
+.kb-fav.active {
+  color: #f4d27e;
 }
 
 .kb-tile-name {

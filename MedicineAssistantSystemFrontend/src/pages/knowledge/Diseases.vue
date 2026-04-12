@@ -14,6 +14,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'tcmSyndrome', label: '中医证候', minWidth: 240 }
     ]"
     :list="knowledgeApi.diseases.list"
+    favoriteType="Disease"
     :create="knowledgeApi.diseases.create"
     :update="knowledgeApi.diseases.update"
     :del="knowledgeApi.diseases.delete"

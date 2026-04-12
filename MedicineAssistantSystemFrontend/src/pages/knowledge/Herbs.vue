@@ -14,6 +14,7 @@ import { knowledgeApi } from '@/api/knowledge'
       { prop: 'effects', label: '功效', minWidth: 240 }
     ]"
     :list="knowledgeApi.herbs.list"
+    favoriteType="HERB"
     :create="knowledgeApi.herbs.create"
     :update="knowledgeApi.herbs.update"
     :del="knowledgeApi.herbs.delete"

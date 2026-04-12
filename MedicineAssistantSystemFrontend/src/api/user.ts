@@ -68,6 +68,14 @@ export async function removeFavorite(
   )
 }
 
+export async function toggleFavorite(
+  userId: number,
+  body: FavoriteOperationRequest,
+  active: boolean
+) {
+  return active ? removeFavorite(userId, body) : addFavorite(userId, body)
+}
+
 export type TaskResponse = {
   id: number
   title: string

@@ -54,6 +54,7 @@ async function openSimilar(row: any) {
         { prop: 'applicant', label: '申请人', minWidth: 200 }
       ]"
       :list="knowledgeApi.patents.list"
+      favoriteType="PATENT"
       :create="knowledgeApi.patents.create"
       :update="knowledgeApi.patents.update"
       :del="knowledgeApi.patents.delete"
