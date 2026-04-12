@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postExpertChatStream } from '@/api/ai'
+import { postVoiceGenAudio } from '@/api/voice'
 import { getExpertByKey } from './experts'
 import { resolveExpertMedia } from './expertMedia'
 
@@ -14,13 +15,55 @@ const expert = computed(() => getExpertByKey(expertKey.value))
 const media = computed(() => resolveExpertMedia([expert.value?.key || expertKey.value, expert.value?.slug || '', expert.value?.name || '']))
 
 const talking = ref(false)
-const gotReplyChunk = ref(false)
 const input = ref('')
 const loading = ref(false)
 const error = ref<string | null>(null)
 const conversationId = ref<number | null>(null)
 const msgs = ref<Msg[]>([])
 const listEl = ref<HTMLElement | null>(null)
+
+const voiceLoadingIndex = ref<number | null>(null)
+let voiceObjectUrl: string | null = null
+const playingAudio = ref<HTMLAudioElement | null>(null)
+
+function stopVoice() {
+  try {
+    playingAudio.value?.pause()
+  } catch {}
+  playingAudio.value = null
+  if (voiceObjectUrl) {
+    URL.revokeObjectURL(voiceObjectUrl)
+    voiceObjectUrl = null
+  }
+  voiceLoadingIndex.value = null
+  talking.value = false
+}
+
+async function playAssistantVoice(i: number, text: string) {
+  const t = text.trim()
+  if (!t || !expert.value) return
+  stopVoice()
+  voiceLoadingIndex.value = i
+  error.value = null
+  try {
+    const blob = await postVoiceGenAudio(t, expert.value.voiceKey ?? null)
+    voiceObjectUrl = URL.createObjectURL(blob)
+    const a = new Audio(voiceObjectUrl)
+    playingAudio.value = a
+    a.onended = () => stopVoice()
+    a.onerror = () => {
+      error.value = '语音播放失败'
+      stopVoice()
+    }
+    await a.play()
+    talking.value = true
+  } catch (e: unknown) {
+    error.value = String((e as Error)?.message || e)
+    stopVoice()
+  }
+}
+
+onBeforeUnmount(() => stopVoice())
 
 watch(
   () => [expertKey.value, expert.value] as const,
@@ -54,10 +97,9 @@ async function send() {
   if (!text || !expert.value) return
   input.value = ''
   error.value = null
+  stopVoice()
   msgs.value.push({ role: 'user', content: text })
   loading.value = true
-  gotReplyChunk.value = false
-  talking.value = false
   msgs.value.push({ role: 'assistant', content: '' })
   const assistantIndex = msgs.value.length - 1
   try {
@@ -70,10 +112,6 @@ async function send() {
         conversationId: conversationId.value
       },
       (chunk) => {
-        if (!gotReplyChunk.value) {
-          gotReplyChunk.value = true
-          talking.value = true
-        }
         const msg = msgs.value[assistantIndex]
         if (msg) msg.content += chunk
         void nextTick(() => {
@@ -88,7 +126,6 @@ async function send() {
     error.value = String((e as Error)?.message || e)
   } finally {
     loading.value = false
-    talking.value = false
     await nextTick()
     listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
   }
@@ -119,7 +156,9 @@ function back() {
           <div v-else class="avatar-fallback">{{ expert?.name?.[0] }}</div>
         </div>
         <div class="side-meta">
-          <p class="state-hint">{{ talking ? '正在回复…' : '静候提问' }}</p>
+          <p class="state-hint">
+            {{ loading ? '正在回复…' : talking ? '朗读中…' : '静候提问' }}
+          </p>
           <button type="button" class="quick" @click="input = '请按中医思路帮我辨证分析，并给出建议'">一键问诊</button>
         </div>
       </aside>
@@ -128,19 +167,31 @@ function back() {
         <div class="thread-shell mas-scrollbar">
           <div ref="listEl" class="msg-list">
             <div v-for="(m, i) in msgs" :key="i" class="msg" :class="m.role">
-              <div class="bubble">
-                <template
-                  v-if="m.role === 'assistant' && !m.content && loading && i === msgs.length - 1"
+              <div v-if="m.role === 'assistant'" class="bubble-row">
+                <div class="bubble">
+                  <template v-if="!m.content && loading && i === msgs.length - 1">
+                    <span class="typing" aria-hidden="true">
+                      <span class="typing-dot" />
+                      <span class="typing-dot" />
+                      <span class="typing-dot" />
+                    </span>
+                    <span class="sr-only">正在回复</span>
+                  </template>
+                  <template v-else>{{ m.content }}</template>
+                </div>
+                <button
+                  v-if="m.content.trim()"
+                  type="button"
+                  class="voice-btn"
+                  :disabled="voiceLoadingIndex !== null"
+                  :aria-busy="voiceLoadingIndex === i"
+                  aria-label="朗读本条回复"
+                  @click="playAssistantVoice(i, m.content)"
                 >
-                  <span class="typing" aria-hidden="true">
-                    <span class="typing-dot" />
-                    <span class="typing-dot" />
-                    <span class="typing-dot" />
-                  </span>
-                  <span class="sr-only">正在回复</span>
-                </template>
-                <template v-else>{{ m.content }}</template>
+                  {{ voiceLoadingIndex === i ? '…' : '朗读' }}
+                </button>
               </div>
+              <div v-else class="bubble">{{ m.content }}</div>
             </div>
           </div>
         </div>
@@ -325,6 +376,13 @@ function back() {
 .msg.assistant {
   justify-content: flex-start;
 }
+.bubble-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
 .bubble {
   max-width: min(100%, 38rem);
   padding: 11px 14px;
@@ -335,6 +393,10 @@ function back() {
   word-break: break-word;
   color: rgba(255, 255, 255, 0.93);
 }
+.msg.assistant .bubble-row .bubble {
+  flex: 1;
+  min-width: 0;
+}
 .msg.user .bubble {
   background: rgba(115, 209, 180, 0.2);
   border: 1px solid rgba(115, 209, 180, 0.38);
@@ -344,6 +406,23 @@ function back() {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.9);
+}
+.voice-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  border-radius: 10px;
+  border: 1px solid rgba(115, 209, 180, 0.38);
+  background: rgba(14, 42, 36, 0.45);
+  color: #9ee4cf;
+  cursor: pointer;
+}
+.voice-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 .composer-shell {
   position: relative;

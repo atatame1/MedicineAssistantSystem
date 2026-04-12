@@ -23,6 +23,8 @@ public class VoiceGenUtil {
             "chenkeji", "speech:chenkeji:d7dj966cnncc73dmpij0:vobjnhnkgxgtaedvqwwr"
     );
 
+    private static final String DEFAULT_VOICE_KEY = "chenkeji";
+
     private static final String SILICONFLOW_TTS_API_URL = "https://api.siliconflow.cn/v1/audio/speech";
 
     private final RestTemplate restTemplate;
@@ -37,10 +39,13 @@ public class VoiceGenUtil {
         if (!StringUtils.hasText(input)) {
             throw new IllegalArgumentException("text 不能为空");
         }
-        String key = StringUtils.hasText(name) ? name : "chenkeji";
+        String key = StringUtils.hasText(name) ? name.trim().toLowerCase() : DEFAULT_VOICE_KEY;
         String voiceUri = VOICE_URI.get(key);
         if (voiceUri == null) {
-            throw new IllegalArgumentException("未知音色: " + key);
+            voiceUri = VOICE_URI.get(DEFAULT_VOICE_KEY);
+        }
+        if (voiceUri == null) {
+            throw new IllegalStateException("未配置默认音色");
         }
 
         HttpHeaders headers = new HttpHeaders();
