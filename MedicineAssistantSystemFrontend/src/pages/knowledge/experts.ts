@@ -3,6 +3,8 @@ export type ExpertItem = {
   slug?: string
   name: string
   tag: string
+  /** 后端 SiliconFlow 音色键，缺省为 chenkeji */
+  voiceKey?: string
 }
 
 export const EXPERTS: ExpertItem[] = [
@@ -15,7 +17,7 @@ export const EXPERTS: ExpertItem[] = [
   { key: '黄宽', slug: 'huang-kuan', name: '黄宽', tag: '中西医汇通' },
   { key: '裘法祖', slug: 'qiu-fa-zu', name: '裘法祖', tag: '外科学 · 器官移植' },
   { key: '张孝骞', slug: 'zhang-xiao-qian', name: '张孝骞', tag: '消化病学 · 临床思维' },
-  { key: '陈可冀', slug: 'chen-ke-ji', name: '陈可冀', tag: '中西医结合 · 心血管病' },
+  { key: '陈可冀', slug: 'chen-ke-ji', name: '陈可冀', tag: '中西医结合 · 心血管病', voiceKey: 'chenkeji' },
   { key: '吴咸中', slug: 'wu-xian-zhong', name: '吴咸中', tag: '中西医结合 · 急腹症' },
   { key: '孙燕', slug: 'sun-yan', name: '孙燕', tag: '肿瘤内科' },
   { key: '詹姆斯·艾利森', slug: 'james-allison', name: '詹姆斯·艾利森', tag: '免疫治疗 · Nobel' },
