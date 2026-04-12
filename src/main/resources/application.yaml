@@ -23,3 +23,6 @@ mybatis-plus:
 app:
   storage:
     root: ${user.dir}/medicine-uploads
+siliconflow:
+  voice-key: your-api-key
+  voice-model: FunAudioLLM/CosyVoice2-0.5B
