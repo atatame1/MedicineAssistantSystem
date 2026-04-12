@@ -76,21 +76,12 @@ public class AiExpertChatClientServiceImpl implements IAiExpertChatClientService
         String v = normalizeExpertKey(expert);
         if (v == null) return null;
         return switch (v) {
-            case "何任", "he-ren", "HeRen" -> "classpath:prompts/expert/he-ren.md";
-            case "李佃贵", "李佃貴", "li-dian-gui", "LiDianGui" -> "classpath:prompts/expert/li-dian-gui.md";
-            case "王玉川", "wang-yu-chuan", "WangYuChuan" -> "classpath:prompts/expert/wang-yu-chuan.md";
-            case "唐由之", "tang-you-zhi", "TangYouZhi" -> "classpath:prompts/expert/tang-you-zhi.md";
-            case "程莘农", "cheng-shen-nong", "ChengShenNong" -> "classpath:prompts/expert/cheng-shen-nong.md";
-            case "朱良春", "zhu-liang-chun", "ZhuLiangChun" -> "classpath:prompts/expert/zhu-liang-chun.md";
-            case "黄宽", "huang-kuan", "HuangKuan" -> "classpath:prompts/expert/huang-kuan.md";
-            case "裘法祖", "qiu-fa-zu", "QiuFaZu" -> "classpath:prompts/expert/qiu-fa-zu.md";
-            case "张孝骞", "zhang-xiao-qian", "ZhangXiaoQian" -> "classpath:prompts/expert/zhang-xiao-qian.md";
-            case "陈可冀", "chen-ke-ji", "ChenKeJi" -> "classpath:prompts/expert/chen-ke-ji.md";
-            case "吴咸中", "wu-xian-zhong", "WuXianZhong" -> "classpath:prompts/expert/wu-xian-zhong.md";
-            case "孙燕", "sun-yan", "SunYan" -> "classpath:prompts/expert/sun-yan.md";
-            case "詹姆斯·艾利森", "James Allison", "JamesAllison", "jim-allison", "james-allison" -> "classpath:prompts/expert/james-allison.md";
-            case "阿德姆·帕塔普蒂安", "Ardem Patapoutian", "ArdemPatapoutian", "ardem-patapoutian" -> "classpath:prompts/expert/ardem-patapoutian.md";
-            case "巴里·马歇尔", "Barry Marshall", "BarryMarshall", "barry-marshall" -> "classpath:prompts/expert/barry-marshall.md";
+            case "李佃贵", "李佃貴", "li-dian-gui", "LiDianGui" -> "classpath:prompts/expert/li-dian-gui.txt";
+            case "王玉川", "wang-yu-chuan", "WangYuChuan" -> "classpath:prompts/expert/wang-yu-chuan.txt";
+            case "程莘农", "cheng-shen-nong", "ChengShenNong" -> "classpath:prompts/expert/cheng-shen-nong.txt";
+            case "裘法祖", "qiu-fa-zu", "QiuFaZu" -> "classpath:prompts/expert/qiu-fa-zu.txt";
+            case "陈可冀", "chen-ke-ji", "ChenKeJi" -> "classpath:prompts/expert/chen-ke-ji.txt";
+            case "孙燕", "sun-yan", "SunYan" -> "classpath:prompts/expert/sun-yan.txt";
             default -> null;
         };
     }
