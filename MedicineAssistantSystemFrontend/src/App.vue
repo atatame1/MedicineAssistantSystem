@@ -127,7 +127,7 @@ onBeforeUnmount(() => {
       </section>
     </main>
 
-    <nav class="dock">
+    <nav class="dock" aria-label="主导航">
       <button
         v-for="item in navItems"
         :key="item.path"
@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
 .app-shell {
   position: relative;
   overflow: hidden;
-  padding: 22px 20px 96px;
+  padding: 22px 20px 14px;
   background: radial-gradient(circle at 30% 20%, #294f45 0%, #102f2a 45%, #0a221f 100%);
   box-sizing: border-box;
   min-height: 100dvh;
@@ -157,6 +157,8 @@ onBeforeUnmount(() => {
   max-height: 100dvh;
   display: flex;
   flex-direction: column;
+  --dock-h: 58px;
+  --dock-gap: 14px;
 }
 
 .motion-bg {
@@ -346,6 +348,15 @@ onBeforeUnmount(() => {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  gap: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: calc(var(--dock-h) + var(--dock-gap) + env(safe-area-inset-bottom, 0px));
+}
+
+.content-panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .route-view-fill {
@@ -358,9 +369,9 @@ onBeforeUnmount(() => {
 .dock {
   position: fixed;
   left: 50%;
-  bottom: 18px;
+  bottom: calc(var(--dock-gap) + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
-  z-index: 10;
+  z-index: 20;
   background: rgba(14, 42, 36, 0.74);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 16px;
@@ -368,6 +379,8 @@ onBeforeUnmount(() => {
   display: flex;
   gap: 6px;
   padding: 8px;
+  margin: 0;
+  width: fit-content;
 }
 
 .dock-item {
@@ -464,7 +477,9 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .app-shell {
-    padding: 14px 10px 96px;
+    padding: 14px 10px 12px;
+    --dock-h: 54px;
+    --dock-gap: 10px;
   }
 
   .content-panel {
