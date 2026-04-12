@@ -308,9 +308,9 @@ onMounted(load)
 
 <style scoped>
 .wrap {
-  max-width: 1180px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 6px 6px 24px;
+  padding: 10px 10px 28px;
   animation: in 0.45s ease both;
 }
 
@@ -327,8 +327,8 @@ onMounted(load)
 
 .grid {
   display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 16px;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
   align-items: start;
 }
 
@@ -342,8 +342,8 @@ onMounted(load)
 }
 
 .avatar {
-  width: 132px;
-  height: 132px;
+  width: 148px;
+  height: 148px;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -365,7 +365,7 @@ onMounted(load)
 
 .pn {
   margin-top: 16px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 950;
   line-height: 1.2;
   color: rgba(255, 255, 255, 0.94);
@@ -373,14 +373,14 @@ onMounted(load)
 
 .ps {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.52);
   font-weight: 700;
 }
 
 .statline {
   margin-top: 14px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
@@ -397,7 +397,7 @@ onMounted(load)
 
 .statextra {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.55);
   display: flex;
@@ -416,9 +416,9 @@ onMounted(load)
 
 .prow {
   display: grid;
-  grid-template-columns: 44px 1fr;
+  grid-template-columns: 52px 1fr;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.4;
 }
 
@@ -444,10 +444,10 @@ onMounted(load)
 .btn {
   border: 0;
   cursor: pointer;
-  border-radius: 10px;
-  padding: 10px 12px;
+  border-radius: 12px;
+  padding: 11px 14px;
   font-weight: 900;
-  font-size: 13px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.92);
   background: rgba(255, 255, 255, 0.12);
 }
@@ -466,7 +466,7 @@ onMounted(load)
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 
 .head {
@@ -486,7 +486,7 @@ onMounted(load)
 
 .ht {
   margin-top: 8px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.94);
 }
@@ -500,7 +500,7 @@ onMounted(load)
 .badge {
   border-radius: 999px;
   padding: 8px 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 950;
   color: rgba(10, 34, 31, 0.95);
   background: rgba(200, 169, 103, 0.92);
@@ -511,7 +511,7 @@ onMounted(load)
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(14px);
-  padding: 14px;
+  padding: 16px;
 }
 
 .cardh {
@@ -523,7 +523,7 @@ onMounted(load)
 }
 
 .ct {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.9);
 }
@@ -534,12 +534,12 @@ onMounted(load)
   background: transparent;
   color: rgba(146, 230, 202, 0.95);
   font-weight: 900;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .empty {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
+  font-size: 14px;
   padding: 8px 0 2px;
 }
 
@@ -552,8 +552,8 @@ onMounted(load)
   border: 0;
   cursor: pointer;
   text-align: left;
-  border-radius: 12px;
-  padding: 12px;
+  border-radius: 14px;
+  padding: 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: transform 0.15s ease, background 0.15s ease;
@@ -572,7 +572,7 @@ onMounted(load)
 }
 
 .tt {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.92);
   overflow: hidden;
@@ -583,7 +583,7 @@ onMounted(load)
 .tag {
   border-radius: 999px;
   padding: 6px 8px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.86);
   background: rgba(255, 255, 255, 0.1);
@@ -602,7 +602,7 @@ onMounted(load)
 }
 
 .muted {
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 800;
 }
@@ -610,7 +610,7 @@ onMounted(load)
 .split {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 16px;
   align-items: start;
 }
 
@@ -623,8 +623,8 @@ onMounted(load)
   border: 0;
   cursor: pointer;
   text-align: left;
-  border-radius: 12px;
-  padding: 10px 12px;
+  border-radius: 14px;
+  padding: 12px 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: background 0.15s ease;
@@ -636,7 +636,7 @@ onMounted(load)
 
 .rname {
   display: block;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.9);
   overflow: hidden;
@@ -647,7 +647,7 @@ onMounted(load)
 .rmeta {
   display: block;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 800;
 }
@@ -662,7 +662,7 @@ onMounted(load)
 .chip {
   border-radius: 999px;
   padding: 6px 10px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 850;
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.08);
@@ -676,7 +676,7 @@ onMounted(load)
   background: rgba(255, 0, 0, 0.08);
   color: rgba(255, 255, 255, 0.9);
   font-weight: 800;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 @media (max-width: 980px) {
