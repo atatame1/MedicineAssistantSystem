@@ -1,12 +1,12 @@
 package com.atatame.medicineassistantsystem.service.impl;
 
+import com.atatame.medicineassistantsystem.config.ExpiringInMemoryChatMemoryRepository;
 import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.request.ExpertChatClientRequest;
 import com.atatame.medicineassistantsystem.service.IAiExpertChatClientService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -29,7 +29,6 @@ public class AiExpertChatClientServiceImpl implements IAiExpertChatClientService
 
     private final ResourceLoader resourceLoader;
 
-    private final ChatMemory chatMemory;
     private final ChatClient chatClient;
 
     private final AtomicLong conversationSeq = new AtomicLong(System.currentTimeMillis());
@@ -37,12 +36,14 @@ public class AiExpertChatClientServiceImpl implements IAiExpertChatClientService
 
     public AiExpertChatClientServiceImpl(ChatClient.Builder chatClientBuilder, ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
-        this.chatMemory = MessageWindowChatMemory.builder()
-                .chatMemoryRepository(new InMemoryChatMemoryRepository())
+        // 使用带过期时间的内存存储库，会话30分钟未访问将自动清理
+        ExpiringInMemoryChatMemoryRepository repository = new ExpiringInMemoryChatMemoryRepository(30);
+        ChatMemory chatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(repository)
                 .maxMessages(20)
                 .build();
         this.chatClient = chatClientBuilder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(this.chatMemory).build())
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 
