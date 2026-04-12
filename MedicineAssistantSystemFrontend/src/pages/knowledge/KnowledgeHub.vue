@@ -74,16 +74,23 @@ function go(p: string) {
         </div>
       </section>
 
-      <aside class="kb">
-        <div class="kb-head">
-          <h3 class="kb-h">知识库索引</h3>
-          <span class="kb-tip">8 类资源</span>
+      <aside class="kb-side" aria-label="知识库索引">
+        <div class="kb-side-hd">
+          <h3 class="kb-side-title">知识库索引</h3>
+          <span class="kb-side-tip">8 类</span>
         </div>
-        <div class="kb-grid">
-          <button v-for="it in kbItems" :key="it.path" type="button" class="kb-card" @click="go(it.path)">
-            <div class="kb-icon">{{ it.icon }}</div>
-            <div class="kb-name">{{ it.name }}</div>
-            <div class="kb-desc">{{ it.desc }}</div>
+        <p class="kb-side-sub">悬停可看简介</p>
+        <div class="kb-chips">
+          <button
+            v-for="it in kbItems"
+            :key="it.path"
+            type="button"
+            class="kb-chip"
+            :title="it.desc"
+            @click="go(it.path)"
+          >
+            <span class="kb-chip-ico">{{ it.icon }}</span>
+            <span class="kb-chip-name">{{ it.name }}</span>
           </button>
         </div>
       </aside>
@@ -127,13 +134,15 @@ function go(p: string) {
 .main {
   margin-top: 16px;
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
   gap: 18px;
   align-items: start;
+  width: 100%;
 }
 
 .carousel {
   min-width: 0;
+  width: 100%;
 }
 
 .cyl-wrap {
@@ -237,99 +246,78 @@ function go(p: string) {
   filter: blur(10px);
 }
 
-.kb {
-  min-width: 0;
-  border-radius: 18px;
-  background: rgba(8, 28, 24, 0.28);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 14px;
+.kb-side {
+  padding: 4px 4px 8px;
+  overflow: visible;
 }
 
-.kb-head {
+.kb-side-hd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
-.kb-tip {
-  font-size: 11px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(200, 169, 103, 0.3);
-  color: rgba(255, 232, 190, 0.9);
-  background: rgba(200, 169, 103, 0.12);
-}
-
-.kb-h {
+.kb-side-title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.78);
-}
-.kb-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-.kb-card {
-  border: 0;
-  border-radius: 22px;
-  background: transparent;
-  padding: 12px 10px 10px;
-  text-align: left;
-  cursor: pointer;
-  position: relative;
-  transition: transform 0.22s ease;
-}
-.kb-card:hover {
-  transform: translateY(-3px);
-}
-.kb-card::before {
-  content: '';
-  position: absolute;
-  inset: -10px -10px -12px -10px;
-  border-radius: 28px;
-  background: radial-gradient(circle at 20% 10%, rgba(115, 209, 180, 0.32), transparent 55%),
-    radial-gradient(circle at 80% 40%, rgba(200, 169, 103, 0.22), transparent 60%);
-  filter: blur(14px);
-  opacity: 0.55;
-  pointer-events: none;
-}
-.kb-card::after {
-  content: '';
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 6px;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.02));
-  opacity: 0.8;
-}
-.kb-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  font-size: 20px;
-}
-.kb-name {
-  margin-top: 10px;
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.92);
 }
-.kb-desc {
-  margin-top: 8px;
+
+.kb-side-tip {
   font-size: 12px;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.7);
+  font-weight: 800;
+  color: rgba(200, 169, 103, 0.95);
 }
+
+.kb-side-sub {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.kb-chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+
+.kb-chip {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 8px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 96px;
+  cursor: pointer;
+  color: inherit;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.kb-chip:hover {
+  background: rgba(115, 209, 180, 0.08);
+  transform: translateY(-1px);
+}
+
+.kb-chip-ico {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.kb-chip-name {
+  font-size: 14px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.93);
+}
+
 @media (max-width: 1100px) {
   .main {
     grid-template-columns: 1fr;
@@ -339,9 +327,6 @@ function go(p: string) {
   }
 }
 @media (max-width: 860px) {
-  .kb-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
   .cell {
     width: 260px;
     height: 330px;

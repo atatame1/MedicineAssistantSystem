@@ -109,6 +109,8 @@ function back() {
       </div>
     </header>
 
+    <p v-if="error" class="err err-banner">{{ error }}</p>
+
     <div class="body">
       <aside class="avatar-side">
         <div class="avatar-wrap">
@@ -123,24 +125,37 @@ function back() {
       </aside>
 
       <section class="chat-side">
-        <div class="chat-panel">
+        <div class="thread-shell mas-scrollbar">
           <div ref="listEl" class="msg-list">
             <div v-for="(m, i) in msgs" :key="i" class="msg" :class="m.role">
-              <div class="bubble">{{ m.content }}</div>
+              <div class="bubble">
+                <template
+                  v-if="m.role === 'assistant' && !m.content && loading && i === msgs.length - 1"
+                >
+                  <span class="typing" aria-hidden="true">
+                    <span class="typing-dot" />
+                    <span class="typing-dot" />
+                    <span class="typing-dot" />
+                  </span>
+                  <span class="sr-only">正在回复</span>
+                </template>
+                <template v-else>{{ m.content }}</template>
+              </div>
             </div>
           </div>
+        </div>
+        <div class="composer-shell">
           <div class="composer">
             <textarea
               v-model="input"
               class="inp"
-              rows="2"
-              placeholder="请输入关于您的健康问题........."
+              rows="1"
+              placeholder="请输入关于您的健康问题……"
               @keydown.enter.exact.prevent="send"
             />
             <button type="button" class="send" :disabled="loading || !input.trim()" @click="send">发送</button>
           </div>
         </div>
-        <p v-if="error" class="err">{{ error }}</p>
       </section>
     </div>
   </div>
@@ -148,24 +163,31 @@ function back() {
 
 <style scoped>
 .expert-page {
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-height: 0;
+  gap: 10px;
   overflow: hidden;
-  padding-bottom: 0;
   box-sizing: border-box;
+  width: 100%;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+.err-banner {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(120, 30, 30, 0.35);
+  border: 1px solid rgba(255, 150, 150, 0.35);
 }
 .top {
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   gap: 16px;
-  position: sticky;
-  top: 0;
-  z-index: 6;
-  padding: 10px 0;
-  background: linear-gradient(180deg, rgba(10, 34, 31, 0.72), rgba(10, 34, 31, 0));
-  backdrop-filter: blur(8px);
+  padding: 2px 0 0;
+  z-index: 1;
 }
 .back {
   border: 1px solid rgba(255, 255, 255, 0.22);
@@ -189,13 +211,14 @@ function back() {
 }
 .body {
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
   gap: 22px;
-  align-items: start;
+  align-items: stretch;
   flex: 1;
-  min-height: 0;
-  height: calc(100vh - 280px);
+  min-height: max(340px, min(66vh, 760px));
   overflow: hidden;
+  box-sizing: border-box;
 }
 .avatar-side {
   position: sticky;
@@ -203,21 +226,31 @@ function back() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
+  min-height: 0;
+  justify-content: flex-start;
 }
 .avatar-wrap {
-  width: 320px;
-  height: min(64vh, 520px);
-  border-radius: 26px;
+  width: 100%;
+  max-width: 300px;
+  flex: 0 0 auto;
+  max-height: min(56vh, 520px);
+  aspect-ratio: 3 / 4;
+  border-radius: 18px;
   overflow: hidden;
-  border: 1px solid rgba(115, 209, 180, 0.35);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(115, 209, 180, 0.28);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.32);
+  background: rgba(8, 22, 20, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .avatar-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center top;
   display: block;
 }
 .avatar-fallback {
@@ -254,32 +287,37 @@ function back() {
   font-weight: 800;
 }
 .chat-side {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: 1fr;
+  gap: 12px;
   min-width: 0;
   min-height: 0;
-  position: relative;
+  align-self: stretch;
+  align-content: stretch;
 }
-.chat-panel {
-  flex: 1;
-  border-radius: 22px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(8, 28, 24, 0.28));
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
+.thread-shell {
   min-height: 0;
-  display: flex;
-  flex-direction: column;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: 16px;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.08), rgba(10, 38, 32, 0.42));
+  border: 1px solid rgba(115, 209, 180, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
 }
 .msg-list {
-  flex: 1;
-  overflow: auto;
-  padding: 16px 14px;
+  padding: 18px 16px 22px;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
 }
 .msg {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   display: flex;
+  width: 100%;
+}
+.msg:last-child {
+  margin-bottom: 0;
 }
 .msg.user {
   justify-content: flex-end;
@@ -288,58 +326,117 @@ function back() {
   justify-content: flex-start;
 }
 .bubble {
-  max-width: 92%;
-  padding: 10px 14px;
-  border-radius: 14px;
+  max-width: min(100%, 38rem);
+  padding: 11px 14px;
+  border-radius: 16px;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.58;
   white-space: pre-wrap;
   word-break: break-word;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.93);
 }
 .msg.user .bubble {
-  background: rgba(115, 209, 180, 0.22);
-  border: 1px solid rgba(115, 209, 180, 0.35);
+  background: rgba(115, 209, 180, 0.2);
+  border: 1px solid rgba(115, 209, 180, 0.38);
+  color: #f0faf6;
 }
 .msg.assistant .bubble {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+}
+.composer-shell {
+  position: relative;
+  z-index: 5;
+  min-height: 56px;
+  align-self: stretch;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.typing {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 22px;
+  padding: 2px 0;
+}
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(115, 209, 180, 0.85);
+  animation: typing-dot 1.15s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes typing-dot {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
 }
 .err {
-  margin: 0;
   font-size: 12px;
-  color: #ff9b9b;
+  color: #ffc9c9;
 }
 .composer {
   display: flex;
   gap: 10px;
   align-items: flex-end;
   padding: 10px 12px;
-  border-radius: 0;
-  background: rgba(10, 34, 31, 0.72);
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: rgba(14, 42, 36, 0.5);
+  border: 1px solid rgba(115, 209, 180, 0.28);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(10px);
 }
 .inp {
   flex: 1;
   resize: none;
-  min-height: 44px;
-  max-height: 88px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: rgba(10, 34, 31, 0.55);
+  min-height: 46px;
+  max-height: 120px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(0, 0, 0, 0.22);
   color: #e9f4ef;
-  padding: 10px 12px;
+  padding: 10px 14px;
   font-size: 14px;
+  line-height: 1.45;
 }
 .inp::placeholder {
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.4);
+}
+.inp:focus {
+  outline: none;
+  border-color: rgba(115, 209, 180, 0.45);
+  box-shadow: 0 0 0 1px rgba(115, 209, 180, 0.25);
 }
 .send {
+  flex-shrink: 0;
   border: 0;
-  border-radius: 14px;
-  padding: 12px 20px;
+  border-radius: 12px;
+  padding: 11px 20px;
   font-weight: 800;
+  font-size: 14px;
   cursor: pointer;
   background: linear-gradient(145deg, #73d1b4, #3d8f75);
   color: #0a221f;
@@ -351,14 +448,16 @@ function back() {
 @media (max-width: 820px) {
   .body {
     grid-template-columns: 1fr;
-    height: calc(100vh - 260px);
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
   }
   .avatar-side {
     position: relative;
   }
   .avatar-wrap {
-    width: 100%;
-    height: 260px;
+    max-width: 100%;
+    max-height: 240px;
+    aspect-ratio: 4 / 3;
   }
   .side-meta {
     width: 100%;

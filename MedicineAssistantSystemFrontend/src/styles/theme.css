@@ -25,6 +25,29 @@ body::-webkit-scrollbar {
   box-sizing: border-box;
 }
 
+.mas-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(115, 209, 180, 0.5) transparent;
+}
+
+.mas-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.mas-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.mas-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(115, 209, 180, 0.45);
+  border-radius: 100px;
+}
+
+.mas-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(115, 209, 180, 0.72);
+}
+
 .el-card {
   border: 0;
   border-radius: 0;
