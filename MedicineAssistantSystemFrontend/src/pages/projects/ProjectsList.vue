@@ -14,6 +14,7 @@ import {
   type ProjectDocument,
   type ProjectMember
 } from '@/api/projectsExtra'
+import { projectAiAssessToHtml } from '@/utils/projectAiMarkdown'
 
 const auth = useAuthStore()
 const userId = computed(() => auth.user?.userId ?? 0)
@@ -128,6 +129,12 @@ function priorityText(p?: number | null) {
 const activeProject = computed(() =>
   projects.value.find(p => p.id === activeId.value) || null
 )
+
+const aiAssessHtml = computed(() => {
+  const t = activeProject.value?.aiAssess?.trim()
+  if (!t) return ''
+  return projectAiAssessToHtml(t)
+})
 
 const dashboardProgressPercent = computed(() => {
   const s = activeProject.value?.status
@@ -493,9 +500,10 @@ onMounted(loadList)
               <div class="cell">
                 <div class="cell-label">AI评估结果</div>
                 <div class="cell-body ai-body">
-                  <div class="ai-text">
-                    {{ activeProject.aiAssess || '尚未生成 AI 评估，可在立项评估中触发。' }}
+                  <div v-if="!activeProject.aiAssess?.trim()" class="ai-text ai-text--plain">
+                    尚未生成 AI 评估，可在立项评估中触发。
                   </div>
+                  <div v-else class="ai-text ai-md mas-scrollbar" v-html="aiAssessHtml" />
                 </div>
               </div>
 
@@ -1139,9 +1147,116 @@ onMounted(loadList)
   font-size: 14px;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.82);
-  max-height: 160px;
+  max-height: 220px;
   overflow: auto;
   font-weight: 780;
+}
+
+.ai-text--plain {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.ai-md {
+  font-weight: 650;
+}
+
+.ai-md :deep(h1),
+.ai-md :deep(h2),
+.ai-md :deep(h3),
+.ai-md :deep(h4) {
+  margin: 10px 0 6px;
+  font-weight: 900;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.ai-md :deep(h1) {
+  font-size: 17px;
+}
+.ai-md :deep(h2) {
+  font-size: 16px;
+}
+.ai-md :deep(h3) {
+  font-size: 15px;
+}
+
+.ai-md :deep(p) {
+  margin: 0 0 8px;
+}
+
+.ai-md :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.ai-md :deep(strong) {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.ai-md :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.ai-md :deep(th),
+.ai-md :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ai-md :deep(th) {
+  background: rgba(0, 0, 0, 0.28);
+  font-weight: 850;
+}
+
+.ai-md :deep(ul),
+.ai-md :deep(ol) {
+  margin: 6px 0;
+  padding-left: 1.25em;
+}
+
+.ai-md :deep(li) {
+  margin: 2px 0;
+}
+
+.ai-md :deep(hr) {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  margin: 10px 0;
+}
+
+.ai-md :deep(code) {
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.ai-md :deep(pre) {
+  margin: 8px 0;
+  padding: 10px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-md :deep(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+}
+
+.ai-md :deep(blockquote) {
+  margin: 8px 0;
+  padding: 4px 0 4px 12px;
+  border-left: 3px solid rgba(115, 209, 180, 0.45);
+  color: rgba(255, 255, 255, 0.78);
 }
 
 .small-list {

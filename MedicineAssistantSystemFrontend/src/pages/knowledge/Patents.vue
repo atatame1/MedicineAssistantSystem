@@ -43,7 +43,7 @@ async function openSimilar(row: any) {
 </script>
 
 <template>
-  <div class="wrap">
+  <div class="wrap kb-patents">
     <CrudList
       title="专利库"
       placeholder="按关键词检索专利"
@@ -65,7 +65,7 @@ async function openSimilar(row: any) {
       ]"
     />
 
-    <el-card class="extra">
+    <div class="extra kb-panel">
       <div class="extra-title">专利分析</div>
       <div class="extra-sub">选择一条专利后执行：相似推荐 / 侵权风险</div>
       <div class="extra-actions">
@@ -95,7 +95,7 @@ async function openSimilar(row: any) {
           </el-descriptions>
         </div>
       </el-drawer>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -103,17 +103,31 @@ async function openSimilar(row: any) {
 .wrap {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
+  gap: 14px;
 }
+
+.kb-patents {
+  padding-bottom: 8px;
+}
+
+.kb-panel {
+  border-radius: 20px;
+  padding: 16px 18px;
+  background: linear-gradient(165deg, rgba(14, 42, 36, 0.55), rgba(8, 28, 24, 0.42));
+  border: 1px solid rgba(115, 209, 180, 0.22);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(12px);
+}
+
 .extra-title {
   font-size: 16px;
   font-weight: 900;
-  color: #123b30;
+  color: rgba(233, 244, 239, 0.95);
 }
 .extra-sub {
   margin-top: 6px;
   font-size: 12px;
-  color: #5c736b;
+  color: rgba(189, 212, 204, 0.75);
 }
 .extra-actions {
   margin-top: 10px;
@@ -124,7 +138,7 @@ async function openSimilar(row: any) {
 }
 .empty {
   margin-top: 10px;
-  color: #6c827a;
+  color: rgba(255, 255, 255, 0.58);
   font-size: 12px;
 }
 .mb {

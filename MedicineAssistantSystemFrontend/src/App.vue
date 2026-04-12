@@ -11,6 +11,7 @@ type NavItem = {
   path: string
   label: string
   icon: string
+  sub?: string
 }
 
 const route = useRoute()
@@ -90,7 +91,7 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="hero-center">
-        <div class="brand-title">药枢协研——中药新药研发人机协同决策与创新智能体多模态数据交互平台</div>
+        <div class="brand-title">药枢协研——中药新药研发人机协同决策与创新智能体</div>
         <div class="brand-subtitle">记忆超群 · 定时执行 · 变身专家 · 迭代成长</div>
       </div>
       <div class="hero-right">
@@ -117,9 +118,11 @@ onBeforeUnmount(() => {
     <main class="viewport">
       <section class="content-panel">
         <router-view v-slot="{ Component, route: currentRoute }">
-          <transition name="page-swap" mode="out-in">
-            <component :is="Component" :key="currentRoute.fullPath" />
-          </transition>
+          <div class="route-view-fill">
+            <transition name="page-swap" mode="out-in">
+              <component :is="Component" :key="currentRoute.fullPath" />
+            </transition>
+          </div>
         </router-view>
       </section>
     </main>
@@ -134,6 +137,7 @@ onBeforeUnmount(() => {
       >
         <span class="dock-icon">{{ item.icon }}</span>
         <span class="dock-label">{{ item.label }}</span>
+        <span v-if="item.sub" class="dock-sub">{{ item.sub }}</span>
       </button>
     </nav>
 
@@ -143,11 +147,16 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .app-shell {
-  min-height: 100vh;
   position: relative;
   overflow: hidden;
   padding: 22px 20px 96px;
   background: radial-gradient(circle at 30% 20%, #294f45 0%, #102f2a 45%, #0a221f 100%);
+  box-sizing: border-box;
+  min-height: 100dvh;
+  height: 100dvh;
+  max-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 .motion-bg {
@@ -237,7 +246,7 @@ onBeforeUnmount(() => {
 
 .brand-title {
   color: #e9f4ef;
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 900;
   line-height: 1.2;
   max-width: min(860px, 74vw);
@@ -251,7 +260,7 @@ onBeforeUnmount(() => {
 .brand-subtitle {
   margin-top: 2px;
   color: #bdd4cc;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .hero-right {
@@ -317,6 +326,11 @@ onBeforeUnmount(() => {
 .viewport {
   position: relative;
   z-index: 2;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .content-panel {
@@ -326,6 +340,19 @@ onBeforeUnmount(() => {
   backdrop-filter: none;
   padding: 0;
   box-shadow: none;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.route-view-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .dock {
@@ -365,6 +392,17 @@ onBeforeUnmount(() => {
 
 .dock-label {
   font-size: 11px;
+}
+
+.dock-sub {
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0.88;
+}
+
+.dock-item.active .dock-sub {
+  color: #0f2b24;
+  opacity: 0.92;
 }
 
 .dock-item:hover {
