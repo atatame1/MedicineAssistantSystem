@@ -1102,12 +1102,15 @@ onMounted(loadList)
   flex-direction: row;
   gap: 16px;
   align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 .progress-ring {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .dash-progress :deep(.el-progress__text) {
@@ -1123,6 +1126,7 @@ onMounted(loadList)
   display: flex;
   flex-direction: column;
   gap: 8px;
+  min-width: 170px;
 }
 
 .meta-label {
