@@ -20,7 +20,13 @@ import java.util.Map;
 public class VoiceGenUtil {
 
     private static final Map<String, String> VOICE_URI = Map.of(
-            "chenkeji", "speech:chenkeji:d7dj966cnncc73dmpij0:vobjnhnkgxgtaedvqwwr"
+            "chenkeji", "speech:chenkeji:d7dj966cnncc73dmpij0:vobjnhnkgxgtaedvqwwr",
+            "sunyan","speech:sunyan:d7dj966cnncc73dmpij0:pxulhcegnpazuluetomh",
+            "qiufazu","speech:qiufazu:d7dj966cnncc73dmpij0:iabnxofyntgrtfpjmimf",
+            "litiangui","speech:litiangui:d7dj966cnncc73dmpij0:ensuorslfatuftepykpj",
+            "wangyuchaung","speech:wangyuchuang:d7dj966cnncc73dmpij0:wvvwaicdbknfpsiatdtt",
+            "chengshennong","speech:chengshennong:d7dj966cnncc73dmpij0:tapnerdelkrttbpgmpdh"
+
     );
 
     private static final String DEFAULT_VOICE = "FunAudioLLM/CosyVoice2-0.5B:alex";
