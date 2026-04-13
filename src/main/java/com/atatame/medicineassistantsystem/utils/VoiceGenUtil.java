@@ -23,9 +23,9 @@ public class VoiceGenUtil {
             "chenkeji", "speech:chenkeji:d7dj966cnncc73dmpij0:vobjnhnkgxgtaedvqwwr",
             "sunyan","speech:sunyan:d7dj966cnncc73dmpij0:pxulhcegnpazuluetomh",
             "qiufazu","speech:qiufazu:d7dj966cnncc73dmpij0:iabnxofyntgrtfpjmimf",
-            "litiangui","speech:litiangui:d7dj966cnncc73dmpij0:ensuorslfatuftepykpj",
-            "wangyuchaung","speech:wangyuchuang:d7dj966cnncc73dmpij0:wvvwaicdbknfpsiatdtt",
-            "chengshennong","speech:chengshennong:d7dj966cnncc73dmpij0:tapnerdelkrttbpgmpdh"
+            "lidiangui","speech:litiangui:d7dj966cnncc73dmpij0:ensuorslfatuftepykpj",
+            "wangyuchuan","speech:wangyuchuang:d7dj966cnncc73dmpij0:wvvwaicdbknfpsiatdtt",
+            "chengshennong","speech:chengshennong:d7dj966cnncc73dmpij0:mffxjwdqfodvljplqrhk"
 
     );
 

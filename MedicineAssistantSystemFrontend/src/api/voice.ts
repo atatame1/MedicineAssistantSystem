@@ -40,7 +40,7 @@ function touchBlobCache(key: string, blob: Blob) {
 export async function postVoiceGenAudio(text: string, voiceName?: string | null): Promise<Blob> {
   const plain = stripTextForTts(text)
   if (!plain) throw new Error('没有可朗读的文本')
-  const voice = voiceName || 'chenkeji'
+  const voice = voiceName || ''
   const key = cacheKey(voice, plain)
   const cached = voiceBlobCache.get(key)
   if (cached) {
