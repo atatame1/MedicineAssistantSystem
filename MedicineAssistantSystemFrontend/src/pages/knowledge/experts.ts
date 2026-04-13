@@ -8,21 +8,13 @@ export type ExpertItem = {
 }
 
 export const EXPERTS: ExpertItem[] = [
-  { key: '何任', slug: 'he-ren', name: '何任', tag: '国医大师 · 中医内科' },
-  { key: '李佃贵', slug: 'li-dian-gui', name: '李佃贵', tag: '国医大师 · 脾胃病' },
-  { key: '王玉川', slug: 'wang-yu-chuan', name: '王玉川', tag: '国医大师 · 内经研究' },
-  { key: '唐由之', slug: 'tang-you-zhi', name: '唐由之', tag: '国医大师 · 中医眼科' },
-  { key: '程莘农', slug: 'cheng-shen-nong', name: '程莘农', tag: '国医大师 · 针灸' },
-  { key: '朱良春', slug: 'zhu-liang-chun', name: '朱良春', tag: '国医大师 · 虫类药' },
-  { key: '黄宽', slug: 'huang-kuan', name: '黄宽', tag: '中西医汇通' },
-  { key: '裘法祖', slug: 'qiu-fa-zu', name: '裘法祖', tag: '外科学 · 器官移植' },
-  { key: '张孝骞', slug: 'zhang-xiao-qian', name: '张孝骞', tag: '消化病学 · 临床思维' },
+  { key: '李佃贵', slug: 'li-dian-gui', name: '李佃贵', tag: '国医大师 · 脾胃病',voiceKey:'lidiangui'},
+  { key: '王玉川', slug: 'wang-yu-chuan', name: '王玉川', tag: '国医大师 · 内经研究',voiceKey:'wangyuchuan'},
+  { key: '程莘农', slug: 'cheng-shen-nong', name: '程莘农', tag: '国医大师 · 针灸',voiceKey:'chengshennong' },
+  { key: '裘法祖', slug: 'qiu-fa-zu', name: '裘法祖', tag: '外科学 · 器官移植',voiceKey:'qiufazu'},
   { key: '陈可冀', slug: 'chen-ke-ji', name: '陈可冀', tag: '中西医结合 · 心血管病', voiceKey: 'chenkeji' },
-  { key: '吴咸中', slug: 'wu-xian-zhong', name: '吴咸中', tag: '中西医结合 · 急腹症' },
-  { key: '孙燕', slug: 'sun-yan', name: '孙燕', tag: '肿瘤内科' },
-  { key: '詹姆斯·艾利森', slug: 'james-allison', name: '詹姆斯·艾利森', tag: '免疫治疗 · Nobel' },
-  { key: '阿德姆·帕塔普蒂安', slug: 'ardem-patapoutian', name: '阿德姆·帕塔普蒂安', tag: '触觉受体 · Nobel' },
-  { key: '巴里·马歇尔', slug: 'barry-marshall', name: '巴里·马歇尔', tag: '幽门螺杆菌 · Nobel' }
+  { key: '孙燕', slug: 'sun-yan', name: '孙燕', tag: '肿瘤内科' ,voiceKey:'sunyan'},
+
 ]
 
 export function getExpertByKey(key: string) {
