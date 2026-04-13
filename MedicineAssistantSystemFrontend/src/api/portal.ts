@@ -3,6 +3,8 @@ import type { Project } from './projects'
 
 export type PortalTask = {
   id: number
+  userId: number | null
+  userName: string | null
   title: string
   description: string | null
   priority: number | null
@@ -10,6 +12,7 @@ export type PortalTask = {
   projectId: number | null
   projectName: string | null
   assigneeId: number | null
+  assigneeName: string | null
   deadline: string | null
   overdue: boolean | null
 }

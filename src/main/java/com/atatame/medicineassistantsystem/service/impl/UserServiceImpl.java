@@ -3,6 +3,8 @@ package com.atatame.medicineassistantsystem.service.impl;
 import com.atatame.medicineassistantsystem.model.constants.UserCenterConstants;
 import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.UserTaskCompleteRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.UserTaskCreateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
@@ -49,6 +51,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,7 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<TaskResponse> myTasks(Long userId) {
         List<UserTask> tasks = userTaskService.list(new LambdaQueryWrapper<UserTask>()
-                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .and(w -> w.eq(UserTask::getUserId, userId))
                 .orderByAsc(UserTask::getStatus)
                 .orderByAsc(UserTask::getPriority)
                 .orderByAsc(UserTask::getDeadline)
@@ -115,11 +118,91 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Override
     public List<TaskResponse> myRecentTasks(Long userId, int limit) {
         List<UserTask> tasks = userTaskService.list(new LambdaQueryWrapper<UserTask>()
-                .and(w -> w.eq(UserTask::getUserId, userId).or().eq(UserTask::getAssigneeId, userId))
+                .and(w -> w.eq(UserTask::getUserId, userId))
                 .orderByAsc(UserTask::getPriority)
                 .orderByDesc(UserTask::getCreateTime)
                 .last("LIMIT " + limit));
         return mapTasksToResponses(tasks);
+    }
+
+    @Override
+    public TaskResponse taskDetail(Long userId, Long taskId) {
+        if (userId == null || taskId == null) return null;
+        UserTask t = userTaskService.getById(taskId);
+        if (t == null) return null;
+        boolean ok = (t.getUserId() != null && t.getUserId().equals(userId));
+        if (!ok) return null;
+        return mapTasksToResponses(List.of(t)).stream().findFirst().orElse(null);
+    }
+
+    @Override
+    public TaskResponse taskDetailById(Long taskId) {
+        if (taskId == null) return null;
+        UserTask t = userTaskService.getById(taskId);
+        if (t == null) return null;
+        return mapTasksToResponses(List.of(t)).stream().findFirst().orElse(null);
+    }
+
+    @Override
+    public void completeTask(Long userId, Long taskId, UserTaskCompleteRequest request) {
+        if (userId == null || taskId == null) return;
+        UserTask t = userTaskService.getById(taskId);
+        if (t == null) return;
+        if (t.getUserId() == null || !t.getUserId().equals(userId)) return;
+        if (t.getStatus() != null && t.getStatus() == 3) return;
+        t.setCompletionFeedback(request == null ? null : request.getCompletionFeedback());
+        if (t.getStatus() == null || t.getStatus() != 2) {
+            t.setStatus(2);
+        }
+        t.setUpdateTime(LocalDateTime.now());
+        userTaskService.updateById(t);
+    }
+
+    @Override
+    public List<TaskResponse> listProjectTasks(Long projectId) {
+        if (projectId == null) return new ArrayList<>();
+        List<UserTask> tasks = userTaskService.list(new LambdaQueryWrapper<UserTask>()
+                .eq(UserTask::getProjectId, projectId)
+                .orderByAsc(UserTask::getStatus)
+                .orderByAsc(UserTask::getPriority)
+                .orderByAsc(UserTask::getDeadline)
+                .orderByDesc(UserTask::getCreateTime));
+        return mapTasksToResponses(tasks);
+    }
+
+    @Override
+    public Long createTask(Long assigneeId, UserTaskCreateRequest request) {
+        if (request == null) return null;
+        if (request.getUserId() == null || request.getProjectId() == null) return null;
+        UserTask t = new UserTask();
+        t.setProjectId(request.getProjectId());
+        t.setUserId(request.getUserId());
+        t.setAssigneeId(assigneeId);
+        t.setTitle(request.getTitle());
+        t.setDescription(request.getDescription());
+        t.setPriority(request.getPriority());
+        t.setStatus(0);
+        LocalDate d = request.getDeadline();
+        if (d != null) {
+            t.setDeadline(d.atTime(23, 59, 59));
+        }
+        LocalDateTime now = LocalDateTime.now();
+        t.setCreateTime(now);
+        t.setUpdateTime(now);
+        userTaskService.save(t);
+        return t.getId();
+    }
+
+    @Override
+    public void withdrawTask(Long assigneeId, Long taskId) {
+        if (assigneeId == null || taskId == null) return;
+        UserTask t = userTaskService.getById(taskId);
+        if (t == null) return;
+        if (t.getAssigneeId() == null || !t.getAssigneeId().equals(assigneeId)) return;
+        if (t.getStatus() != null && t.getStatus() == 2) return;
+        t.setStatus(3);
+        t.setUpdateTime(LocalDateTime.now());
+        userTaskService.updateById(t);
     }
 
     private List<TaskResponse> mapTasksToResponses(List<UserTask> tasks) {
@@ -131,7 +214,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (!pids.isEmpty()) {
             projectService.listByIds(pids).forEach(p -> projectNames.put(p.getId(), p.getProjectName()));
         }
-        return tasks.stream().map(t -> toTaskResponse(t, projectNames)).collect(Collectors.toList());
+        Set<Long> uids = new HashSet<>();
+        for (UserTask t : tasks) {
+            if (t.getUserId() != null) uids.add(t.getUserId());
+            if (t.getAssigneeId() != null) uids.add(t.getAssigneeId());
+        }
+        Map<Long, String> userNames = new HashMap<>();
+        if (!uids.isEmpty()) {
+            for (User u : listByIds(uids)) {
+                String n = u.getNickname();
+                if (n == null || n.isBlank()) n = u.getUsername();
+                userNames.put(u.getId(), n != null ? n : "");
+            }
+        }
+        return tasks.stream().map(t -> toTaskResponse(t, projectNames, userNames)).collect(Collectors.toList());
     }
 
     @Override
@@ -209,7 +305,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         List<Long> projectIds = projects.stream().map(ProjectResponse::getId).collect(Collectors.toList());
         List<ProjectDocument> docs = projectDocumentService.list(new LambdaQueryWrapper<ProjectDocument>()
                 .in(ProjectDocument::getProjectId, projectIds)
-                .eq(ProjectDocument::getDocType, "PROJECT_REPORT")
+//                .eq(ProjectDocument::getDocType, "PROJECT_REPORT")
                 .orderByDesc(ProjectDocument::getUploadTime));
         Map<Long, String> projectNameMap = projects.stream()
                 .collect(Collectors.toMap(ProjectResponse::getId, ProjectResponse::getProjectName, (a, b) -> a));
@@ -317,9 +413,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         return statistics;
     }
 
-    private TaskResponse toTaskResponse(UserTask task, Map<Long, String> projectNames) {
+    private TaskResponse toTaskResponse(UserTask task, Map<Long, String> projectNames, Map<Long, String> userNames) {
         TaskResponse response = new TaskResponse();
         response.setId(task.getId());
+        response.setUserId(task.getUserId());
+        response.setUserName(task.getUserId() != null ? userNames.get(task.getUserId()) : null);
         response.setTitle(task.getTitle());
         response.setDescription(task.getDescription());
         response.setPriority(task.getPriority());
@@ -327,6 +425,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         response.setProjectId(task.getProjectId());
         response.setProjectName(task.getProjectId() != null ? projectNames.get(task.getProjectId()) : null);
         response.setAssigneeId(task.getAssigneeId());
+        response.setAssigneeName(task.getAssigneeId() != null ? userNames.get(task.getAssigneeId()) : null);
         response.setCompletionFeedback(task.getCompletionFeedback());
         response.setDeadline(task.getDeadline());
         response.setCreateTime(task.getCreateTime());

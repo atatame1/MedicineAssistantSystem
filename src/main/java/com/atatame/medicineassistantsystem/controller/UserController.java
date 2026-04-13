@@ -3,6 +3,7 @@ package com.atatame.medicineassistantsystem.controller;
 import com.atatame.medicineassistantsystem.common.Result;
 import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.UserTaskCompleteRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
@@ -46,18 +47,16 @@ public class UserController {
         return Result.ok(userService.myTasks(userId));
     }
 
-    @GetMapping("/{userId}/tasks/{taskId}")
-    @Operation(summary = "任务详情", description = "获取当前用户某条任务详情")
-    public Result<TaskResponse> taskDetail(
+    @PostMapping("/{userId}/tasks/{taskId}/complete")
+    @Operation(summary = "提交任务完成报告", description = "提交完成报告并将任务状态改为完成")
+    public Result<Void> completeTask(
             @Parameter(description = "用户 ID", required = true)
             @PathVariable Long userId,
-            @PathVariable Long taskId
+            @PathVariable Long taskId,
+            @RequestBody UserTaskCompleteRequest request
     ) {
-        return userService.myTasks(userId).stream()
-                .filter(t -> t.getId() != null && t.getId().equals(taskId))
-                .findFirst()
-                .map(Result::ok)
-                .orElse(Result.fail("任务不存在"));
+        userService.completeTask(userId, taskId, request);
+        return Result.ok();
     }
 
     @GetMapping("/{userId}/projects")

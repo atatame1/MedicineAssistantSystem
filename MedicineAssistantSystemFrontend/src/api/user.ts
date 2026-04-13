@@ -78,6 +78,8 @@ export async function toggleFavorite(
 
 export type TaskResponse = {
   id: number
+  userId: number | null
+  userName: string | null
   title: string
   description: string | null
   priority: number | null
@@ -85,6 +87,7 @@ export type TaskResponse = {
   projectId: number | null
   projectName: string | null
   assigneeId: number | null
+  assigneeName: string | null
   deadline: string | null
   completionFeedback: string | null
   createTime: string | null
@@ -157,6 +160,21 @@ export async function listUsers() {
 
 export async function listMyTasks(userId: number) {
   return apiGet<TaskResponse[]>(`/api/user/${userId}/tasks`)
+}
+
+export async function getTaskDetail(userId: number, taskId: number) {
+  return apiGet<TaskResponse>(`/api/user/${userId}/tasks/${taskId}`)
+}
+
+export async function completeTask(
+  userId: number,
+  taskId: number,
+  body: { completionFeedback: string }
+) {
+  return apiPostJson<void, { completionFeedback: string }>(
+    `/api/user/${userId}/tasks/${taskId}/complete`,
+    body
+  )
 }
 
 export async function listMyProjects(userId: number) {

@@ -34,7 +34,7 @@ public class UserTask {
     private Integer priority;
 
     /**
-     * 0-发送任务 1-用户进行任务中 2-用户完成任务
+     * 0-发送任务 1-用户进行任务中 2-用户完成任务 3-任务被撤回
      */
     @TableField("status")
     private Integer status;

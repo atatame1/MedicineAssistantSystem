@@ -60,6 +60,12 @@ const router = createRouter({
       meta: { title: '项目成员' }
     },
     {
+      path: '/projects/tasks',
+      name: 'projects-tasks',
+      component: () => import('@/pages/projects/ProjectTasks.vue'),
+      meta: { title: '任务管理', requiresAuth: true }
+    },
+    {
       path: '/projects/draft-evaluate',
       name: 'projects-draft-evaluate',
       component: () => import('@/pages/projects/DraftEvaluateStream.vue'),

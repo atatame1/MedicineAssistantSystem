@@ -2,6 +2,8 @@ package com.atatame.medicineassistantsystem.service;
 
 import com.atatame.medicineassistantsystem.model.dto.request.FavoriteOperationRequest;
 import com.atatame.medicineassistantsystem.model.dto.request.SettingsUpdateRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.UserTaskCompleteRequest;
+import com.atatame.medicineassistantsystem.model.dto.request.UserTaskCreateRequest;
 import com.atatame.medicineassistantsystem.model.dto.response.DocumentResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteResponse;
 import com.atatame.medicineassistantsystem.model.dto.response.FavoriteStatisticsResponse;
@@ -26,6 +28,12 @@ import java.util.List;
 public interface IUserService extends IService<User> {
     List<TaskResponse> myTasks(Long userId);
     List<TaskResponse> myRecentTasks(Long userId, int limit);
+    TaskResponse taskDetail(Long userId, Long taskId);
+    TaskResponse taskDetailById(Long taskId);
+    void completeTask(Long userId, Long taskId, UserTaskCompleteRequest request);
+    List<TaskResponse> listProjectTasks(Long projectId);
+    Long createTask(Long assigneeId, UserTaskCreateRequest request);
+    void withdrawTask(Long assigneeId, Long taskId);
     List<ProjectResponse> myProjects(Long userId);
     List<MyProjectItemResponse> myProjectsForCurrentUser(Long userId, Integer status);
     List<DocumentResponse> myReports(Long userId);

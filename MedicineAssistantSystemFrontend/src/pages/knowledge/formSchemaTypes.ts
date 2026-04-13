@@ -8,7 +8,8 @@ export type FormField = {
 }
 
 function selectUsesNumber(f: FormField): boolean {
-  return !!(f.options?.length && typeof f.options[0].value === 'number')
+  const first = f.options?.[0]
+  return typeof first?.value === 'number'
 }
 
 export function defaultValue(f: FormField): string | number | boolean | null {

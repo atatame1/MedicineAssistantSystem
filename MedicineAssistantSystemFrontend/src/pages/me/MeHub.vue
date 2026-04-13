@@ -66,7 +66,50 @@ const reportTop = computed(() =>
 
 const favTop = computed(() => [...favorites.value].slice(0, 5))
 
-const overdueCount = computed(() => tasks.value.filter((t: any) => !!t?.overdue).length)
+const taskCounts = computed(() => {
+  const rows = tasks.value || []
+  let completed = 0
+  let withdrawn = 0
+  let overdue = 0
+  let todo = 0
+  for (const t of rows as any[]) {
+    const s = t?.status
+    if (s === 2) {
+      completed++
+      continue
+    }
+    if (s === 3) {
+      withdrawn++
+      continue
+    }
+    if (t?.overdue) {
+      overdue++
+      continue
+    }
+    todo++
+  }
+  return { completed, withdrawn, overdue, todo }
+})
+
+function taskTag(t: any) {
+  const s = t?.status
+  if (s === 2) return { text: '完成', cls: 'done' }
+  if (s === 3) return { text: '撤回', cls: 'withdrawn' }
+  if (t?.overdue) return { text: '逾期', cls: 'overdue' }
+  return { text: '待办', cls: 'todo' }
+}
+
+function priorityText(p?: number | null) {
+  if (p === 1) return '高'
+  if (p === 2) return '中'
+  if (p === 3) return '低'
+  return '-'
+}
+
+function dateOnly(s?: string | null) {
+  if (!s) return '-'
+  return String(s).slice(0, 10)
+}
 
 const profileSubline = computed(() => {
   const u = profile.value?.username
@@ -209,7 +252,12 @@ onMounted(load)
             <div class="ht">概览</div>
           </div>
           <div class="hact">
-            <div v-if="overdueCount" class="badge">逾期 {{ overdueCount }}</div>
+            <div class="badges">
+              <div class="badge b-todo">待办 {{ taskCounts.todo }}</div>
+              <div class="badge b-overdue">逾期 {{ taskCounts.overdue }}</div>
+              <div class="badge b-done">完成 {{ taskCounts.completed }}</div>
+              <div class="badge b-withdrawn">撤回 {{ taskCounts.withdrawn }}</div>
+            </div>
             <button class="btn ghost" type="button" @click="load">{{ loading ? '加载中…' : '刷新' }}</button>
           </div>
         </header>
@@ -226,13 +274,12 @@ onMounted(load)
             <button v-for="t in todoTop" :key="t.id" class="task" type="button" @click="go('/me/tasks')">
               <div class="tl">
                 <span class="tt">{{ t.title }}</span>
-                <span v-if="t.overdue" class="tag danger">逾期</span>
-                <span v-else class="tag">待办</span>
+                <span class="tag" :class="taskTag(t).cls">{{ taskTag(t).text }}</span>
               </div>
               <div class="tm">
                 <span class="muted">{{ t.projectName || '未绑定项目' }}</span>
-                <span class="muted">优先级 {{ t.priority ?? '-' }}</span>
-                <span class="muted">截止 {{ t.deadline ?? '-' }}</span>
+                <span class="muted">优先级 {{ priorityText(t.priority ?? null) }}</span>
+                <span class="muted">截止 {{ dateOnly(t.deadline ?? null) }}</span>
               </div>
             </button>
           </div>
@@ -261,7 +308,7 @@ onMounted(load)
 
           <section class="card">
             <div class="cardh">
-              <div class="ct">我的报告</div>
+              <div class="ct">我的文档</div>
               <button class="link" type="button" @click="go('/me/reports')">查看全部</button>
             </div>
             <div v-if="!reportTop.length && !loading" class="empty">暂无报告</div>
@@ -498,6 +545,13 @@ onMounted(load)
   align-items: center;
 }
 
+.badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .badge {
   border-radius: 999px;
   padding: 8px 10px;
@@ -505,6 +559,26 @@ onMounted(load)
   font-weight: 950;
   color: rgba(10, 34, 31, 0.95);
   background: rgba(200, 169, 103, 0.92);
+}
+
+.badge.b-overdue {
+  color: rgba(255, 255, 255, 0.96);
+  background: rgba(220, 65, 65, 0.92);
+}
+
+.badge.b-done {
+  color: rgba(10, 34, 31, 0.95);
+  background: rgba(115, 209, 180, 0.92);
+}
+
+.badge.b-withdrawn {
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.badge.b-todo {
+  color: rgba(10, 34, 31, 0.95);
+  background: rgba(240, 200, 90, 0.92);
 }
 
 .card {
@@ -590,9 +664,24 @@ onMounted(load)
   background: rgba(255, 255, 255, 0.1);
 }
 
-.tag.danger {
+.tag.overdue {
+  color: rgba(255, 255, 255, 0.96);
+  background: rgba(220, 65, 65, 0.92);
+}
+
+.tag.todo {
   color: rgba(10, 34, 31, 0.95);
-  background: rgba(200, 169, 103, 0.92);
+  background: rgba(240, 200, 90, 0.92);
+}
+
+.tag.done {
+  color: rgba(10, 34, 31, 0.95);
+  background: rgba(115, 209, 180, 0.92);
+}
+
+.tag.withdrawn {
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .tm {

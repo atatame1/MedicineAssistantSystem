@@ -1,13 +1,66 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { listMyTasks, type TaskResponse } from '@/api/user'
+import { completeTask, listMyTasks, type TaskResponse } from '@/api/user'
 import { useAuthStore } from '@/stores/auth'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const auth = useAuthStore()
 const userId = computed(() => auth.user?.userId || 0)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const rows = ref<TaskResponse[]>([])
+const completeOpen = ref(false)
+const completing = ref(false)
+const completeTaskId = ref<number | null>(null)
+const completeTitle = ref('')
+const completeFeedback = ref('')
+const completeDeadline = ref<string | null>(null)
+const completeOverdue = ref(false)
+
+function statusText(s?: number | null) {
+  const m: Record<number, string> = { 0: '已发布', 1: '进行中', 2: '已完成', 3: '已撤回' }
+  if (s == null) return '-'
+  return m[s] ?? `状态${s}`
+}
+
+function parseDeadlineMs(d?: string | null) {
+  if (!d) return null
+  const t = Date.parse(d)
+  if (!Number.isFinite(t)) return null
+  return t
+}
+
+function openComplete(row: TaskResponse) {
+  if (row.status === 3) return
+  completeTaskId.value = row.id
+  completeTitle.value = row.title
+  completeFeedback.value = row.completionFeedback || ''
+  completeDeadline.value = row.deadline || null
+  const dl = parseDeadlineMs(row.deadline)
+  completeOverdue.value = dl != null && Date.now() > dl
+  completeOpen.value = true
+}
+
+async function submitComplete() {
+  if (!completeTaskId.value || !userId.value) return
+  if (!completeFeedback.value.trim()) return
+  completing.value = true
+  try {
+    if (completeOverdue.value) {
+      await ElMessageBox.alert('该任务已超过截止时间，将以逾期提交记录。', '逾期提交', {
+        confirmButtonText: '继续提交'
+      })
+    }
+    await completeTask(userId.value, completeTaskId.value, {
+      completionFeedback: completeFeedback.value.trim()
+    })
+    completeOpen.value = false
+    ElMessage.success('已提交')
+    await load()
+  } finally {
+    completing.value = false
+  }
+}
 
 async function load() {
   loading.value = true
@@ -43,6 +96,11 @@ onMounted(load)
         <el-table-column prop="title" label="标题" min-width="240" />
         <el-table-column prop="projectName" label="项目" min-width="200" />
         <el-table-column prop="priority" label="优先级" width="90" />
+        <el-table-column label="状态" width="110">
+          <template #default="{ row }">
+            {{ statusText(row.status) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="deadline" label="截止时间" width="180" />
         <el-table-column label="逾期" width="90">
           <template #default="{ row }">
@@ -50,8 +108,39 @@ onMounted(load)
             <el-tag v-else effect="light">否</el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="操作" width="140" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              size="small"
+              type="primary"
+              plain
+              :disabled="row.status === 3"
+              @click="openComplete(row)"
+            >{{ row.status === 2 ? '修改报告' : '提交报告' }}</el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
+
+    <el-dialog v-model="completeOpen" title="完成报告" width="560px" append-to-body>
+      <div style="font-weight: 900; margin-bottom: 10px">{{ completeTitle }}</div>
+      <div style="opacity: 0.75; margin-bottom: 10px">
+        截止：{{ completeDeadline || '-' }}
+        <el-tag v-if="completeOverdue" type="danger" effect="dark" style="margin-left: 8px">逾期提交</el-tag>
+      </div>
+      <el-input
+        v-model="completeFeedback"
+        type="textarea"
+        :rows="6"
+        maxlength="2000"
+        show-word-limit
+        placeholder="填写完成报告"
+      />
+      <template #footer>
+        <el-button @click="completeOpen = false">取消</el-button>
+        <el-button type="primary" :loading="completing" @click="submitComplete">保存</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 

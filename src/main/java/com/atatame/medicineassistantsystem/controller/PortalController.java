@@ -1,8 +1,6 @@
 package com.atatame.medicineassistantsystem.controller;
 
-import com.atatame.medicineassistantsystem.auth.AuthInterceptor;
 import com.atatame.medicineassistantsystem.common.Result;
-import com.atatame.medicineassistantsystem.exception.BusinessException;
 import com.atatame.medicineassistantsystem.model.dto.response.PortalOverviewResponse;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.UserAiDialogSummary;
@@ -12,7 +10,6 @@ import com.atatame.medicineassistantsystem.service.IUserAiDialogSummaryService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/portal")
@@ -40,7 +38,9 @@ public class PortalController {
                 .orderByDesc(Project::getUpdateTime)
                 .last("limit 10"));
         PortalOverviewResponse response = new PortalOverviewResponse();
-        response.setTasks(userService.myRecentTasks(userId, 10));
+        response.setTasks(userService.myRecentTasks(userId, 10).stream()
+                .filter(t -> t.getStatus() == null || t.getStatus() != 2)
+                .collect(Collectors.toList()));
         response.setMyProjects(projects);
         response.setRiskWarnings(projects.stream().filter(p -> p.getPriority() != null && p.getPriority() == 1).count());
         UserAiDialogSummary summary = userAiDialogSummaryService.getById(userId);

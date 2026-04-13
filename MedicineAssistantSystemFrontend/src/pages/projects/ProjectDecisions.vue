@@ -535,6 +535,7 @@ onMounted(async () => {
   </div>
 </template>
 
+<style src="./projectToolPage.css"></style>
 <style scoped>
 .compare {
   display: flex;
@@ -768,5 +769,3 @@ onMounted(async () => {
   background: rgba(146, 230, 202, 0.34) !important;
 }
 </style>
-
-<style src="./projectToolPage.css"></style>

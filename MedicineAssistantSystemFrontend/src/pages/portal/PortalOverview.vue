@@ -62,6 +62,18 @@ const topTasks = computed(() => {
   return tasks.slice(0, 5)
 })
 
+function priorityText(p?: number | null) {
+  if (p === 1) return '高'
+  if (p === 2) return '中'
+  if (p === 3) return '低'
+  return '-'
+}
+
+function dateOnly(s?: string | null) {
+  if (!s) return '-'
+  return String(s).slice(0, 10)
+}
+
 const portalNews = computed(() => {
   const rows: string[] = []
   rows.push(`项目焦点：${topProjectName.value}`)
@@ -302,7 +314,8 @@ onMounted(load)
               <div class="task-title">{{ task.title }}</div>
               <div class="task-meta">
                 <span>{{ task.projectName || '未绑定项目' }}</span>
-                <span>优先级 {{ task.priority ?? '-' }}</span>
+                <span>优先级 {{ priorityText(task.priority ?? null) }}</span>
+                <span>截止 {{ dateOnly(task.deadline || null) }}</span>
               </div>
             </div>
             <el-tag v-if="task.overdue" type="danger" effect="dark">逾期</el-tag>

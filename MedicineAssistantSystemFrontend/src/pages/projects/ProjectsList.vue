@@ -229,6 +229,7 @@ const toolLinks = [
   { to: '/projects/decisions', label: '决策' },
   { to: '/projects/documents', label: '文档' },
   { to: '/projects/members', label: '成员' },
+  { to: '/projects/tasks', label: '任务管理' },
   { to: '/projects/draft-evaluate', label: '立项评估' }
 ] as const
 

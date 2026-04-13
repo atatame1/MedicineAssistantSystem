@@ -35,7 +35,7 @@ onMounted(load)
     <header class="head">
       <div>
         <p class="kicker">工作台</p>
-        <h1 class="t">我的报告</h1>
+        <h1 class="t">我的文档</h1>
         <p class="s">项目产出与文档</p>
       </div>
       <el-button class="btn" round :loading="loading" @click="load">刷新</el-button>
