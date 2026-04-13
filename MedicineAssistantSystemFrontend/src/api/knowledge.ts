@@ -1,4 +1,13 @@
 import { apiGet, apiPostJson } from './http'
+import type { Literature } from './literatures'
+import {
+  createLiterature,
+  deleteLiterature,
+  downloadLiteraturePdfBlob,
+  listLiteratures,
+  replaceLiteraturePdf,
+  updateLiterature
+} from './literatures'
 
 export type CrudEntity = { id?: number }
 
@@ -62,6 +71,8 @@ export type PatentRisk = {
   suggestion: string | null
 }
 
+export type { Literature }
+
 export const knowledgeApi = {
   herbs: {
     list: (keyword?: string) =>
@@ -110,5 +121,13 @@ export const knowledgeApi = {
       apiGet<PatentSimilarity[]>(`/api/patents/similar?patentId=${encodeURIComponent(String(patentId))}`),
     risk: (patentId: number) =>
       apiGet<PatentRisk>(`/api/patents/risk?patentId=${encodeURIComponent(String(patentId))}`)
+  },
+  literatures: {
+    list: listLiteratures,
+    create: (body: Literature, file?: File | null) => createLiterature(body, file),
+    update: updateLiterature,
+    delete: deleteLiterature,
+    replacePdf: replaceLiteraturePdf,
+    downloadPdfBlob: downloadLiteraturePdfBlob
   }
 }

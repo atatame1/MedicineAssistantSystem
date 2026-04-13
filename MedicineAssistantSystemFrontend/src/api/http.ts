@@ -83,6 +83,26 @@ export async function apiDelete<T>(path: string): Promise<T> {
   return requestJson<T>(path, { method: 'DELETE' })
 }
 
+export async function apiGetBlob(path: string): Promise<Blob> {
+  const res = await client.request<Blob>({
+    url: path,
+    method: 'GET',
+    responseType: 'blob'
+  })
+  const blob = res.data
+  if (blob.type && blob.type.includes('application/json')) {
+    const text = await blob.text()
+    try {
+      const j = JSON.parse(text) as { message?: string }
+      throw new Error(j.message || 'request failed')
+    } catch (e: any) {
+      if (e instanceof SyntaxError) throw new Error(text || 'request failed')
+      throw e
+    }
+  }
+  return blob
+}
+
 export async function apiPostMultipart<T, B extends Record<string, any>>(
   path: string,
   form: B

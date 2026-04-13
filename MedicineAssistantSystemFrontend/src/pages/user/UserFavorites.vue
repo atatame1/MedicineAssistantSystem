@@ -39,7 +39,8 @@ const typeLabelMap: Record<string, string> = {
   HERB: '中药材',
   COMPONENT: '成分',
   Disease: '疾病',
-  Regulation: '法规'
+  Regulation: '法规',
+  TARGET_PATHWAY: '靶点通路'
 }
 const detailKeyLabelMap: Record<string, string> = {
   name: '名称',

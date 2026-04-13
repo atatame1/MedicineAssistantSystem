@@ -74,14 +74,8 @@ const router = createRouter({
     {
       path: '/literatures',
       name: 'literatures',
-      component: () => import('@/pages/literatures/LiteraturesList.vue'),
+      component: () => import('@/pages/knowledge/Literatures.vue'),
       meta: { title: '文献库' }
-    },
-    {
-      path: '/literatures/create',
-      name: 'literatures-create',
-      component: () => import('@/pages/literatures/LiteraturesCreate.vue'),
-      meta: { title: '新增文献' }
     },
     {
       path: '/literatures/:literatureId/summary',

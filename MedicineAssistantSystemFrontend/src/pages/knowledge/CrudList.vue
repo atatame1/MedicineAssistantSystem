@@ -1,21 +1,69 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 import { addFavorite, listUserFavorites, removeFavorite } from '@/api/user'
+import EntityFormFields from './EntityFormFields.vue'
+import { defaultValue, normalizeFieldValue, type FormField } from './formSchemaTypes'
+
+function formatDetailValue(f: FormField, row: Row | null): string {
+  if (!row) return '—'
+  const v = row[f.prop]
+  if (v === null || v === undefined) return '—'
+  if (typeof v === 'string' && v.trim() === '') return '—'
+  const t = f.type || 'text'
+  if (t === 'select' && f.options?.length) {
+    const opt = f.options.find((o) => o.value === v || String(o.value) === String(v))
+    if (opt) return String(opt.label)
+  }
+  if (t === 'switch') return v ? '是' : '否'
+  if (typeof v === 'object') {
+    try {
+      return JSON.stringify(v)
+    } catch {
+      return '—'
+    }
+  }
+  const s = String(v).trim()
+  if (!s) return '—'
+  if ((s.startsWith('[') || s.startsWith('{')) && s.length > 1) {
+    try {
+      return JSON.stringify(JSON.parse(s))
+    } catch {
+      /* keep raw */
+    }
+  }
+  return s
+}
 
 type Row = Record<string, any>
 
 const props = defineProps<{
   title: string
   placeholder: string
-  columns: { prop: string; label: string; width?: number; minWidth?: number }[]
+  columns: { prop: string; label: string; width?: number; minWidth?: number; maxDisplayLen?: number }[]
   list: (keyword?: string) => Promise<Row[]>
-  create: (body: Row) => Promise<void>
+  create: (body: Row, file?: File | null) => Promise<void>
   update: (body: Row) => Promise<void>
   del: (id: number) => Promise<void>
-  formSchema: { prop: string; label: string; type?: 'text' | 'textarea' }[]
+  formSchema?: FormField[]
+  formSchemaCreate?: FormField[]
+  formSchemaEdit?: FormField[]
   favoriteType?: string
+  multipartCreate?: boolean
+  multipartEdit?: boolean
+  replaceFile?: (id: number, file: File) => Promise<void>
+  extraTileButtons?: {
+    label: string
+    type?: 'primary' | 'success' | 'warning' | 'info' | 'danger'
+    plain?: boolean
+    onClick: (row: Row) => void
+  }[]
+  onRowInteract?: (row: Row) => void
 }>()
+
+const schemaCreate = computed<FormField[]>(() => props.formSchemaCreate ?? props.formSchema ?? [])
+const schemaEdit = computed<FormField[]>(() => props.formSchemaEdit ?? props.formSchema ?? [])
 
 const keyword = ref('')
 const loading = ref(false)
@@ -28,8 +76,19 @@ const dialogOpen = ref(false)
 const saving = ref(false)
 const editing = ref<Row | null>(null)
 const form = reactive<Row>({})
+const createPdfRaw = ref<File | null>(null)
+const createPdfList = ref<{ name?: string; raw?: File }[]>([])
+const editPdfRaw = ref<File | null>(null)
+const editPdfList = ref<{ name?: string; raw?: File }[]>([])
+
+const detailOpen = ref(false)
+const detailRow = ref<Row | null>(null)
 
 const isEdit = computed(() => !!editing.value?.id)
+
+const detailFields = computed(() => schemaEdit.value)
+
+const activeSchema = computed<FormField[]>(() => (isEdit.value ? schemaEdit.value : schemaCreate.value))
 
 const titleProp = computed(() => {
   const prefs = ['name', 'title', 'patentNumber']
@@ -42,6 +101,23 @@ const titleProp = computed(() => {
 const bodyColumns = computed(() =>
   props.columns.filter((c) => c.prop !== 'id' && c.prop !== titleProp.value)
 )
+
+function displayCell(row: Row, c: { prop: string; maxDisplayLen?: number }) {
+  const v = row[c.prop]
+  if (v == null || v === '') return '—'
+  const s = String(v).replace(/\s+/g, ' ').trim()
+  const max = c.maxDisplayLen
+  if (max != null && max > 0 && s.length > max) {
+    return s.slice(0, max) + '…'
+  }
+  return s
+}
+
+function openDetail(row: Row) {
+  detailRow.value = row
+  props.onRowInteract?.(row)
+  detailOpen.value = true
+}
 
 async function load() {
   loading.value = true
@@ -65,27 +141,80 @@ async function load() {
   }
 }
 
+function onCreatePdfChange(uploadFile: { raw?: File } | null) {
+  createPdfRaw.value = uploadFile?.raw ?? null
+  createPdfList.value = uploadFile ? [uploadFile as { name?: string; raw?: File }] : []
+}
+
+function clearCreatePdf() {
+  createPdfRaw.value = null
+  createPdfList.value = []
+}
+
+function onEditPdfChange(uploadFile: { raw?: File } | null) {
+  editPdfRaw.value = uploadFile?.raw ?? null
+  editPdfList.value = uploadFile ? [uploadFile as { name?: string; raw?: File }] : []
+}
+
+function clearEditPdf() {
+  editPdfRaw.value = null
+  editPdfList.value = []
+}
+
 function openCreate() {
   editing.value = null
+  createPdfRaw.value = null
+  createPdfList.value = []
   Object.keys(form).forEach((k) => delete form[k])
-  props.formSchema.forEach((f) => (form[f.prop] = ''))
+  schemaCreate.value.forEach((f) => {
+    form[f.prop] = defaultValue(f) as never
+  })
   dialogOpen.value = true
 }
 
 function openEdit(row: Row) {
   editing.value = row
+  clearEditPdf()
   Object.keys(form).forEach((k) => delete form[k])
-  props.formSchema.forEach((f) => (form[f.prop] = row?.[f.prop] ?? ''))
+  schemaEdit.value.forEach((f) => {
+    form[f.prop] = normalizeFieldValue(row?.[f.prop], f) as never
+  })
   form.id = row.id
+  props.onRowInteract?.(row)
   dialogOpen.value = true
 }
 
+function buildPayload(isUpdate: boolean): Row {
+  const keys = (isUpdate ? schemaEdit.value : schemaCreate.value).map((f) => f.prop)
+  const body: Row = {}
+  for (const k of keys) {
+    const v = form[k]
+    body[k] = v
+  }
+  if (isUpdate) body.id = form.id
+  return body
+}
+
 async function save() {
+  try {
+    await ElMessageBox.confirm(
+      isEdit.value ? '确定保存当前修改？' : '确定提交新增？',
+      '确认',
+      { type: 'warning', confirmButtonText: '确定', cancelButtonText: '取消' }
+    )
+  } catch {
+    return
+  }
   saving.value = true
   error.value = null
   try {
-    const body: Row = { ...form }
-    if (isEdit.value) await props.update(body)
+    const body = buildPayload(isEdit.value)
+    if (isEdit.value) {
+      await props.update(body)
+      if (props.multipartEdit && editPdfRaw.value && props.replaceFile) {
+        await props.replaceFile(Number(form.id), editPdfRaw.value)
+      }
+    } else if (props.multipartCreate) await props.create(body, createPdfRaw.value ?? undefined)
     else await props.create(body)
     dialogOpen.value = false
     await load()
@@ -97,6 +226,15 @@ async function save() {
 }
 
 async function remove(row: Row) {
+  try {
+    await ElMessageBox.confirm('确定删除该条记录？删除后不可恢复。', '确认删除', {
+      type: 'warning',
+      confirmButtonText: '删除',
+      cancelButtonText: '取消'
+    })
+  } catch {
+    return
+  }
   saving.value = true
   error.value = null
   try {
@@ -118,6 +256,16 @@ async function toggleFavorite(row: Row) {
     try {
       window.dispatchEvent(new CustomEvent('auth:required'))
     } catch {}
+    return
+  }
+  const fav = isFavorited(row)
+  try {
+    await ElMessageBox.confirm(
+      fav ? '确定取消收藏该条？' : '确定将该项加入收藏？',
+      '确认',
+      { type: 'info', confirmButtonText: '确定', cancelButtonText: '取消' }
+    )
+  } catch {
     return
   }
   saving.value = true
@@ -183,11 +331,25 @@ load()
             <div class="kb-tile-body">
               <div v-for="c in bodyColumns" :key="c.prop" class="kb-kv">
                 <span class="kb-k">{{ c.label }}</span>
-                <p class="kb-v">{{ row[c.prop] ?? '—' }}</p>
+                <p class="kb-v">{{ displayCell(row, c) }}</p>
               </div>
             </div>
             <div class="kb-tile-ft">
-              <el-button type="primary" class="btn-go" size="small" @click="openEdit(row)">编辑</el-button>
+              <el-button size="small" :disabled="saving" @click="openDetail(row)">详细</el-button>
+              <el-button type="primary" class="btn-go" size="small" :disabled="saving" @click="openEdit(row)">
+                编辑
+              </el-button>
+              <el-button
+                v-for="(b, bi) in extraTileButtons || []"
+                :key="bi"
+                size="small"
+                :type="b.type"
+                :plain="b.plain"
+                :disabled="saving"
+                @click="b.onClick(row)"
+              >
+                {{ b.label }}
+              </el-button>
               <el-button type="danger" plain size="small" :disabled="saving" @click="remove(row)">删除</el-button>
             </div>
           </article>
@@ -196,22 +358,91 @@ load()
       </div>
     </div>
 
-    <el-dialog v-model="dialogOpen" :title="isEdit ? '编辑' : '新增'" width="720px" class="kb-dialog">
-      <el-form :model="form" label-width="110px">
-        <el-form-item v-for="f in formSchema" :key="f.prop" :label="f.label">
-          <el-input v-if="(f.type || 'text') === 'text'" v-model="form[f.prop]" />
-          <el-input v-else v-model="form[f.prop]" type="textarea" :rows="3" />
-        </el-form-item>
-      </el-form>
+    <el-dialog
+      v-model="dialogOpen"
+      :title="isEdit ? '编辑' : '新增'"
+      :width="isEdit ? 'min(960px, 94vw)' : '720px'"
+      class="kb-dialog"
+    >
+      <div class="kb-dialog-body mas-scrollbar">
+        <el-form :model="form" label-width="128px">
+          <el-form-item v-if="multipartCreate && !isEdit" label="PDF">
+            <el-upload
+              :auto-upload="false"
+              :limit="1"
+              :file-list="createPdfList as any"
+              :on-change="onCreatePdfChange"
+              :on-remove="clearCreatePdf"
+              accept="application/pdf,.pdf"
+              list-type="text"
+            >
+              <el-button type="primary">选择 PDF</el-button>
+            </el-upload>
+          </el-form-item>
+          <el-form-item v-if="multipartEdit && isEdit" label="替换PDF">
+            <el-upload
+              :auto-upload="false"
+              :limit="1"
+              :file-list="editPdfList as any"
+              :on-change="onEditPdfChange"
+              :on-remove="clearEditPdf"
+              accept="application/pdf,.pdf"
+              list-type="text"
+            >
+              <el-button>选择新 PDF</el-button>
+            </el-upload>
+            <div class="kb-hint">留空则保留原文件；选择新文件将删除旧 PDF 并上传</div>
+          </el-form-item>
+          <EntityFormFields :fields="activeSchema" :model="form" />
+        </el-form>
+      </div>
       <template #footer>
         <el-button @click="dialogOpen = false">取消</el-button>
         <el-button type="primary" :loading="saving" @click="save">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="detailOpen"
+      title="详情"
+      width="min(960px, 94vw)"
+      class="kb-dialog"
+      destroy-on-close
+    >
+      <div class="kb-dialog-body mas-scrollbar">
+        <el-descriptions
+          v-if="detailFields.length"
+          :column="1"
+          border
+          class="kb-detail-desc"
+        >
+          <el-descriptions-item v-if="multipartEdit && detailRow" label="PDF">
+            <span class="kb-detail-val">{{ detailRow.pdfPath ? '已上传 PDF' : '无 PDF' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item v-for="f in detailFields" :key="f.prop" :label="f.label">
+            <span class="kb-detail-val">{{ formatDetailValue(f, detailRow) }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        <div v-else class="kb-empty">暂无字段配置</div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <style scoped>
+.kb-dialog-body {
+  max-height: min(78vh, 720px);
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.kb-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+
 .kb-page {
   padding-bottom: 100px;
   box-sizing: border-box;
@@ -388,10 +619,35 @@ load()
 
 .kb-tile-ft {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding: 10px 14px 12px 18px;
   border-top: 1px solid rgba(115, 209, 180, 0.12);
   background: rgba(0, 0, 0, 0.12);
+}
+
+.kb-detail-desc {
+  --el-descriptions-item-bordered-label-background: #f5f7fa;
+}
+
+.kb-detail-desc :deep(.el-descriptions__label) {
+  width: min(32%, 200px);
+  background: #f5f7fa !important;
+  color: #303133;
+  font-weight: 600;
+}
+
+.kb-detail-desc :deep(.el-descriptions__content) {
+  background: #fff !important;
+  color: #303133;
+}
+
+.kb-detail-val {
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .kb-empty {

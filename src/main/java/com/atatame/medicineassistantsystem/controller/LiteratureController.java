@@ -10,6 +10,11 @@ import com.atatame.medicineassistantsystem.utils.FileStorageUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,6 +27,12 @@ import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 @RestController
@@ -56,12 +67,58 @@ public class LiteratureController {
         boolean ok = literatureService.save(request);
         if (!ok || request.getId() == null) {
             throw new BusinessException("保存文献失败");
-        }if(!(file == null || file.isEmpty())){
-            String key = fileStorageUtil.store(request.getId(), file);
+        }
+        if (!(file == null || file.isEmpty())) {
+            String key = fileStorageUtil.storeLiteraturePdf(request.getId(), file);
             request.setPdfPath(key);
             request.setFileSize(file.getSize());
             literatureService.updateById(request);
         }
+        return Result.ok();
+    }
+
+    @GetMapping("/{literatureId:\\d+}/pdf")
+    @Operation(summary = "下载文献 PDF")
+    public ResponseEntity<Resource> downloadPdf(@PathVariable Long literatureId) throws IOException {
+        Literature l = literatureService.getById(literatureId);
+        if (l == null) {
+            throw new BusinessException("文献不存在");
+        }
+        if (!StringUtils.hasText(l.getPdfPath())) {
+            throw new BusinessException("无 PDF 文件");
+        }
+        Path path = fileStorageUtil.resolvePath(l.getPdfPath());
+        if (!Files.exists(path)) {
+            throw new BusinessException("文件已丢失");
+        }
+        Resource resource = new FileSystemResource(path.toFile());
+        String fn = "literature-" + literatureId + ".pdf";
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + URLEncoder.encode(fn, StandardCharsets.UTF_8) + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(resource);
+    }
+
+    @PostMapping(value = "/{literatureId:\\d+}/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "替换文献 PDF（删除旧文件并上传新文件）")
+    public Result<Void> replacePdf(@PathVariable Long literatureId,
+                                   @RequestPart("file") MultipartFile file) throws IOException {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("文件为空");
+        }
+        Literature l = literatureService.getById(literatureId);
+        if (l == null) {
+            throw new BusinessException("文献不存在");
+        }
+        String oldKey = l.getPdfPath();
+        if (StringUtils.hasText(oldKey)) {
+            fileStorageUtil.deleteStoredFile(oldKey);
+        }
+        String key = fileStorageUtil.storeLiteraturePdf(literatureId, file);
+        l.setPdfPath(key);
+        l.setFileSize(file.getSize());
+        literatureService.updateById(l);
         return Result.ok();
     }
 

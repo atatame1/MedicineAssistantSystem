@@ -79,6 +79,11 @@ public class UserCenterConstants {
          * 法规类型
          */
         public static final String Regulation="Regulation";
+
+        /**
+         * 靶点通路
+         */
+        public static final String TARGET_PATHWAY = "TARGET_PATHWAY";
     }
 
     /**

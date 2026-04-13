@@ -105,7 +105,8 @@ const typeLabelMap: Record<string, string> = {
   PATENT: '专利',
   FORMULA: '方剂',
   HERB: '药材',
-  COMPONENT: '成分'
+  COMPONENT: '成分',
+  TARGET_PATHWAY: '靶点通路'
 }
 
 function favTypeLabel(t?: string | null) {

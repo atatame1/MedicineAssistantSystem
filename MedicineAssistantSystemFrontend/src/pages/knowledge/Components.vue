@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CrudList from './CrudList.vue'
 import { knowledgeApi } from '@/api/knowledge'
+import { componentCreate, componentEdit } from './knowledgeFormSchemas'
 </script>
 
 <template>
@@ -18,11 +19,7 @@ import { knowledgeApi } from '@/api/knowledge'
     :create="knowledgeApi.components.create"
     :update="knowledgeApi.components.update"
     :del="knowledgeApi.components.delete"
-    :formSchema="[
-      { prop: 'name', label: '名称' },
-      { prop: 'chemicalStructure', label: '化学结构(SMILES)', type: 'textarea' },
-      { prop: 'bioactivity', label: '生物活性', type: 'textarea' },
-      { prop: 'potentialTargets', label: '潜在靶点', type: 'textarea' }
-    ]"
+    :form-schema-create="componentCreate"
+    :form-schema-edit="componentEdit"
   />
 </template>

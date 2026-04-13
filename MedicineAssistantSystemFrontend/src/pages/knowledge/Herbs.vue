@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CrudList from './CrudList.vue'
 import { knowledgeApi } from '@/api/knowledge'
+import { herbCreate, herbEdit } from './knowledgeFormSchemas'
 </script>
 
 <template>
@@ -18,13 +19,7 @@ import { knowledgeApi } from '@/api/knowledge'
     :create="knowledgeApi.herbs.create"
     :update="knowledgeApi.herbs.update"
     :del="knowledgeApi.herbs.delete"
-    :formSchema="[
-      { prop: 'name', label: '名称' },
-      { prop: 'source', label: '来源' },
-      { prop: 'nature', label: '性' },
-      { prop: 'taste', label: '味' },
-      { prop: 'meridian', label: '归经' },
-      { prop: 'effects', label: '功效', type: 'textarea' }
-    ]"
+    :form-schema-create="herbCreate"
+    :form-schema-edit="herbEdit"
   />
 </template>

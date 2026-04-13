@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CrudList from './CrudList.vue'
 import { knowledgeApi } from '@/api/knowledge'
+import { targetPathwayCreate, targetPathwayEdit } from './knowledgeFormSchemas'
 </script>
 
 <template>
@@ -17,11 +18,8 @@ import { knowledgeApi } from '@/api/knowledge'
     :create="knowledgeApi.targetPathways.create"
     :update="knowledgeApi.targetPathways.update"
     :del="knowledgeApi.targetPathways.delete"
-    :formSchema="[
-      { prop: 'name', label: '靶点/名称' },
-      { prop: 'pathwayName', label: '信号通路', type: 'textarea' },
-      { prop: 'relatedDiseases', label: '关联疾病', type: 'textarea' },
-      { prop: 'mechanismDescription', label: '机制说明', type: 'textarea' }
-    ]"
+    :form-schema-create="targetPathwayCreate"
+    :form-schema-edit="targetPathwayEdit"
+    favorite-type="TARGET_PATHWAY"
   />
 </template>

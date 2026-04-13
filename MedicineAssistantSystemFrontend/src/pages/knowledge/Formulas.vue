@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CrudList from './CrudList.vue'
 import { knowledgeApi } from '@/api/knowledge'
+import { formulaCreate, formulaEdit } from './knowledgeFormSchemas'
 </script>
 
 <template>
@@ -17,11 +18,7 @@ import { knowledgeApi } from '@/api/knowledge'
     :create="knowledgeApi.formulas.create"
     :update="knowledgeApi.formulas.update"
     :del="knowledgeApi.formulas.delete"
-    :formSchema="[
-      { prop: 'name', label: '名称' },
-      { prop: 'composition', label: '组成', type: 'textarea' },
-      { prop: 'indications', label: '适应症', type: 'textarea' },
-      { prop: 'effects', label: '功效', type: 'textarea' }
-    ]"
+    :form-schema-create="formulaCreate"
+    :form-schema-edit="formulaEdit"
   />
 </template>

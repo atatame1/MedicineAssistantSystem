@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import CrudList from './CrudList.vue'
 import { knowledgeApi, type Patent, type PatentRisk, type PatentSimilarity } from '@/api/knowledge'
+import { patentCreate, patentEdit } from './knowledgeFormSchemas'
 
 const riskOpen = ref(false)
 const simOpen = ref(false)
@@ -11,7 +12,12 @@ const similar = ref<PatentSimilarity[]>([])
 const loadingExtra = ref(false)
 const errorExtra = ref<string | null>(null)
 
-async function openRisk(row: any) {
+function syncPatentRow(row: Record<string, unknown>) {
+  current.value = row as Patent
+}
+
+async function openRisk(row: Patent | null) {
+  if (!row?.id) return
   current.value = row
   riskOpen.value = true
   simOpen.value = false
@@ -26,7 +32,8 @@ async function openRisk(row: any) {
   }
 }
 
-async function openSimilar(row: any) {
+async function openSimilar(row: Patent | null) {
+  if (!row?.id) return
   current.value = row
   simOpen.value = true
   riskOpen.value = false
@@ -43,72 +50,67 @@ async function openSimilar(row: any) {
 </script>
 
 <template>
-  <div class="wrap kb-patents">
-    <CrudList
-      title="专利库"
-      placeholder="按关键词检索专利"
-      :columns="[
-        { prop: 'id', label: 'ID', width: 80 },
-        { prop: 'name', label: '名称', minWidth: 320 },
-        { prop: 'patentNumber', label: '专利号', minWidth: 180 },
-        { prop: 'applicant', label: '申请人', minWidth: 200 }
-      ]"
-      :list="knowledgeApi.patents.list"
-      favoriteType="PATENT"
-      :create="knowledgeApi.patents.create"
-      :update="knowledgeApi.patents.update"
-      :del="knowledgeApi.patents.delete"
-      :formSchema="[
-        { prop: 'name', label: '名称', type: 'textarea' },
-        { prop: 'patentNumber', label: '专利号' },
-        { prop: 'applicant', label: '申请人' },
-        { prop: 'abstractContent', label: '摘要', type: 'textarea' }
-      ]"
-    />
+  <div class="kb-patents">
+  <CrudList
+    title="专利库"
+    placeholder="按关键词检索专利"
+    :columns="[
+      { prop: 'id', label: 'ID', width: 80 },
+      { prop: 'name', label: '名称', minWidth: 320 },
+      { prop: 'patentNumber', label: '专利号', minWidth: 180 },
+      { prop: 'applicant', label: '申请人', minWidth: 200 }
+    ]"
+    :list="knowledgeApi.patents.list"
+    favoriteType="PATENT"
+    :create="knowledgeApi.patents.create"
+    :update="knowledgeApi.patents.update"
+    :del="knowledgeApi.patents.delete"
+    :form-schema-create="patentCreate"
+    :form-schema-edit="patentEdit"
+    :on-row-interact="syncPatentRow"
+  />
 
-    <div class="extra kb-panel">
-      <div class="extra-title">专利分析</div>
-      <div class="extra-sub">选择一条专利后执行：相似推荐 / 侵权风险</div>
-      <div class="extra-actions">
-        <el-button :disabled="!current" @click="openSimilar(current)">相似专利</el-button>
-        <el-button type="danger" :disabled="!current" @click="openRisk(current)">侵权风险</el-button>
-      </div>
-
-      <div v-if="!current" class="empty">提示：在上表点一条“编辑”可快速查看字段；也可先点任意行后再点这里按钮</div>
-
-      <el-alert v-if="errorExtra" :title="errorExtra" type="error" show-icon class="mb" />
-
-      <el-drawer v-model="simOpen" title="相似专利推荐" size="50%">
-        <el-table v-loading="loadingExtra" :data="similar" stripe>
-          <el-table-column prop="patentId" label="专利ID" width="100" />
-          <el-table-column prop="patentName" label="名称" min-width="240" />
-          <el-table-column prop="score" label="得分" width="90" />
-          <el-table-column prop="riskLevel" label="风险" width="100" />
-        </el-table>
-      </el-drawer>
-
-      <el-drawer v-model="riskOpen" title="侵权风险提示" size="50%">
-        <div v-loading="loadingExtra">
-          <el-descriptions :column="1" border>
-            <el-descriptions-item label="风险等级">{{ risk?.riskLevel ?? '-' }}</el-descriptions-item>
-            <el-descriptions-item label="风险说明">{{ risk?.riskDescription ?? '-' }}</el-descriptions-item>
-            <el-descriptions-item label="建议">{{ risk?.suggestion ?? '-' }}</el-descriptions-item>
-          </el-descriptions>
-        </div>
-      </el-drawer>
+  <div class="extra kb-panel">
+    <div class="extra-title">专利分析</div>
+    <div class="extra-sub">在卡片上点「详细」或「编辑」可选中专利；再使用下方分析</div>
+    <div class="extra-actions">
+      <el-button :disabled="!current?.id" @click="openSimilar(current)">相似专利</el-button>
+      <el-button type="danger" :disabled="!current?.id" @click="openRisk(current)">侵权风险</el-button>
     </div>
+
+    <div v-if="!current" class="empty">请先点某条卡片的「详细」或「编辑」</div>
+
+    <el-alert v-if="errorExtra" :title="errorExtra" type="error" show-icon class="mb" />
+
+    <el-drawer v-model="simOpen" title="相似专利推荐" size="50%">
+      <el-table v-loading="loadingExtra" :data="similar" stripe>
+        <el-table-column prop="patentId" label="专利ID" width="100" />
+        <el-table-column prop="patentName" label="名称" min-width="240" />
+        <el-table-column prop="score" label="得分" width="90" />
+        <el-table-column prop="riskLevel" label="风险" width="100" />
+      </el-table>
+    </el-drawer>
+
+    <el-drawer v-model="riskOpen" title="侵权风险提示" size="50%">
+      <div v-loading="loadingExtra">
+        <el-descriptions :column="1" border>
+          <el-descriptions-item label="风险等级">{{ risk?.riskLevel ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="风险说明">{{ risk?.riskDescription ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="建议">{{ risk?.suggestion ?? '-' }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+    </el-drawer>
+  </div>
   </div>
 </template>
 
 <style scoped>
-.wrap {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-}
-
 .kb-patents {
   padding-bottom: 8px;
+}
+
+.extra {
+  margin-top: 14px;
 }
 
 .kb-panel {

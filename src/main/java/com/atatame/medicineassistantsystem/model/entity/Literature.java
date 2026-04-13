@@ -253,10 +253,10 @@ public class  Literature {
     @TableField("importance")
     private Integer importance;
 
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @TableField(value = "create_time")
     private LocalDateTime createTime;
 
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @TableField(value = "update_time")
     private LocalDateTime updateTime;
 
 }

@@ -24,7 +24,7 @@ public class VoiceGenUtil {
             "sunyan","speech:sunyan:d7dj966cnncc73dmpij0:pxulhcegnpazuluetomh",
             "qiufazu","speech:qiufazu:d7dj966cnncc73dmpij0:iabnxofyntgrtfpjmimf",
             "lidiangui","speech:litiangui:d7dj966cnncc73dmpij0:ensuorslfatuftepykpj",
-            "wangyuchuan","speech:wangyuchuang:d7dj966cnncc73dmpij0:wvvwaicdbknfpsiatdtt",
+            "wangyuchuan","speech:wangyuchuan:d7dj966cnncc73dmpij0:icrbtkwwuvmnjbtughaz",
             "chengshennong","speech:chengshennong:d7dj966cnncc73dmpij0:mffxjwdqfodvljplqrhk"
 
     );

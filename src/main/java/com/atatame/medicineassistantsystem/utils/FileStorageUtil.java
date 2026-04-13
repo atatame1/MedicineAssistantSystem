@@ -29,6 +29,28 @@ public class FileStorageUtil {
         return "projects/" + projectId + "/" + name;
     }
 
+    public String storeLiteraturePdf(Long literatureId, MultipartFile file) throws IOException {
+        Path base = Paths.get(root).normalize().toAbsolutePath();
+        Path dir = base.resolve("literatures").resolve(String.valueOf(literatureId));
+        Files.createDirectories(dir);
+        String orig = file.getOriginalFilename();
+        String ext = FileUtil.extName(orig);
+        String name = UUID.randomUUID().toString().replace("-", "") + (ext == null || ext.isEmpty() ? "" : "." + ext);
+        Path target = dir.resolve(name);
+        file.transferTo(target.toFile());
+        return "literatures/" + literatureId + "/" + name;
+    }
+
+    public void deleteStoredFile(String storageKey) throws IOException {
+        if (storageKey == null || storageKey.isBlank()) {
+            return;
+        }
+        Path p = resolvePath(storageKey);
+        if (Files.exists(p)) {
+            Files.delete(p);
+        }
+    }
+
     public Path resolvePath(String storageKey) {
         if (storageKey == null || storageKey.contains("..")) {
             throw new IllegalArgumentException("invalid storage key");

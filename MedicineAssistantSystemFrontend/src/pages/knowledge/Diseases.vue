@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CrudList from './CrudList.vue'
 import { knowledgeApi } from '@/api/knowledge'
+import { diseaseCreate, diseaseEdit } from './knowledgeFormSchemas'
 </script>
 
 <template>
@@ -18,11 +19,7 @@ import { knowledgeApi } from '@/api/knowledge'
     :create="knowledgeApi.diseases.create"
     :update="knowledgeApi.diseases.update"
     :del="knowledgeApi.diseases.delete"
-    :formSchema="[
-      { prop: 'name', label: '名称' },
-      { prop: 'category', label: '分类' },
-      { prop: 'tcmSyndrome', label: '中医证候', type: 'textarea' },
-      { prop: 'modernName', label: '现代医学名称', type: 'textarea' }
-    ]"
+    :form-schema-create="diseaseCreate"
+    :form-schema-edit="diseaseEdit"
   />
 </template>

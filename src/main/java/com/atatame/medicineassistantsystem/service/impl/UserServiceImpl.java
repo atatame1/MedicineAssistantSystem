@@ -20,6 +20,7 @@ import com.atatame.medicineassistantsystem.model.entity.Herb;
 import com.atatame.medicineassistantsystem.model.entity.Literature;
 import com.atatame.medicineassistantsystem.model.entity.Patent;
 import com.atatame.medicineassistantsystem.model.entity.Regulation;
+import com.atatame.medicineassistantsystem.model.entity.TargetPathway;
 import com.atatame.medicineassistantsystem.model.entity.Project;
 import com.atatame.medicineassistantsystem.model.entity.ProjectDocument;
 import com.atatame.medicineassistantsystem.model.entity.ProjectMember;
@@ -35,6 +36,7 @@ import com.atatame.medicineassistantsystem.service.IHerbService;
 import com.atatame.medicineassistantsystem.service.ILiteratureService;
 import com.atatame.medicineassistantsystem.service.IPatentService;
 import com.atatame.medicineassistantsystem.service.IRegulationService;
+import com.atatame.medicineassistantsystem.service.ITargetPathwayService;
 import com.atatame.medicineassistantsystem.service.IProjectDocumentService;
 import com.atatame.medicineassistantsystem.service.IProjectMemberService;
 import com.atatame.medicineassistantsystem.service.IProjectService;
@@ -83,6 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private final IComponentService componentService;
     private final IDiseaseService diseaseService;
     private final IRegulationService regulationService;
+    private final ITargetPathwayService targetPathwayService;
 
     @Override
     public List<UserListItemResponse> listAllUsers() {
@@ -444,6 +447,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         if (UserCenterConstants.EntityType.Regulation.equals(favoriteType)) {
             Regulation regulation = regulationService.getById(favoriteId);
             return regulation == null ? null : regulation.getName();
+        }
+        if (UserCenterConstants.EntityType.TARGET_PATHWAY.equals(favoriteType)) {
+            TargetPathway tp = targetPathwayService.getById(favoriteId);
+            return tp == null ? null : tp.getName();
         }
         return favoriteType + "-" + favoriteId;
     }
