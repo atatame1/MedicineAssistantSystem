@@ -132,6 +132,12 @@ const router = createRouter({
       meta: { title: '知识中心' }
     },
     {
+      path: '/knowledge/explore',
+      name: 'knowledge-explore',
+      component: () => import('@/pages/knowledge/FreeExplore.vue'),
+      meta: { title: '自由探索' }
+    },
+    {
       path: '/knowledge/herbs',
       name: 'knowledge-herbs',
       component: () => import('@/pages/knowledge/Herbs.vue'),

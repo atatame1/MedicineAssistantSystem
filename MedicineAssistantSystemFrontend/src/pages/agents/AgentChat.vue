@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
 import {
   deleteAiConversation,
@@ -14,6 +14,7 @@ import {
 type Msg = { role: 'user' | 'assistant'; content: string; ts: number }
 
 const route = useRoute()
+const router = useRouter()
 const agent = computed(() => String(route.params.agent))
 
 const titleMap: Record<string, string> = {
@@ -81,6 +82,7 @@ const displayConversationTitle = computed(() => {
 const memoryEnabled = computed(() => true)
 
 const conversationId = ref<number | null>(null)
+const seededOnce = ref(false)
 
 function bucketLabel(iso: string | null) {
   if (!iso) return '更早'
@@ -347,6 +349,23 @@ watch(
   () => {
     clearChat()
     refreshHistory()
+  },
+  { immediate: true }
+)
+
+watch(
+  () => route.query.seed,
+  async (v) => {
+    if (seededOnce.value) return
+    const seed = typeof v === 'string' ? v.trim() : ''
+    if (!seed) return
+    seededOnce.value = true
+    input.value = seed
+    await nextTick()
+    await send()
+    const q = { ...route.query }
+    delete (q as any).seed
+    router.replace({ query: q })
   },
   { immediate: true }
 )

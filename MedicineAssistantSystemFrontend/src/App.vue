@@ -5,6 +5,7 @@ import { onBeforeUnmount, onMounted, ref } from 'vue'
 import LoginDialog from '@/components/LoginDialog.vue'
 import { useAuthStore } from '@/stores/auth'
 import defaultAvatar from '@/assets/shark_cute2.jpg'
+import brandLogo from '@/assets/logo.png'
 import { logout } from '@/api/auth'
 
 type NavItem = {
@@ -87,7 +88,9 @@ onBeforeUnmount(() => {
 
     <header class="hero">
       <div class="hero-left">
-        <div class="brand-badge">药</div>
+        <button class="brand-mark" type="button" aria-label="药枢协同" @click="jump('/portal')">
+          <img class="brand-logo" :src="brandLogo" alt="药枢协同" />
+        </button>
       </div>
 
       <div class="hero-center">
@@ -233,19 +236,33 @@ onBeforeUnmount(() => {
   text-align: center;
 }
 
-.brand-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #d9b66f, #a7864a);
-  color: #22332d;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 24px rgba(200, 169, 103, 0.26);
+.brand-logo {
+  width: auto;
+  height: 52px;
+  display: block;
+  object-fit: contain;
 }
 
+.brand-mark {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  max-width: min(420px, 46vw);
+  overflow: hidden;
+}
+
+@media (max-width: 900px) {
+  .brand-logo {
+    height: 44px;
+  }
+  .brand-mark {
+    max-width: min(380px, 66vw);
+  }
+}
 .brand-title {
   color: #e9f4ef;
   font-size: 21px;
