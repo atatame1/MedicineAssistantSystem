@@ -60,6 +60,7 @@ const props = defineProps<{
     onClick: (row: Row) => void
   }[]
   onRowInteract?: (row: Row) => void
+  detailInTileHeader?: boolean
 }>()
 
 const schemaCreate = computed<FormField[]>(() => props.formSchemaCreate ?? props.formSchema ?? [])
@@ -326,7 +327,20 @@ load()
                   {{ isFavorited(row) ? '★' : '☆' }}
                 </button>
               </div>
-              <h3 class="kb-tile-name">{{ row[titleProp] ?? '—' }}</h3>
+              <div class="kb-tile-title-row">
+                <h3 class="kb-tile-name">{{ row[titleProp] ?? '—' }}</h3>
+                <el-button
+                  v-if="detailInTileHeader"
+                  link
+                  type="primary"
+                  size="small"
+                  class="kb-tile-detail-hd"
+                  :disabled="saving"
+                  @click.stop="openDetail(row)"
+                >
+                  详细
+                </el-button>
+              </div>
             </div>
             <div class="kb-tile-body">
               <div v-for="c in bodyColumns" :key="c.prop" class="kb-kv">
@@ -575,6 +589,23 @@ load()
 
 .kb-fav.active {
   color: #f4d27e;
+}
+
+.kb-tile-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.kb-tile-title-row .kb-tile-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.kb-tile-detail-hd {
+  flex-shrink: 0;
+  font-weight: 700;
 }
 
 .kb-tile-name {

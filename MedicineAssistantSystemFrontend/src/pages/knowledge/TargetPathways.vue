@@ -21,5 +21,6 @@ import { targetPathwayCreate, targetPathwayEdit } from './knowledgeFormSchemas'
     :form-schema-create="targetPathwayCreate"
     :form-schema-edit="targetPathwayEdit"
     favorite-type="TARGET_PATHWAY"
+    detail-in-tile-header
   />
 </template>
