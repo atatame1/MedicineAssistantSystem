@@ -171,6 +171,27 @@ public class AiAgentController {
         return stream(AgentCode.FORMULA_COMPATIBILITY, request, servletRequest);
     }
 
+    @PostMapping(value = "/formula-compatibility/ephemeral", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @Operation(summary = "配伍分析智能体（临时分析，不落库）")
+    public SseEmitter formulaCompatibilityEphemeral(@RequestBody AiTaskRequest request) {
+        String input = request.getInput() == null ? "" : request.getInput();
+        SseEmitter emitter = new SseEmitter(600_000L);
+        aiAgentService.stream(AgentCode.FORMULA_COMPATIBILITY, input, null)
+                .subscribeOn(Schedulers.boundedElastic())
+                .subscribe(
+                        chunk -> {
+                            try {
+                                emitter.send(SseEmitter.event().data(chunk));
+                            } catch (IOException e) {
+                                emitter.completeWithError(e);
+                            }
+                        },
+                        emitter::completeWithError,
+                        emitter::complete
+                );
+        return emitter;
+    }
+
     @PostMapping(value = "/mechanism-inference", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     @Operation(summary = "机制推演智能体")
     public SseEmitter mechanismInference(@RequestBody AiTaskRequest request, HttpServletRequest servletRequest) {

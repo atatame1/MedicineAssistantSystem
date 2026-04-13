@@ -33,6 +33,10 @@ const kbItems = [
   { name: '法规库', desc: '检索 / 指导原则 / 政策更新', icon: '⚖️', path: '/regulations' }
 ]
 
+function goExplore() {
+  router.push('/knowledge/explore')
+}
+
 function goExpert(key: string) {
   router.push(`/knowledge/expert/${encodeURIComponent(key)}`)
 }
@@ -77,7 +81,13 @@ function go(p: string) {
       <aside class="kb-side" aria-label="知识库索引">
         <div class="kb-side-hd">
           <h3 class="kb-side-title">知识库索引</h3>
-          <span class="kb-side-tip">8 类</span>
+          <div class="kb-side-actions">
+            <button type="button" class="kb-explore" title="自由探索" @click="goExplore">
+              <span class="kbe-ico">＋</span>
+              <span class="kbe-txt">自由探索</span>
+            </button>
+            <span class="kb-side-tip">8 类</span>
+          </div>
         </div>
         <p class="kb-side-sub">悬停可看简介</p>
         <div class="kb-chips">
@@ -259,6 +269,41 @@ function go(p: string) {
   margin-bottom: 8px;
 }
 
+.kb-side-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.kb-explore {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 10px;
+  height: 30px;
+  padding: 0 10px;
+  cursor: pointer;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kb-explore:hover {
+  background: rgba(115, 209, 180, 0.12);
+  border-color: rgba(115, 209, 180, 0.24);
+}
+
+.kbe-ico {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.kbe-txt {
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .kb-side-title {
   margin: 0;
   font-size: 17px;
@@ -317,6 +362,7 @@ function go(p: string) {
   line-height: 1.35;
   color: rgba(255, 255, 255, 0.93);
 }
+
 
 @media (max-width: 1100px) {
   .main {
