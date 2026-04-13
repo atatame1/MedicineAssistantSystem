@@ -91,7 +91,7 @@ function bucketLabel(iso: string | null) {
   if (days < 1) return '今天'
   if (days < 2) return '一天前'
   if (days < 8) return '一周前'
-  if (days < 32) return '一个月前'
+  if (days < 32) return '30天内'
   return '更早'
 }
 

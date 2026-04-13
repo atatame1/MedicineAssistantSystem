@@ -95,14 +95,21 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
 
 <template>
   <div class="page-wrap">
-    <div class="toolbar">
-      <el-input
-        v-model="keyword"
-        placeholder="输入关键词检索法规"
-        clearable
-        class="keyword-input"
-      />
-      <el-button class="btn-go" @click="load" :loading="loading" type="primary">搜索</el-button>
+    <div class="head">
+      <div class="intro">
+        <div class="intro-title">法规库</div>
+        <div class="intro-sub">政策法规 · 注册审批 · 合规要点速览</div>
+      </div>
+      <div class="toolbar">
+        <el-input
+          v-model="keyword"
+          placeholder="按关键词检索法规/通知"
+          clearable
+          class="keyword-input"
+          @keyup.enter="load"
+        />
+        <el-button class="btn-go" @click="load" :loading="loading" type="primary">检索</el-button>
+      </div>
     </div>
 
     <el-alert v-if="error" type="error" show-icon :title="error" class="mb-12" />
@@ -208,16 +215,41 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
   box-sizing: border-box;
 }
 
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.intro-title {
+  font-size: 27px;
+  line-height: 1.1;
+  font-weight: 900;
+  color: rgba(233, 244, 239, 0.96);
+}
+
+.intro-sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(189, 212, 204, 0.74);
+}
+
 .toolbar {
   display: flex;
   gap: 10px;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  padding: 8px;
+  border-radius: 14px;
+  border: 1px solid rgba(115, 209, 180, 0.2);
+  background: rgba(8, 28, 24, 0.42);
 }
 
 .keyword-input {
-  flex: 1;
-  min-width: 200px;
+  flex: 0 1 auto;
+  width: clamp(260px, 34vw, 420px);
 }
 
 .btn-go {
@@ -339,6 +371,18 @@ onBeforeUnmount(() => window.removeEventListener('resize', syncTableMax))
 }
 
 @media (max-width: 980px) {
+  .head {
+    align-items: stretch;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .keyword-input {
+    width: 100%;
+  }
+
   .layout {
     grid-template-columns: 1fr;
   }

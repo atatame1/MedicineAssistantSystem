@@ -51,6 +51,36 @@ const topTaskName = computed(() => {
   return `${first.title}${first.projectName ? ` · ${first.projectName}` : ''}`
 })
 
+const topTasks = computed(() => {
+  const tasks = [...(overview.value?.tasks ?? [])]
+  tasks.sort((a, b) => {
+    const ao = a.overdue ? 0 : 1
+    const bo = b.overdue ? 0 : 1
+    if (ao !== bo) return ao - bo
+    return (a.priority ?? 99) - (b.priority ?? 99)
+  })
+  return tasks.slice(0, 5)
+})
+
+const portalNews = computed(() => {
+  const rows: string[] = []
+  rows.push(`项目焦点：${topProjectName.value}`)
+  const tasks = topTasks.value
+  if (tasks.length) {
+    for (const t of tasks.slice(0, 3)) {
+      rows.push(`任务进展：${t.title}${t.projectName ? `（${t.projectName}）` : ''}`)
+    }
+  } else {
+    rows.push('任务进展：暂无待处理任务')
+  }
+  if (riskCount.value > 0) {
+    rows.push(`风险提示：当前有 ${riskCount.value} 个高优先级风险待处理`)
+  } else {
+    rows.push('风险提示：暂无高优先级风险')
+  }
+  return rows.slice(0, 5)
+})
+
 const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'success' | 'danger' }> = {
   1: { text: '立项中', type: 'warning' },
   2: { text: '进行中', type: 'success' },
@@ -144,77 +174,96 @@ onMounted(load)
   <div class="page-wrap">
     <el-alert v-if="error" :title="error" type="error" show-icon class="mb-16" />
 
-    <section class="hero">
-      <div class="hero-badge">智能门户</div>
-      <h1 class="hero-title">中药新药研发的人机协同门户</h1>
-      <p class="hero-desc">
-        用一个足够克制的首页，把平台是什么、当前在推进什么、以及用户最近在关心什么，直接摆在第一屏。
-      </p>
-      <div class="hero-tags">
-        <span class="hero-tag">知识检索</span>
-        <span class="hero-tag">专家问答</span>
-        <span class="hero-tag">智能研判</span>
-        <span class="hero-tag">项目推进</span>
+    <section class="banner">
+      <div class="banner-nav">
+        <button type="button" class="nav-pill" @click="go('/portal')">智能门户</button>
+        <button type="button" class="nav-pill" @click="go('/knowledge')">中医智研</button>
+        <button type="button" class="nav-pill" @click="go('/agents')">人机协同</button>
       </div>
-      <div class="hero-actions">
-        <button type="button" class="hero-primary" @click="go('/projects')">进入项目中心</button>
-        <button type="button" class="hero-link" @click="go('/knowledge')">知识枢库</button>
+      <h1 class="banner-title">中药新药研发人机协同决策系统</h1>
+      <p class="banner-sub">传承本草智慧 · 融合现代证据 · 贯通研发全流程</p>
+      <div class="banner-actions">
+        <button type="button" class="btn-primary" @click="go('/projects')">进入项目中心</button>
+        <button type="button" class="btn-ghost" @click="go('/knowledge')">知识枢库</button>
+        <button type="button" class="btn-ghost" @click="go('/agents')">灵智工坊</button>
       </div>
     </section>
 
-    <section class="summary-band">
-      <div class="summary-head">
-        <div>
-          <div class="section-title">近期用户任务摘要</div>
-          <div class="summary-sub">基于近期智能体问答生成</div>
+    <section class="metric-row">
+      <div class="metric-item">
+        <div class="metric-label">我的项目</div>
+        <div class="metric-value">{{ projectCount }}</div>
+        <div class="metric-sub">最近更新前 10 个项目</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-label">待办任务</div>
+        <div class="metric-value">{{ taskCount }}</div>
+        <div class="metric-sub">包含实验与审批任务</div>
+      </div>
+      <div class="metric-item">
+        <div class="metric-label">风险预警</div>
+        <div class="metric-value">{{ riskCount }}</div>
+        <div class="metric-sub">高优先级项目风险提醒</div>
+      </div>
+    </section>
+
+    <section class="portal-main">
+      <aside class="portal-news panel">
+        <div class="panel-head">
+          <h3>门户快讯</h3>
+          <span>News</span>
         </div>
-        <el-button
-          type="primary"
-          plain
-          size="small"
-          :loading="summarizing"
-          :disabled="summarizing || !userId"
-          @click="runSummary"
-        >
-          重新生成总结
-        </el-button>
-      </div>
-      <el-progress
-        v-if="summarizing || summaryProgress > 0"
-        class="summary-progress"
-        :percentage="Math.round(summaryProgress)"
-        :stroke-width="6"
-        striped
-        striped-flow
-      />
-      <div class="summary-text">{{ displaySummary }}</div>
+        <ul class="news-list">
+          <li v-for="(item, idx) in portalNews" :key="idx">{{ item }}</li>
+        </ul>
+      </aside>
+
+      <article class="portal-summary panel">
+        <div class="summary-head">
+          <div>
+            <div class="section-title">近期用户任务摘要</div>
+            <div class="summary-sub">基于近期智能体问答生成，支持手动刷新</div>
+          </div>
+          <el-button
+            type="primary"
+            plain
+            size="small"
+            :loading="summarizing"
+            :disabled="summarizing || !userId"
+            @click="runSummary"
+          >
+            重新生成总结
+          </el-button>
+        </div>
+        <el-progress
+          v-if="summarizing || summaryProgress > 0"
+          class="summary-progress"
+          :percentage="Math.round(summaryProgress)"
+          :stroke-width="6"
+          striped
+          striped-flow
+        />
+        <div class="summary-text">{{ displaySummary }}</div>
+      </article>
+
+      <aside class="portal-nav panel">
+        <div class="panel-head">
+          <h3>研究导航</h3>
+          <span>Access</span>
+        </div>
+        <div class="nav-links">
+          <button type="button" class="nav-link" @click="go('/projects')">项目中心</button>
+          <button type="button" class="nav-link" @click="go('/projects/draft-evaluate')">立项评估</button>
+          <button type="button" class="nav-link" @click="go('/knowledge/expert/chenkeji')">专家问答</button>
+          <button type="button" class="nav-link" @click="go('/literatures')">文献库</button>
+          <button type="button" class="nav-link" @click="go('/knowledge/patents')">专利库</button>
+          <button type="button" class="nav-link" @click="go('/regulations')">法规库</button>
+        </div>
+      </aside>
     </section>
 
-    <section class="stats-row">
-      <div class="stat-item">
-        <div class="stat-label">我的项目</div>
-        <div class="stat-value">{{ projectCount }}</div>
-        <div class="stat-tip">最近更新前 10 个项目</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">待办任务</div>
-        <div class="stat-value">{{ taskCount }}</div>
-        <div class="stat-tip">包含实验与审批任务</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-label">风险预警</div>
-        <div class="stat-value">{{ riskCount }}</div>
-        <div class="stat-tip">高优先级项目风险提醒</div>
-      </div>
-      <div class="stat-item focus">
-        <div class="stat-label">当前焦点</div>
-        <div class="focus-line">{{ topProjectName }}</div>
-        <div class="focus-line soft">{{ topTaskName }}</div>
-      </div>
-    </section>
-
-    <section class="work-grid">
-      <div class="section section-projects">
+    <section class="work-shell">
+      <div class="work-block section-projects">
         <div class="section-head">
           <div class="section-title">项目进展</div>
           <div class="section-line"></div>
@@ -241,7 +290,7 @@ onMounted(load)
         </el-table>
       </div>
 
-      <div class="section section-tasks">
+      <div class="work-block section-tasks">
         <div class="section-head">
           <div class="section-title">今日任务</div>
           <div class="section-line"></div>
@@ -272,106 +321,236 @@ onMounted(load)
 .page-wrap {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   max-width: 1220px;
   margin: 0 auto;
-  padding: 8px 2px 18px;
+  padding: 6px 2px 18px;
 }
 
-.hero {
+.banner {
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0;
+  padding: 14px 4px 14px;
+  background: transparent;
+  position: relative;
+  overflow: hidden;
+  animation: panel-in 0.5s ease both;
+}
+
+.banner::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 10%, rgba(115, 209, 180, 0.08) 45%, transparent 70%);
+  transform: translateX(-120%);
+  animation: shimmer 9s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.banner-nav {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 18px 0 4px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6px 12px;
+.nav-pill {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.76);
   border-radius: 999px;
-  border: 1px solid rgba(115, 209, 180, 0.32);
-  background: rgba(115, 209, 180, 0.14);
-  color: #dff8ee;
-  font-size: 12px;
-  font-weight: 800;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.hero-title {
-  max-width: 820px;
-  margin: 18px 0 0;
+.nav-pill:hover {
+  background: rgba(115, 209, 180, 0.1);
+  border-color: rgba(115, 209, 180, 0.22);
+}
+
+.banner-title {
+  margin: 10px 0 0;
   color: rgba(255, 255, 255, 0.97);
-  font-size: 42px;
-  line-height: 1.12;
+  font-size: 40px;
+  line-height: 1.1;
   font-weight: 900;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.012em;
 }
 
-.hero-desc {
-  max-width: 760px;
-  margin: 16px 0 0;
-  color: rgba(255, 255, 255, 0.7);
+.banner-sub {
+  margin: 12px 0 0;
+  color: rgba(255, 255, 255, 0.66);
   font-size: 15px;
-  line-height: 1.9;
+  line-height: 1.8;
 }
 
-.hero-tags {
+.banner-actions {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
-.hero-tag {
-  padding: 8px 13px;
+.btn-primary,
+.btn-ghost {
+  padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.78);
   font-size: 12px;
-}
-
-.hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 24px;
-}
-
-.hero-primary,
-.hero-link {
-  padding: 11px 18px;
-  border-radius: 999px;
-  font-size: 13px;
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
 }
 
-.hero-primary {
+.btn-primary {
   border: 0;
   color: #06241e;
   background: linear-gradient(135deg, rgba(146, 230, 202, 0.96), rgba(115, 209, 180, 0.92));
 }
 
-.hero-link {
+.btn-ghost {
   border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.88);
-  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.03);
 }
 
-.hero-primary:hover,
-.hero-link:hover {
+.btn-primary:hover,
+.btn-ghost:hover {
   transform: translateY(-1px);
 }
 
-.summary-band {
-  padding: 20px 0 18px;
+.portal-main {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.8fr) minmax(220px, 0.9fr);
+  gap: 14px;
+  animation: panel-in 0.55s ease both;
+}
+
+.portal-main > *:nth-child(1) {
+  animation: panel-in 0.45s ease both;
+}
+
+.portal-main > *:nth-child(2) {
+  animation: panel-in 0.55s ease both;
+}
+
+.portal-main > *:nth-child(3) {
+  animation: panel-in 0.65s ease both;
+}
+
+.panel {
+  border: 0;
+  border-left: 2px solid rgba(115, 209, 180, 0.18);
+  border-radius: 0;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 8px 12px 8px 14px;
+}
+
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.panel-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.panel-head span {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.52);
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  animation: panel-in 0.5s ease both;
+  padding-top: 2px;
+}
+
+.metric-item {
+  border: 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0;
+  background: transparent;
+  padding: 10px 2px 0;
+}
+
+.metric-label {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 13px;
+}
+
+.metric-value {
+  margin-top: 8px;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.metric-sub {
+  margin-top: 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.news-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.news-list li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  padding-bottom: 7px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.09);
+}
+
+.news-list li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.portal-summary {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-links {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+
+.nav-link {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(255, 255, 255, 0.82);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.nav-link:hover {
+  background: rgba(115, 209, 180, 0.12);
+  border-color: rgba(115, 209, 180, 0.26);
 }
 
 .summary-head {
@@ -399,72 +578,26 @@ onMounted(load)
 }
 
 .summary-text {
-  max-width: 980px;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1.9;
   white-space: pre-wrap;
 }
 
-.stats-row {
+.work-shell {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
   gap: 18px;
-}
-
-.stat-item {
-  min-width: 0;
-  padding-top: 8px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.stat-label {
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 13px;
-}
-
-.stat-value {
-  margin-top: 12px;
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 42px;
-  line-height: 1;
-  font-weight: 800;
-}
-
-.stat-tip {
-  margin-top: 8px;
-  color: rgba(255, 255, 255, 0.56);
-  font-size: 12px;
-}
-
-.stat-item.focus {
-  display: flex;
-  flex-direction: column;
-}
-
-.focus-line {
-  margin-top: 12px;
-  color: rgba(255, 255, 255, 0.9);
-  font-size: 14px;
-  line-height: 1.7;
-  font-weight: 700;
-}
-
-.focus-line.soft {
-  margin-top: 6px;
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.work-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.9fr);
-  gap: 24px;
   align-items: start;
+  animation: panel-in 0.7s ease both;
 }
 
-.section {
+.work-block {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0;
+  background: transparent;
+  padding: 12px 0 10px;
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -483,9 +616,9 @@ onMounted(load)
 
 .table-free {
   overflow: hidden;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.035);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
   backdrop-filter: blur(12px);
 }
 
@@ -545,9 +678,9 @@ onMounted(load)
   align-items: center;
   gap: 8px;
   padding: 14px 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.035);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.01);
   backdrop-filter: blur(12px);
 }
 
@@ -573,12 +706,13 @@ onMounted(load)
 }
 
 @media (max-width: 980px) {
-  .hero-title {
-    font-size: 30px;
+  .banner-title {
+    font-size: 34px;
   }
 
-  .stats-row,
-  .work-grid {
+  .portal-main,
+  .metric-row,
+  .work-shell {
     grid-template-columns: 1fr;
   }
 
@@ -594,22 +728,45 @@ onMounted(load)
     padding-top: 2px;
   }
 
-  .hero-title {
+  .banner-title {
     font-size: 24px;
   }
 
-  .hero-desc,
+  .banner-sub,
   .summary-text {
     font-size: 14px;
   }
 
-  .hero-actions {
+  .banner-actions {
     width: 100%;
   }
 
-  .hero-primary,
-  .hero-link {
+  .btn-primary,
+  .btn-ghost {
     width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  50% {
+    transform: translateX(120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
