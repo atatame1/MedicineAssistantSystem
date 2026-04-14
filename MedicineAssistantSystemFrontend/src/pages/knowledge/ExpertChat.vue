@@ -3,6 +3,7 @@ import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { postExpertChatStream } from '@/api/ai'
 import { postVoiceGenAudio } from '@/api/voice'
+import { projectAiAssessToHtml } from '@/utils/projectAiMarkdown'
 import { getExpertByKey } from './experts'
 import { resolveExpertMedia } from './expertMedia'
 
@@ -25,8 +26,18 @@ const listEl = ref<HTMLElement | null>(null)
 const voiceLoadingIndex = ref<number | null>(null)
 let voiceObjectUrl: string | null = null
 const playingAudio = ref<HTMLAudioElement | null>(null)
+const speakingIndex = ref<number | null>(null)
+let typingTimer: number | null = null
+let typingToken = 0
+const fullTextByIndex = new Map<number, string>()
+const mdHtmlCache = new Map<string, string>()
 
 function stopVoice() {
+  typingToken++
+  if (typingTimer != null) {
+    window.clearInterval(typingTimer)
+    typingTimer = null
+  }
   try {
     playingAudio.value?.pause()
   } catch {}
@@ -37,12 +48,87 @@ function stopVoice() {
   }
   voiceLoadingIndex.value = null
   talking.value = false
+  speakingIndex.value = null
+}
+
+function mdHtml(text: string) {
+  const t = text || ''
+  const cached = mdHtmlCache.get(t)
+  if (cached != null) return cached
+  const html = projectAiAssessToHtml(t)
+  mdHtmlCache.set(t, html)
+  if (mdHtmlCache.size > 120) mdHtmlCache.clear()
+  return html
+}
+
+async function speakAndTypewrite(i: number, text: string) {
+  const t = text.trim()
+  if (!t || !expert.value) return
+  stopVoice()
+  speakingIndex.value = i
+  fullTextByIndex.set(i, text)
+  voiceLoadingIndex.value = i
+  error.value = null
+  try {
+    const blob = await postVoiceGenAudio(t, expert.value.voiceKey ?? null)
+    voiceObjectUrl = URL.createObjectURL(blob)
+    const a = new Audio(voiceObjectUrl)
+    playingAudio.value = a
+
+    await new Promise<void>((resolve, reject) => {
+      a.onloadedmetadata = () => resolve()
+      a.onerror = () => reject(new Error('语音播放失败'))
+    })
+
+    const token = ++typingToken
+    const msg = msgs.value[i]
+    if (msg) msg.content = ''
+
+    const durMs = Number.isFinite(a.duration) && a.duration > 0 ? a.duration * 1000 : 0
+    const total = text.length || 1
+    const stepMs = durMs > 0 ? Math.max(12, Math.min(60, Math.floor(durMs / total))) : 24
+    let p = 0
+    typingTimer = window.setInterval(() => {
+      if (token !== typingToken) return
+      p = Math.min(text.length, p + 1)
+      const m = msgs.value[i]
+      if (m) m.content = text.slice(0, p)
+      if (p >= text.length && typingTimer != null) {
+        window.clearInterval(typingTimer)
+        typingTimer = null
+      }
+      void nextTick(() => listEl.value?.scrollTo({ top: listEl.value!.scrollHeight }))
+    }, stepMs)
+
+    a.onended = () => {
+      const m = msgs.value[i]
+      if (m) m.content = fullTextByIndex.get(i) ?? text
+      stopVoice()
+    }
+    a.onerror = () => {
+      error.value = '语音播放失败'
+      const m = msgs.value[i]
+      if (m) m.content = fullTextByIndex.get(i) ?? text
+      stopVoice()
+    }
+
+    await a.play()
+    talking.value = true
+  } catch (e: unknown) {
+    error.value = String((e as Error)?.message || e)
+    const m = msgs.value[i]
+    if (m) m.content = fullTextByIndex.get(i) ?? text
+    stopVoice()
+  } finally {
+    if (voiceLoadingIndex.value === i) voiceLoadingIndex.value = null
+  }
 }
 
 async function playAssistantVoice(i: number, text: string) {
   const t = text.trim()
   if (!t || !expert.value) return
   stopVoice()
+  speakingIndex.value = i
   voiceLoadingIndex.value = i
   error.value = null
   try {
@@ -102,6 +188,7 @@ async function send() {
   loading.value = true
   msgs.value.push({ role: 'assistant', content: '' })
   const assistantIndex = msgs.value.length - 1
+  let assistantFull = ''
   try {
     await nextTick()
     listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
@@ -112,8 +199,7 @@ async function send() {
         conversationId: conversationId.value
       },
       (chunk) => {
-        const msg = msgs.value[assistantIndex]
-        if (msg) msg.content += chunk
+        assistantFull += chunk
         void nextTick(() => {
           listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
         })
@@ -128,6 +214,10 @@ async function send() {
     loading.value = false
     await nextTick()
     listEl.value?.scrollTo({ top: listEl.value.scrollHeight })
+  }
+
+  if (assistantFull.trim()) {
+    await speakAndTypewrite(assistantIndex, assistantFull)
   }
 }
 
@@ -169,7 +259,7 @@ function back() {
             <div v-for="(m, i) in msgs" :key="i" class="msg" :class="m.role">
               <div v-if="m.role === 'assistant'" class="bubble-row">
                 <div class="bubble">
-                  <template v-if="!m.content && loading && i === msgs.length - 1">
+                  <template v-if="!m.content && ((loading && i === msgs.length - 1) || voiceLoadingIndex === i)">
                     <span class="typing" aria-hidden="true">
                       <span class="typing-dot" />
                       <span class="typing-dot" />
@@ -177,7 +267,7 @@ function back() {
                     </span>
                     <span class="sr-only">正在回复</span>
                   </template>
-                  <template v-else>{{ m.content }}</template>
+                  <div v-else class="md" v-html="mdHtml(m.content)" />
                 </div>
                 <button
                   v-if="m.content.trim()"
@@ -189,6 +279,15 @@ function back() {
                   @click="playAssistantVoice(i, m.content)"
                 >
                   {{ voiceLoadingIndex === i ? '…' : '朗读' }}
+                </button>
+                <button
+                  v-if="talking && speakingIndex === i"
+                  type="button"
+                  class="voice-btn voice-btn--stop"
+                  aria-label="停止朗读"
+                  @click="stopVoice"
+                >
+                  停止
                 </button>
               </div>
               <div v-else class="bubble">{{ m.content }}</div>
@@ -393,6 +492,57 @@ function back() {
   word-break: break-word;
   color: rgba(255, 255, 255, 0.93);
 }
+.md :deep(h1),
+.md :deep(h2),
+.md :deep(h3),
+.md :deep(h4),
+.md :deep(h5),
+.md :deep(h6) {
+  margin: 10px 0 6px;
+  font-weight: 900;
+  line-height: 1.35;
+}
+.md :deep(p) {
+  margin: 0 0 8px;
+}
+.md :deep(p:last-child) {
+  margin-bottom: 0;
+}
+.md :deep(ul),
+.md :deep(ol) {
+  margin: 6px 0;
+  padding-left: 1.25em;
+}
+.md :deep(li) {
+  margin: 2px 0;
+}
+.md :deep(code) {
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.md :deep(pre) {
+  margin: 8px 0;
+  padding: 10px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.md :deep(pre code) {
+  background: transparent;
+  padding: 0;
+}
+.md :deep(blockquote) {
+  margin: 8px 0;
+  padding: 4px 0 4px 12px;
+  border-left: 3px solid rgba(115, 209, 180, 0.45);
+  color: rgba(255, 255, 255, 0.78);
+}
+.md :deep(a) {
+  color: rgba(146, 230, 202, 0.95);
+}
 .msg.assistant .bubble-row .bubble {
   flex: 1;
   min-width: 0;
@@ -423,6 +573,11 @@ function back() {
 .voice-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+.voice-btn--stop {
+  color: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.18);
 }
 .composer-shell {
   position: relative;
