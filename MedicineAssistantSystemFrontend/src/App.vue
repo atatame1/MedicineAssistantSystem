@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
 
       <div class="hero-center">
         <div class="brand-title">药枢协研——中药新药研发人机协同决策与创新智能体</div>
-        <div class="brand-subtitle">记忆超群 · 定时执行 · 变身专家 · 迭代成长</div>
+        <div class="brand-subtitle">记忆超群 · 定时反馈 · 变身专家 · 迭代成长</div>
       </div>
       <div class="hero-right">
         <el-popover v-model:visible="userMenuOpen" placement="bottom-end" :width="220" trigger="click">

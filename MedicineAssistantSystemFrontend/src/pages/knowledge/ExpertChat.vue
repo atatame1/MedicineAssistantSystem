@@ -52,13 +52,23 @@ function stopVoice() {
 }
 
 function mdHtml(text: string) {
-  const t = text || ''
+  const t = normalizeExpertText(text || '')
   const cached = mdHtmlCache.get(t)
   if (cached != null) return cached
   const html = projectAiAssessToHtml(t)
   mdHtmlCache.set(t, html)
   if (mdHtmlCache.size > 120) mdHtmlCache.clear()
   return html
+}
+
+function normalizeExpertText(text: string) {
+  return String(text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/^\s*\*\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/\*/g, '')
 }
 
 async function speakAndTypewrite(i: number, text: string) {

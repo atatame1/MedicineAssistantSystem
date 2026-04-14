@@ -14,8 +14,6 @@ const agents = [
   { key: 'report-generation', name: '报告生成', desc: '自动生成立项/研究总结/技术资料等结构化报告', icon: '📝' }
 ]
 
-const layoutClass = ['n0', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7']
-
 const particles = [
   { x: '5%', y: '16%', s: 6, d: '0s' },
   { x: '14%', y: '63%', s: 9, d: '-1.3s' },
@@ -54,23 +52,19 @@ function openAgent(key: string) {
     </header>
 
     <section class="network">
-      <svg class="links" viewBox="0 0 1200 520" preserveAspectRatio="none" aria-hidden="true">
-        <path class="link" d="M95 110 C 240 40, 340 80, 430 145" />
-        <path class="link delay1" d="M430 145 C 520 210, 605 112, 705 125" />
-        <path class="link delay2" d="M705 125 C 790 95, 930 70, 1080 120" />
-        <path class="link delay3" d="M190 315 C 300 230, 430 240, 520 315" />
-        <path class="link delay1" d="M520 315 C 620 380, 730 260, 820 305" />
-        <path class="link delay2" d="M820 305 C 915 360, 1000 320, 1090 315" />
-        <path class="link soft" d="M430 145 C 430 220, 430 245, 520 315" />
-        <path class="link soft delay3" d="M705 125 C 690 210, 760 235, 820 305" />
+      <svg class="links" viewBox="0 0 1200 380" preserveAspectRatio="none" aria-hidden="true">
+        <path class="link" d="M150 95 C 250 62, 350 62, 450 95 C 550 128, 650 128, 750 95 C 850 62, 950 62, 1050 95" />
+        <path class="link delay1" d="M150 285 C 250 252, 350 252, 450 285 C 550 318, 650 318, 750 285 C 850 252, 950 252, 1050 285" />
+        <path class="link soft" d="M150 95 C 110 165, 110 215, 150 285" />
+        <path class="link soft delay2" d="M450 95 C 410 165, 410 215, 450 285" />
+        <path class="link soft delay3" d="M750 95 C 790 165, 790 215, 750 285" />
+        <path class="link soft delay1" d="M1050 95 C 1090 165, 1090 215, 1050 285" />
       </svg>
-
       <button
         v-for="(a, i) in agents"
         :key="a.key"
         type="button"
         class="node"
-        :class="layoutClass[i]"
         :style="{ '--i': i }"
         @click="openAgent(a.key)"
       >
@@ -176,46 +170,46 @@ function openAgent(key: string) {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-rows: 88px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: auto;
   gap: 14px;
   padding: 12px 0 6px;
 }
 
 .links {
   position: absolute;
-  inset: 12px 6px 0;
+  inset: 8px 6px 2px;
   z-index: 0;
   width: calc(100% - 12px);
-  height: calc(100% - 12px);
+  height: calc(100% - 10px);
   pointer-events: none;
-  opacity: 0.78;
+  opacity: 0.7;
 }
 
 .link {
   fill: none;
-  stroke: rgba(158, 228, 202, 0.48);
+  stroke: rgba(158, 228, 202, 0.42);
   stroke-width: 1.4;
   stroke-dasharray: 5 10;
   animation: flow 7.5s linear infinite;
 }
 
 .link.soft {
-  stroke: rgba(212, 184, 125, 0.32);
+  stroke: rgba(212, 184, 125, 0.3);
   stroke-width: 1;
   stroke-dasharray: 4 12;
 }
 
 .delay1 {
-  animation-delay: -1.3s;
+  animation-delay: -1.2s;
 }
 
 .delay2 {
-  animation-delay: -2.5s;
+  animation-delay: -2.4s;
 }
 
 .delay3 {
-  animation-delay: -3.8s;
+  animation-delay: -3.6s;
 }
 
 .node {
@@ -244,6 +238,7 @@ function openAgent(key: string) {
     nodeIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) backwards,
     drift 6.6s ease-in-out infinite;
   animation-delay: calc(var(--i) * 0.07s), calc(var(--i) * 0.45s);
+  min-height: 176px;
 }
 
 .node:hover {
@@ -299,57 +294,6 @@ function openAgent(key: string) {
   font-size: 12px;
   line-height: 1.45;
   font-weight: 700;
-}
-
-.n0,
-.n1,
-.n2,
-.n3,
-.n4,
-.n5,
-.n6,
-.n7 {
-  grid-row: span 2;
-}
-
-.n0 {
-  grid-column: 1 / 4;
-  --offset: -6px;
-}
-
-.n1 {
-  grid-column: 4 / 7;
-  --offset: 12px;
-}
-
-.n2 {
-  grid-column: 7 / 10;
-  --offset: 0px;
-}
-
-.n3 {
-  grid-column: 10 / 13;
-  --offset: 8px;
-}
-
-.n4 {
-  grid-column: 2 / 5;
-  --offset: -2px;
-}
-
-.n5 {
-  grid-column: 5 / 8;
-  --offset: 14px;
-}
-
-.n6 {
-  grid-column: 8 / 10;
-  --offset: -10px;
-}
-
-.n7 {
-  grid-column: 10 / 13;
-  --offset: 4px;
 }
 
 @keyframes enter {
@@ -459,24 +403,10 @@ function openAgent(key: string) {
 @media (max-width: 1024px) {
   .network {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-auto-rows: auto;
   }
 
   .links {
     display: none;
-  }
-
-  .n0,
-  .n1,
-  .n2,
-  .n3,
-  .n4,
-  .n5,
-  .n6,
-  .n7 {
-    grid-column: auto;
-    grid-row: auto;
-    --offset: 0px;
   }
 
   .node {

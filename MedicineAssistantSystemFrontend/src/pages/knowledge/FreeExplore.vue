@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { postAiStreamText } from '@/api/ai'
-import { projectAiAssessToHtml } from '@/utils/projectAiMarkdown'
+import { stripLeadingConversationJson } from '@/utils/projectAiMarkdown'
 
 type ExploreRow = { herb: string; dose: string }
 const rows = ref<ExploreRow[]>([
@@ -13,7 +13,34 @@ const rows = ref<ExploreRow[]>([
 const running = ref(false)
 const error = ref<string | null>(null)
 const output = ref('')
-const outputHtml = computed(() => projectAiAssessToHtml(output.value))
+const outputHtml = computed(() => renderExploreOutput(output.value))
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function renderExploreOutput(raw: string) {
+  const cleaned = stripLeadingConversationJson(String(raw || ''))
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/^\s{0,3}#{1,6}\s*/gm, '')
+    .replace(/^\s*[-*+]\s+/gm, '')
+    .replace(/^\s*\d+\.\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/__([^_]+)__/g, '$1')
+    .replace(/_([^_]+)_/g, '$1')
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '$1（$2）')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  return escapeHtml(cleaned).replace(/\n/g, '<br/>')
+}
 
 function addRow() {
   rows.value.push({ herb: '', dose: '' })
