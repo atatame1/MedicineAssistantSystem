@@ -315,7 +315,7 @@ onMounted(() => {
     <section class="portal-main">
       <aside class="portal-news panel">
         <div class="panel-head">
-          <h3>公众号最新文章</h3>
+          <h3>中药新药最新研发资讯</h3>
           <span>WeChat</span>
         </div>
         <div class="mp-toolbar">
