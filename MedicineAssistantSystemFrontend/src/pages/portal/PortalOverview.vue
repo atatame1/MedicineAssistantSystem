@@ -35,11 +35,21 @@ const summaryProgress = ref(0)
 let summaryRaf = 0
 const DEFAULT_MP_NAME = '中药新药'
 const MP_PREF_KEY = 'mas_portal_mp_pref'
+const MP_CACHE_PREFIX = 'mas_portal_mp_cache:v2:'
+const MP_REQ_LIMIT_KEY = 'mas_portal_mp_req_limit:v1'
+const MP_AUTO_REFRESH_KEY = 'mas_portal_mp_auto_refresh:v1'
+const MP_REQ_DAILY_LIMIT = 6
+const mpReqCount = ref(0)
 
 type MpCache = {
   nickname: string
   items: MpArticleItem[]
   updatedAt: number
+}
+
+type MpReqLimit = {
+  day: string
+  count: number
 }
 
 const projectCount = computed(() => overview.value?.myProjects?.length ?? 0)
@@ -121,6 +131,7 @@ const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'succ
 }
 
 const activeMpName = computed(() => mpNickname.value || mpKeyword.value || DEFAULT_MP_NAME)
+const mpReqRemain = computed(() => Math.max(0, MP_REQ_DAILY_LIMIT - mpReqCount.value))
 
 async function load() {
   if (!userId.value) return
@@ -209,9 +220,46 @@ function saveMpKeyword() {
   } catch {}
 }
 
+function currentDay() {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function loadMpReqLimit() {
+  try {
+    const raw = localStorage.getItem(MP_REQ_LIMIT_KEY)
+    if (!raw) {
+      mpReqCount.value = 0
+      return
+    }
+    const rec = JSON.parse(raw) as MpReqLimit
+    if (rec.day !== currentDay()) {
+      mpReqCount.value = 0
+      localStorage.setItem(MP_REQ_LIMIT_KEY, JSON.stringify({ day: currentDay(), count: 0 }))
+      return
+    }
+    mpReqCount.value = Number.isFinite(rec.count) ? Math.max(0, rec.count) : 0
+  } catch {
+    mpReqCount.value = 0
+  }
+}
+
+function consumeMpReqQuota() {
+  loadMpReqLimit()
+  if (mpReqCount.value >= MP_REQ_DAILY_LIMIT) return false
+  mpReqCount.value += 1
+  try {
+    localStorage.setItem(MP_REQ_LIMIT_KEY, JSON.stringify({ day: currentDay(), count: mpReqCount.value }))
+  } catch {}
+  return true
+}
+
 function loadMpCache(name: string) {
   try {
-    const raw = localStorage.getItem(`mas_portal_mp_cache:${name}`)
+    const raw = localStorage.getItem(`${MP_CACHE_PREFIX}${name}`)
     if (!raw) return false
     const data = JSON.parse(raw) as MpCache
     if (!Array.isArray(data.items) || !data.updatedAt) return false
@@ -231,16 +279,20 @@ function saveMpCache(name: string, nickname: string, items: MpArticleItem[]) {
       items,
       updatedAt: Date.now()
     }
-    localStorage.setItem(`mas_portal_mp_cache:${name}`, JSON.stringify(data))
+    localStorage.setItem(`${MP_CACHE_PREFIX}${name}`, JSON.stringify(data))
     mpUpdatedAt.value = data.updatedAt
   } catch {}
 }
 
-async function loadMpArticles(force = false) {
+async function loadMpArticles(force = false, persistKeyword = true) {
   const name = mpKeyword.value.trim() || DEFAULT_MP_NAME
   mpKeyword.value = name
   mpError.value = null
   if (!force && loadMpCache(name)) return
+  if (!consumeMpReqQuota()) {
+    mpError.value = `今日查询次数已用完（${MP_REQ_DAILY_LIMIT}次），请明天再试`
+    return
+  }
   mpLoading.value = true
   try {
     const res = await queryMpArticles({ name, page: 1 })
@@ -248,7 +300,7 @@ async function loadMpArticles(force = false) {
     mpNickname.value = (res.mpNickname || name).trim()
     mpArticles.value = items
     saveMpCache(name, mpNickname.value, items)
-    saveMpKeyword()
+    if (persistKeyword) saveMpKeyword()
   } catch (e: any) {
     mpError.value = String(e?.message || e)
   } finally {
@@ -256,9 +308,42 @@ async function loadMpArticles(force = false) {
   }
 }
 
+function isAfterNine() {
+  return new Date().getHours() >= 9
+}
+
+function hasAutoRefreshedToday() {
+  try {
+    return localStorage.getItem(MP_AUTO_REFRESH_KEY) === currentDay()
+  } catch {
+    return false
+  }
+}
+
+function markAutoRefreshedToday() {
+  try {
+    localStorage.setItem(MP_AUTO_REFRESH_KEY, currentDay())
+  } catch {}
+}
+
+async function triggerDailyMpRefresh() {
+  if (!isAfterNine()) return
+  if (hasAutoRefreshedToday()) return
+  const prevKeyword = mpKeyword.value
+  mpKeyword.value = DEFAULT_MP_NAME
+  await loadMpArticles(true, false)
+  mpKeyword.value = prevKeyword
+  if (!mpError.value) markAutoRefreshedToday()
+}
+
 function restoreMpDefault() {
   mpKeyword.value = DEFAULT_MP_NAME
-  loadMpArticles(true)
+  mpError.value = null
+  if (loadMpCache(DEFAULT_MP_NAME)) return
+  mpNickname.value = DEFAULT_MP_NAME
+  mpArticles.value = []
+  mpUpdatedAt.value = 0
+  mpError.value = '默认公众号暂无本地缓存，请手动点查询获取一次'
 }
 
 watch(
@@ -268,9 +353,11 @@ watch(
   }
 )
 
-onMounted(() => {
+onMounted(async () => {
   load()
   restoreMpKeyword()
+  loadMpReqLimit()
+  await triggerDailyMpRefresh()
   loadMpArticles()
 })
 </script>
@@ -321,11 +408,12 @@ onMounted(() => {
         <div class="mp-toolbar">
           <el-input v-model="mpKeyword" size="small" placeholder="输入公众号名称" clearable @keyup.enter="loadMpArticles(true)" />
           <div class="mp-toolbar-actions">
-            <el-button size="small" :loading="mpLoading" @click="loadMpArticles(true)">查询</el-button>
-            <el-button size="small" :disabled="mpLoading" @click="restoreMpDefault">恢复默认</el-button>
+            <el-button size="small" :loading="mpLoading" :disabled="mpLoading || mpReqRemain <= 0" @click="loadMpArticles(true)">查询</el-button>
+            <el-button size="small" :disabled="mpLoading || mpReqRemain <= 0" @click="restoreMpDefault">恢复默认</el-button>
           </div>
         </div>
         <div class="mp-name">{{ activeMpName }}</div>
+        <div class="mp-limit-tip">今日剩余查询 {{ mpReqRemain }} / {{ MP_REQ_DAILY_LIMIT }}</div>
         <div v-if="mpError" class="mp-error">{{ mpError }}</div>
         <ul v-else class="news-list">
           <li v-for="(item, idx) in mpArticles" :key="`${item.url || idx}`">
@@ -543,7 +631,7 @@ onMounted(() => {
 
 .portal-main {
   display: grid;
-  grid-template-columns: minmax(220px, 0.9fr) minmax(0, 1.8fr) minmax(220px, 0.9fr);
+  grid-template-columns: minmax(260px, 1.15fr) minmax(0, 1.75fr) minmax(220px, 0.9fr);
   gap: 14px;
   animation: panel-in 0.55s ease both;
 }
@@ -569,13 +657,6 @@ onMounted(() => {
   padding: 8px 12px 8px 14px;
 }
 
-.portal-news {
-  display: flex;
-  flex-direction: column;
-  min-height: 360px;
-  max-height: 360px;
-}
-
 .panel-head {
   display: flex;
   justify-content: space-between;
@@ -598,18 +679,19 @@ onMounted(() => {
 
 .metric-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: minmax(260px, 1.15fr) minmax(0, 1.75fr) minmax(220px, 0.9fr);
+  gap: 14px;
   animation: panel-in 0.5s ease both;
   padding-top: 2px;
 }
 
 .metric-item {
   border: 0;
+  border-left: 2px solid rgba(115, 209, 180, 0.18);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0;
   background: transparent;
-  padding: 10px 2px 0;
+  padding: 10px 12px 0 14px;
 }
 
 .metric-label {
@@ -638,11 +720,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
-  min-height: 0;
-  padding-right: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
 
 .news-list li {
@@ -656,11 +733,6 @@ onMounted(() => {
 .news-list li:last-child {
   border-bottom: 0;
   padding-bottom: 0;
-}
-
-.news-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
 .mp-toolbar {
@@ -706,6 +778,12 @@ onMounted(() => {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.68);
   margin-bottom: 8px;
+}
+
+.mp-limit-tip {
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .mp-link {

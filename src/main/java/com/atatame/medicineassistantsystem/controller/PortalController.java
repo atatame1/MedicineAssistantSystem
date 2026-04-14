@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Tag(name = "智能门户", description = "统一入口与看板")
 public class PortalController {
+    private static final List<String> MP_RESEARCH_INCLUDE_KEYS = Arrays.asList(
+            "中药", "中医药", "新药", "研发", "药效", "药理", "药代", "毒理",
+            "临床", "实验", "机制", "活性", "成分", "方剂", "复方", "提取",
+            "申报", "审评", "注册", "一致性", "指南", "适应症", "靶点", "通路"
+    );
+    private static final List<String> MP_RESEARCH_EXCLUDE_KEYS = Arrays.asList(
+            "养生", "保健", "食疗", "诈骗", "反诈", "辟谣", "节日", "清明", "端午", "春节",
+            "招聘", "招募", "征集", "活动", "投票", "抽奖", "直播", "讲座", "培训",
+            "公告", "通知", "会议", "晚会", "青年", "团委", "党建", "祝福"
+    );
 
     private final IUserService userService;
     private final IProjectService projectService;
@@ -143,8 +154,11 @@ public class PortalController {
                     if ("1".equals(asText(n, "is_deleted"))) continue;
                     Integer msgStatus = asIntObj(n, "msg_status");
                     if (msgStatus != null && msgStatus != 2) continue;
+                    String title = asText(n, "title");
+                    String digest = asText(n, "digest");
+                    if (!isResearchRelated(title, digest)) continue;
                     MpArticleItemResponse item = new MpArticleItemResponse();
-                    item.setTitle(asText(n, "title"));
+                    item.setTitle(title);
                     item.setUrl(asText(n, "url"));
                     item.setPostTimeStr(asText(n, "post_time_str"));
                     item.setPostTime(asLongObj(n, "post_time"));
@@ -167,6 +181,18 @@ public class PortalController {
     private static String asText(JsonNode node, String field) {
         JsonNode n = node.path(field);
         return n.isMissingNode() || n.isNull() ? null : n.asText();
+    }
+
+    private static boolean isResearchRelated(String title, String digest) {
+        String text = ((title == null ? "" : title) + " " + (digest == null ? "" : digest)).trim();
+        if (text.isEmpty()) return false;
+        for (String exclude : MP_RESEARCH_EXCLUDE_KEYS) {
+            if (text.contains(exclude)) return false;
+        }
+        for (String include : MP_RESEARCH_INCLUDE_KEYS) {
+            if (text.contains(include)) return true;
+        }
+        return false;
     }
 
     private static Integer asIntObj(JsonNode node, String field) {

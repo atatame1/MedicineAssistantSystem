@@ -128,6 +128,7 @@ function formatInlineMd(s: string) {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
     .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br/>')
 }
 
 function parseTableRow(line: string) {
@@ -144,7 +145,10 @@ function isTableSeparator(line: string) {
 }
 
 function formatAiMarkdown(s: string) {
-  const lines = String(s || '').replace(/\r\n/g, '\n').split('\n')
+  const lines = String(s || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/\r\n/g, '\n')
+    .split('\n')
   let i = 0
   const out: string[] = []
 
@@ -220,7 +224,7 @@ function formatAiMarkdown(s: string) {
       ps.push(p)
       i++
     }
-    out.push(`<p>${formatInlineMd(ps.join('<br/>'))}</p>`)
+    out.push(`<p>${formatInlineMd(ps.join('\n'))}</p>`)
   }
 
   return out.join('')
