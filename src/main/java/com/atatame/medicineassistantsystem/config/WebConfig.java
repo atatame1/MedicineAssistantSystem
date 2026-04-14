@@ -48,7 +48,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/diseases/**",
                         "/api/target-pathways/**",
                         "/api/patents/**",
-                        "/api/voice/**"
+                        "/api/voice/**",
+                        "/api/ai/expert/chatclient/**"
                 );
     }
 }
