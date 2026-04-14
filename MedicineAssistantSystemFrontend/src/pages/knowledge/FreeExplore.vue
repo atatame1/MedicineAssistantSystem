@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { postAiStreamText } from '@/api/ai'
+import { projectAiAssessToHtml } from '@/utils/projectAiMarkdown'
 
 type ExploreRow = { herb: string; dose: string }
 const rows = ref<ExploreRow[]>([
@@ -12,6 +13,7 @@ const rows = ref<ExploreRow[]>([
 const running = ref(false)
 const error = ref<string | null>(null)
 const output = ref('')
+const outputHtml = computed(() => projectAiAssessToHtml(output.value))
 
 function addRow() {
   rows.value.push({ herb: '', dose: '' })
@@ -74,7 +76,7 @@ async function analyze() {
 
       <section v-if="error || output" class="out">
         <div v-if="error" class="err">{{ error }}</div>
-        <pre v-else class="txt">{{ output }}</pre>
+        <div v-else class="txt md" v-html="outputHtml" />
       </section>
     </div>
   </div>
@@ -207,9 +209,110 @@ async function analyze() {
   color: rgba(233, 244, 239, 0.9);
   font-size: 13px;
   line-height: 1.8;
-  white-space: pre-wrap;
   word-break: break-word;
   font-family: inherit;
+}
+
+.md :deep(h1),
+.md :deep(h2),
+.md :deep(h3),
+.md :deep(h4) {
+  margin: 10px 0 6px;
+  font-weight: 900;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.md :deep(h1) {
+  font-size: 17px;
+}
+.md :deep(h2) {
+  font-size: 16px;
+}
+.md :deep(h3) {
+  font-size: 15px;
+}
+
+.md :deep(p) {
+  margin: 0 0 8px;
+}
+
+.md :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.md :deep(strong) {
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.md :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.md :deep(th),
+.md :deep(td) {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.md :deep(th) {
+  background: rgba(0, 0, 0, 0.28);
+  font-weight: 850;
+}
+
+.md :deep(ul),
+.md :deep(ol) {
+  margin: 6px 0;
+  padding-left: 1.25em;
+}
+
+.md :deep(li) {
+  margin: 2px 0;
+}
+
+.md :deep(hr) {
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  margin: 10px 0;
+}
+
+.md :deep(code) {
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.md :deep(pre) {
+  margin: 8px 0;
+  padding: 10px;
+  overflow: auto;
+  background: rgba(0, 0, 0, 0.32);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.md :deep(pre code) {
+  background: transparent;
+  padding: 0;
+  font-size: 12px;
+}
+
+.md :deep(blockquote) {
+  margin: 8px 0;
+  padding: 4px 0 4px 12px;
+  border-left: 3px solid rgba(115, 209, 180, 0.45);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.md :deep(a) {
+  color: rgba(146, 230, 202, 0.95);
 }
 
 @media (max-width: 680px) {
