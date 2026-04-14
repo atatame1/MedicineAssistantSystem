@@ -442,7 +442,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-width: 1220px;
+  max-width: 1380px;
   margin: 0 auto;
   padding: 6px 2px 18px;
 }
@@ -569,6 +569,13 @@ onMounted(() => {
   padding: 8px 12px 8px 14px;
 }
 
+.portal-news {
+  display: flex;
+  flex-direction: column;
+  min-height: 360px;
+  max-height: 360px;
+}
+
 .panel-head {
   display: flex;
   justify-content: space-between;
@@ -631,6 +638,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .news-list li {
@@ -644,6 +656,11 @@ onMounted(() => {
 .news-list li:last-child {
   border-bottom: 0;
   padding-bottom: 0;
+}
+
+.news-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .mp-toolbar {
