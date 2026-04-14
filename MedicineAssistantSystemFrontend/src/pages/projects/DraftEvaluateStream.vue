@@ -89,6 +89,11 @@ function stop() {
 
 <style src="./projectToolPage.css"></style>
 <style scoped>
+.draft-eval {
+  max-width: min(1360px, calc(100vw - 40px));
+  width: 100%;
+}
+
 .de-toolbar {
   display: flex;
   justify-content: space-between;

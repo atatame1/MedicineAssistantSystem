@@ -27,13 +27,15 @@ const navItems: NavItem[] = [
   { path: '/portal', label: '智研门户', icon: '◉' },
   { path: '/knowledge', label: '知识枢库', icon: '◇' },
   { path: '/agents', label: '灵智工坊', icon: '▣' },
-  { path: '/projects', label: '自由探索', icon: '△' },
+  { path: '/projects', label: '项目管理', icon: '△' },
+  { path: '/knowledge/explore', label: '自由探索', icon: '✦' },
   { path: '/me', label: '我的空间', icon: '★' }
 ]
 
 const activeMenu = computed(() => {
   const path = route.path
   if (path.startsWith('/projects')) return '/projects'
+  if (path.startsWith('/knowledge/explore')) return '/knowledge/explore'
   if (path.startsWith('/knowledge') || path.startsWith('/literatures') || path.startsWith('/regulations')) return '/knowledge'
   if (path.startsWith('/agents')) return '/agents'
   if (path.startsWith('/me') || path.startsWith('/user/')) return '/me'
