@@ -23,6 +23,10 @@ mybatis-plus:
 app:
   storage:
     root: ${user.dir}/medicine-uploads
+  mp-monitor:
+    base-url: https://www.dajiala.com/fbmain/monitor/v3/post_history
+    key: your-api-key
+    default-name: 中药新药
 siliconflow:
   voice-key: your-api-key
   voice-model: FunAudioLLM/CosyVoice2-0.5B

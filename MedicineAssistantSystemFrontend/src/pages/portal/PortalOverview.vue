@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getPortalOverview, triggerPortalSummary, type PortalOverview } from '@/api/portal'
+import {
+  getPortalOverview,
+  queryMpArticles,
+  triggerPortalSummary,
+  type MpArticleItem,
+  type PortalOverview
+} from '@/api/portal'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -18,9 +24,23 @@ watch(
 const loading = ref(false)
 const error = ref<string | null>(null)
 const overview = ref<PortalOverview | null>(null)
+const mpError = ref<string | null>(null)
+const mpLoading = ref(false)
+const mpKeyword = ref('')
+const mpNickname = ref('')
+const mpArticles = ref<MpArticleItem[]>([])
+const mpUpdatedAt = ref(0)
 const summarizing = ref(false)
 const summaryProgress = ref(0)
 let summaryRaf = 0
+const DEFAULT_MP_NAME = '中药新药'
+const MP_PREF_KEY = 'mas_portal_mp_pref'
+
+type MpCache = {
+  nickname: string
+  items: MpArticleItem[]
+  updatedAt: number
+}
 
 const projectCount = computed(() => overview.value?.myProjects?.length ?? 0)
 const taskCount = computed(() => overview.value?.tasks?.length ?? 0)
@@ -100,6 +120,8 @@ const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'succ
   4: { text: '已取消', type: 'danger' }
 }
 
+const activeMpName = computed(() => mpNickname.value || mpKeyword.value || DEFAULT_MP_NAME)
+
 async function load() {
   if (!userId.value) return
   loading.value = true
@@ -172,6 +194,73 @@ function go(path: string) {
   router.push(path)
 }
 
+function restoreMpKeyword() {
+  try {
+    const v = localStorage.getItem(MP_PREF_KEY)
+    mpKeyword.value = v?.trim() || DEFAULT_MP_NAME
+  } catch {
+    mpKeyword.value = DEFAULT_MP_NAME
+  }
+}
+
+function saveMpKeyword() {
+  try {
+    localStorage.setItem(MP_PREF_KEY, mpKeyword.value.trim() || DEFAULT_MP_NAME)
+  } catch {}
+}
+
+function loadMpCache(name: string) {
+  try {
+    const raw = localStorage.getItem(`mas_portal_mp_cache:${name}`)
+    if (!raw) return false
+    const data = JSON.parse(raw) as MpCache
+    if (!Array.isArray(data.items) || !data.updatedAt) return false
+    mpNickname.value = data.nickname || name
+    mpArticles.value = data.items
+    mpUpdatedAt.value = data.updatedAt
+    return true
+  } catch {
+    return false
+  }
+}
+
+function saveMpCache(name: string, nickname: string, items: MpArticleItem[]) {
+  try {
+    const data: MpCache = {
+      nickname,
+      items,
+      updatedAt: Date.now()
+    }
+    localStorage.setItem(`mas_portal_mp_cache:${name}`, JSON.stringify(data))
+    mpUpdatedAt.value = data.updatedAt
+  } catch {}
+}
+
+async function loadMpArticles(force = false) {
+  const name = mpKeyword.value.trim() || DEFAULT_MP_NAME
+  mpKeyword.value = name
+  mpError.value = null
+  if (!force && loadMpCache(name)) return
+  mpLoading.value = true
+  try {
+    const res = await queryMpArticles({ name, page: 1 })
+    const items = Array.isArray(res.articles) ? res.articles : []
+    mpNickname.value = (res.mpNickname || name).trim()
+    mpArticles.value = items
+    saveMpCache(name, mpNickname.value, items)
+    saveMpKeyword()
+  } catch (e: any) {
+    mpError.value = String(e?.message || e)
+  } finally {
+    mpLoading.value = false
+  }
+}
+
+function restoreMpDefault() {
+  mpKeyword.value = DEFAULT_MP_NAME
+  loadMpArticles(true)
+}
+
 watch(
   () => userId.value,
   (id) => {
@@ -179,7 +268,11 @@ watch(
   }
 )
 
-onMounted(load)
+onMounted(() => {
+  load()
+  restoreMpKeyword()
+  loadMpArticles()
+})
 </script>
 
 <template>
@@ -222,12 +315,26 @@ onMounted(load)
     <section class="portal-main">
       <aside class="portal-news panel">
         <div class="panel-head">
-          <h3>门户快讯</h3>
-          <span>News</span>
+          <h3>公众号最新文章</h3>
+          <span>WeChat</span>
         </div>
-        <ul class="news-list">
-          <li v-for="(item, idx) in portalNews" :key="idx">{{ item }}</li>
+        <div class="mp-toolbar">
+          <el-input v-model="mpKeyword" size="small" placeholder="输入公众号名称" clearable @keyup.enter="loadMpArticles(true)" />
+          <div class="mp-toolbar-actions">
+            <el-button size="small" :loading="mpLoading" @click="loadMpArticles(true)">查询</el-button>
+            <el-button size="small" :disabled="mpLoading" @click="restoreMpDefault">恢复默认</el-button>
+          </div>
+        </div>
+        <div class="mp-name">{{ activeMpName }}</div>
+        <div v-if="mpError" class="mp-error">{{ mpError }}</div>
+        <ul v-else class="news-list">
+          <li v-for="(item, idx) in mpArticles" :key="`${item.url || idx}`">
+            <a class="mp-link" :href="item.url || '#'" target="_blank" rel="noopener noreferrer">{{ item.title || '未命名文章' }}</a>
+            <div class="mp-time">{{ item.postTimeStr || '-' }}</div>
+          </li>
+          <li v-if="!mpArticles.length && !mpLoading">暂无文章</li>
         </ul>
+        <div v-if="mpUpdatedAt" class="mp-cache-tip">缓存于 {{ new Date(mpUpdatedAt).toLocaleString() }}</div>
       </aside>
 
       <article class="portal-summary panel">
@@ -537,6 +644,78 @@ onMounted(load)
 .news-list li:last-child {
   border-bottom: 0;
   padding-bottom: 0;
+}
+
+.mp-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mp-toolbar :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mp-toolbar :deep(.el-input__inner) {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mp-toolbar :deep(.el-input__inner::placeholder) {
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.mp-toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mp-toolbar-actions :deep(.el-button) {
+  border-radius: 8px;
+  border: 1px solid rgba(115, 209, 180, 0.18);
+  background: rgba(115, 209, 180, 0.1);
+  color: rgba(219, 245, 236, 0.92);
+}
+
+.mp-toolbar-actions :deep(.el-button:hover) {
+  border-color: rgba(115, 209, 180, 0.32);
+  background: rgba(115, 209, 180, 0.16);
+  color: #fff;
+}
+
+.mp-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.68);
+  margin-bottom: 8px;
+}
+
+.mp-link {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+}
+
+.mp-link:hover {
+  color: rgba(146, 230, 202, 0.95);
+}
+
+.mp-time {
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mp-error {
+  color: rgba(255, 160, 160, 0.95);
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+
+.mp-cache-tip {
+  margin-top: 8px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.46);
 }
 
 .portal-summary {
