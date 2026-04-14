@@ -16,6 +16,35 @@ const completeTitle = ref('')
 const completeFeedback = ref('')
 const completeDeadline = ref<string | null>(null)
 const completeOverdue = ref(false)
+const detailOpen = ref(false)
+const detailTitle = ref('')
+const detailDesc = ref('')
+
+function descShort(d?: string | null) {
+  const t = (d || '').trim()
+  if (!t) return '-'
+  return t.length > 24 ? `${t.slice(0, 24)}…` : t
+}
+
+function priorityText(p?: number | null) {
+  if (p === 1) return '高'
+  if (p === 2) return '中'
+  if (p === 3) return '低'
+  return '-'
+}
+
+function tagType(row: TaskResponse) {
+  if (row.status === 2) return { text: '完成', cls: 'done' }
+  if (row.status === 3) return { text: '撤回', cls: 'withdrawn' }
+  if (row.overdue) return { text: '逾期', cls: 'overdue' }
+  return { text: '待办', cls: 'todo' }
+}
+
+function openDesc(row: TaskResponse) {
+  detailTitle.value = row.title
+  detailDesc.value = row.description || ''
+  detailOpen.value = true
+}
 
 function statusText(s?: number | null) {
   const m: Record<number, string> = { 0: '已发布', 1: '进行中', 2: '已完成', 3: '已撤回' }
@@ -92,13 +121,23 @@ onMounted(load)
 
     <div class="panel">
       <el-table v-loading="loading" :data="rows" stripe>
-        <el-table-column prop="id" label="ID" width="90" />
         <el-table-column prop="title" label="标题" min-width="240" />
+        <el-table-column label="任务描述" min-width="260">
+          <template #default="{ row }">
+            <el-button class="desc-link" link type="primary" @click="openDesc(row)">
+              {{ descShort(row.description) }}
+            </el-button>
+          </template>
+        </el-table-column>
         <el-table-column prop="projectName" label="项目" min-width="200" />
-        <el-table-column prop="priority" label="优先级" width="90" />
+        <el-table-column label="优先级" width="90">
+          <template #default="{ row }">
+            {{ priorityText(row.priority ?? null) }}
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="110">
           <template #default="{ row }">
-            {{ statusText(row.status) }}
+            <span class="st" :class="tagType(row).cls">{{ tagType(row).text }}</span>
           </template>
         </el-table-column>
         <el-table-column prop="deadline" label="截止时间" width="180" />
@@ -139,6 +178,13 @@ onMounted(load)
       <template #footer>
         <el-button @click="completeOpen = false">取消</el-button>
         <el-button type="primary" :loading="completing" @click="submitComplete">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="detailOpen" width="720px" append-to-body>
+      <div class="dc">{{ detailTitle || '-' }}</div>
+      <template #footer>
+        <el-button @click="detailOpen = false">关闭</el-button>
       </template>
     </el-dialog>
   </div>
@@ -222,6 +268,70 @@ onMounted(load)
 
 .panel :deep(.el-table__inner-wrapper::before) {
   display: none;
+}
+
+.st {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 950;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.st.overdue {
+  color: rgba(255, 255, 255, 0.96);
+  background: rgba(220, 65, 65, 0.92);
+  border-color: rgba(255, 120, 120, 0.25);
+}
+
+.st.todo {
+  color: rgba(10, 34, 31, 0.95);
+  background: rgba(240, 200, 90, 0.92);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.st.done {
+  color: rgba(10, 34, 31, 0.95);
+  background: rgba(115, 209, 180, 0.92);
+  border-color: rgba(115, 209, 180, 0.25);
+}
+
+.st.withdrawn {
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.desc-link {
+  color: rgba(103, 197, 200, 0.95) !important;
+  /* font-weight: 850; */
+}
+.desc-link:hover {
+  color: rgba(22, 230, 241, 0.719) !important;
+}
+
+.dt {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.dc {
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dc-desc {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.8;
 }
 
 .panel :deep(.el-alert) {
