@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
@@ -35,9 +34,9 @@ public class UserAiDialogSummaryServiceImpl
     private final IUserService userService;
 
     @Override
-    public void summarizeUser(Long userId) {
+    public String summarizeUser(Long userId) {
         if (userId == null) {
-            return;
+            return null;
         }
         LocalDateTime now = LocalDateTime.now();
         List<AiAgentConversation> conversations = aiAgentConversationService.list(
@@ -45,7 +44,7 @@ public class UserAiDialogSummaryServiceImpl
                         .eq(AiAgentConversation::getUserId, userId)
         );
 
-        if(conversations==null||conversations.isEmpty())return;
+        if (conversations == null || conversations.isEmpty()) return null;
 
         UserAiDialogSummary row = this.getById(userId);
         if (row == null) {
@@ -61,7 +60,7 @@ public class UserAiDialogSummaryServiceImpl
                         .orderByAsc(AiAgentMessage::getCreateTime)
         );
 
-        if(msgs==null||msgs.isEmpty())return;
+        if (msgs == null || msgs.isEmpty()) return null;
 
         StringBuilder sb = new StringBuilder();
         for (AiAgentMessage m : msgs) {
@@ -102,15 +101,16 @@ public class UserAiDialogSummaryServiceImpl
             summary = resp == null ? null : resp.getOutput();
         } catch (Exception ex) {
             log.warn("summarize user {} dialog failed", userId, ex);
-            return;
+            return null;
         }
         if (summary == null || summary.isBlank()) {
-            return;
+            return null;
         }
 
         row.setSummaryText(summary);
         row.setUpdateTime(now);
         this.saveOrUpdate(row);
+        return summary;
     }
 }
 

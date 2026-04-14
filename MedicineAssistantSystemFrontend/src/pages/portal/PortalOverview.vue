@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   getPortalOverview,
   queryMpArticles,
@@ -167,6 +168,10 @@ async function runSummary() {
   summaryRaf = requestAnimationFrame(tick)
   try {
     const text = await triggerPortalSummary(userId.value)
+    if (!text || !String(text).trim()) {
+      ElMessage.info('最近没有新的对话内容')
+      return
+    }
     if (overview.value) {
       overview.value = { ...overview.value, summaryText: text ?? null }
     } else {

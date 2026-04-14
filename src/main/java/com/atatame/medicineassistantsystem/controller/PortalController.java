@@ -88,9 +88,7 @@ public class PortalController {
     @PostMapping("/summarize")
     @Operation(summary = "手动生成近期AI对话总结")
     public Result<String> summarize(@RequestParam Long userId) {
-        userAiDialogSummaryService.summarizeUser(userId);
-        UserAiDialogSummary s = userAiDialogSummaryService.getById(userId);
-        return Result.ok(s == null ? null : s.getSummaryText());
+        return Result.ok(userAiDialogSummaryService.summarizeUser(userId));
     }
 
     @PostMapping("/mp-articles")

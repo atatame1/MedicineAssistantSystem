@@ -6,10 +6,13 @@ spring:
       max-file-size: 50MB
       max-request-size: 55MB
   ai:
-    ollama:
-      base-url: http://10.20.62.52:11434
+    model:
+      chat: dashscope
+    dashscope:
+      api-key: your-api-key
       chat:
-        model: qwen3.5:35b
+        options:
+          model: qwen-plus
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://127.0.0.1:3306/MedicineAssistantSystem?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
