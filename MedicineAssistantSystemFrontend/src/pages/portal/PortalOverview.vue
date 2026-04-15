@@ -574,7 +574,7 @@ onMounted(async () => {
   color: rgba(255, 255, 255, 0.76);
   border-radius: 999px;
   padding: 4px 10px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -611,7 +611,7 @@ onMounted(async () => {
 .btn-ghost {
   padding: 10px 16px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   cursor: pointer;
   transition: transform 0.18s ease, opacity 0.18s ease, background 0.18s ease;
@@ -678,7 +678,7 @@ onMounted(async () => {
 }
 
 .panel-head span {
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.52);
 }
 
@@ -701,7 +701,7 @@ onMounted(async () => {
 
 .metric-label {
   color: rgba(255, 255, 255, 0.62);
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .metric-value {
@@ -714,7 +714,7 @@ onMounted(async () => {
 
 .metric-sub {
   margin-top: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.55);
 }
 
@@ -728,7 +728,7 @@ onMounted(async () => {
 }
 
 .news-list li {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.8);
   padding-bottom: 7px;
@@ -780,14 +780,14 @@ onMounted(async () => {
 }
 
 .mp-name {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.68);
   margin-bottom: 8px;
 }
 
 .mp-limit-tip {
   margin-bottom: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
 }
 
@@ -802,19 +802,19 @@ onMounted(async () => {
 
 .mp-time {
   margin-top: 4px;
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
 }
 
 .mp-error {
   color: rgba(255, 160, 160, 0.95);
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 8px;
 }
 
 .mp-cache-tip {
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.46);
 }
 
@@ -837,7 +837,7 @@ onMounted(async () => {
   padding: 9px 10px;
   text-align: left;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .nav-link:hover {
@@ -854,7 +854,7 @@ onMounted(async () => {
 
 .section-title {
   color: rgba(255, 255, 255, 0.92);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   letter-spacing: 0.4px;
 }
@@ -862,7 +862,7 @@ onMounted(async () => {
 .summary-sub {
   margin-top: 4px;
   color: rgba(255, 255, 255, 0.54);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .summary-progress {
@@ -871,7 +871,7 @@ onMounted(async () => {
 
 .summary-text {
   color: rgba(255, 255, 255, 0.88);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.9;
   white-space: pre-wrap;
 }
@@ -994,7 +994,7 @@ onMounted(async () => {
   gap: 12px;
   margin-top: 5px;
   color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 @media (max-width: 980px) {
@@ -1026,7 +1026,7 @@ onMounted(async () => {
 
   .banner-sub,
   .summary-text {
-    font-size: 14px;
+    font-size: 16px;
   }
 
   .banner-actions {

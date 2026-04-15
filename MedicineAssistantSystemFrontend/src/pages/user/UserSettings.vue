@@ -104,7 +104,7 @@ onMounted(() => {
 
 .kicker {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -120,7 +120,7 @@ onMounted(() => {
 
 .sub {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.55);
 }
 

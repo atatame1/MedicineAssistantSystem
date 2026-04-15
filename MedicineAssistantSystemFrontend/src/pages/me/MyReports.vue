@@ -98,7 +98,7 @@ onMounted(load)
 
 .kicker {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -114,7 +114,7 @@ onMounted(load)
 
 .s {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.58);
 }
 

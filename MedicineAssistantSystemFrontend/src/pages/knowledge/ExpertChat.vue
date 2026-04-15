@@ -366,7 +366,7 @@ function back() {
 }
 .title-block .tag {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.65);
 }
 .body {
@@ -425,7 +425,7 @@ function back() {
 }
 .state-hint {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.55);
 }
 .side-meta {
@@ -443,7 +443,7 @@ function back() {
   border-radius: 999px;
   padding: 6px 10px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
 }
 .chat-side {
@@ -496,7 +496,7 @@ function back() {
   max-width: min(100%, 38rem);
   padding: 11px 14px;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.58;
   white-space: pre-wrap;
   word-break: break-word;
@@ -527,7 +527,7 @@ function back() {
   margin: 2px 0;
 }
 .md :deep(code) {
-  font-size: 12px;
+  font-size: 14px;
   background: rgba(0, 0, 0, 0.35);
   padding: 1px 5px;
   border-radius: 4px;
@@ -572,7 +572,7 @@ function back() {
   align-self: flex-start;
   margin-top: 4px;
   padding: 5px 10px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   border-radius: 10px;
   border: 1px solid rgba(115, 209, 180, 0.38);
@@ -639,7 +639,7 @@ function back() {
   }
 }
 .err {
-  font-size: 12px;
+  font-size: 14px;
   color: #ffc9c9;
 }
 .composer {
@@ -663,7 +663,7 @@ function back() {
   background: rgba(0, 0, 0, 0.22);
   color: #e9f4ef;
   padding: 10px 14px;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.45;
 }
 .inp::placeholder {
@@ -680,7 +680,7 @@ function back() {
   border-radius: 12px;
   padding: 11px 20px;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 16px;
   cursor: pointer;
   background: linear-gradient(145deg, #73d1b4, #3d8f75);
   color: #0a221f;

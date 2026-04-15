@@ -363,7 +363,7 @@ onMounted(() => {
 
 .kicker {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -379,7 +379,7 @@ onMounted(() => {
 
 .sub {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.55);
 }
 
@@ -410,7 +410,7 @@ onMounted(() => {
 
 .stat-label {
   color: rgba(255, 255, 255, 0.55);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .stat-value {
@@ -453,7 +453,7 @@ onMounted(() => {
 
 .summary-key {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.52);
   margin-bottom: 6px;
@@ -486,14 +486,14 @@ onMounted(() => {
 }
 
 .detail-key {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.7);
   word-break: break-word;
 }
 
 .detail-value {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.92);
   line-height: 1.5;
   word-break: break-word;
@@ -510,7 +510,7 @@ onMounted(() => {
 
 .detail-empty {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 13px;
+  font-size: 15px;
   padding: 8px 2px;
 }
 

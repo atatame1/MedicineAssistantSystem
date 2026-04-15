@@ -546,7 +546,7 @@ onMounted(async () => {
 }
 
 .compare-hint {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.72);
 }
 
@@ -603,7 +603,7 @@ onMounted(async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   letter-spacing: 0.02em;
   flex-shrink: 0;
@@ -662,7 +662,7 @@ onMounted(async () => {
 }
 
 .dec-k {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -670,7 +670,7 @@ onMounted(async () => {
 }
 
 .dec-v {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.9);
   word-break: break-word;
@@ -678,13 +678,13 @@ onMounted(async () => {
 
 .dec-v-strong {
   font-weight: 650;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.4;
 }
 
 .dec-v-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.82);
 }
 
@@ -708,7 +708,7 @@ onMounted(async () => {
 }
 
 .dec-sec-h {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.04em;
   color: rgba(146, 230, 202, 0.88);
@@ -717,7 +717,7 @@ onMounted(async () => {
 
 .dec-sec-body {
   margin: 0;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
@@ -736,7 +736,7 @@ onMounted(async () => {
 .ai-suggest-rich {
   margin-bottom: 10px;
   min-height: 40px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;

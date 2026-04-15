@@ -123,7 +123,7 @@ async function run() {
 }
 .s {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
 }
 .act {

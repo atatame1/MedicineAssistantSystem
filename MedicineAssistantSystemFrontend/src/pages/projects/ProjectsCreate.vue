@@ -56,7 +56,7 @@ function onSuccess() {
 
 .pc-s {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.52);
   font-weight: 700;
 }

@@ -131,7 +131,7 @@ async function analyze() {
 
 .hd .s {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(189, 212, 204, 0.72);
 }
 
@@ -226,7 +226,7 @@ async function analyze() {
 
 .err {
   color: rgba(255, 165, 165, 0.95);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.7;
   white-space: pre-wrap;
 }
@@ -234,7 +234,7 @@ async function analyze() {
 .txt {
   margin: 0;
   color: rgba(233, 244, 239, 0.9);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.8;
   word-break: break-word;
   font-family: inherit;
@@ -276,7 +276,7 @@ async function analyze() {
 .md :deep(table) {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 14px;
   margin: 8px 0;
 }
 
@@ -310,7 +310,7 @@ async function analyze() {
 }
 
 .md :deep(code) {
-  font-size: 12px;
+  font-size: 14px;
   background: rgba(0, 0, 0, 0.35);
   padding: 1px 5px;
   border-radius: 4px;
@@ -328,7 +328,7 @@ async function analyze() {
 .md :deep(pre code) {
   background: transparent;
   padding: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .md :deep(blockquote) {

@@ -107,7 +107,7 @@ onBeforeUnmount(() => stop())
 }
 
 .panel-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   margin-bottom: 8px;
   color: #26493d;

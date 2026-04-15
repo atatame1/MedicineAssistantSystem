@@ -193,7 +193,7 @@ async function submit() {
 
 .hd-sub {
   margin-top: 4px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
 }
 
@@ -219,7 +219,7 @@ async function submit() {
 
 .hero-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
 }
 
@@ -257,7 +257,7 @@ async function submit() {
 
 .b-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
   line-height: 1.4;
 }
@@ -277,7 +277,7 @@ async function submit() {
 
 .tips-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
   line-height: 1.4;
 }
@@ -295,7 +295,7 @@ async function submit() {
 
 .form-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
 }
 
@@ -317,7 +317,7 @@ async function submit() {
 }
 
 .hint {
-  font-size: 12px;
+  font-size: 14px;
   color: #6a8078;
 }
 
@@ -332,7 +332,7 @@ async function submit() {
 
 .fine {
   margin-top: 10px;
-  font-size: 12px;
+  font-size: 14px;
   color: #6a8078;
   line-height: 1.4;
 }
@@ -346,7 +346,7 @@ async function submit() {
 }
 
 .ft-left {
-  font-size: 12px;
+  font-size: 14px;
   color: #6a8078;
 }
 

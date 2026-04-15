@@ -651,7 +651,7 @@ onMounted(loadList)
 }
 
 .title-sub {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 750;
   color: rgba(255, 255, 255, 0.86);
 }
@@ -719,7 +719,7 @@ onMounted(loadList)
 
 .proj-tools-label {
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 850;
@@ -741,7 +741,7 @@ onMounted(loadList)
   justify-content: center;
   padding: 8px 16px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 820;
   color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
@@ -805,7 +805,7 @@ onMounted(loadList)
 }
 
 .lane-label {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.85);
@@ -873,7 +873,7 @@ onMounted(loadList)
 }
 
 .pill-id {
-  font-size: 12px;
+  font-size: 14px;
   opacity: 0.55;
   font-weight: 850;
 }
@@ -890,13 +890,13 @@ onMounted(loadList)
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .pill-tag {
   padding: 4px 9px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.86);
   background: rgba(255, 255, 255, 0.1);
@@ -918,7 +918,7 @@ onMounted(loadList)
   display: flex;
   flex-wrap: wrap;
   gap: 10px 12px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.45;
   color: rgba(255, 255, 255, 0.58);
   font-weight: 780;
@@ -947,7 +947,7 @@ onMounted(loadList)
 
 .empty-tip-txt {
   margin: 0;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 780;
@@ -1020,7 +1020,7 @@ onMounted(loadList)
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.62);
   font-weight: 780;
 }
@@ -1035,7 +1035,7 @@ onMounted(loadList)
 .tag-chip {
   padding: 6px 11px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.88);
   background: rgba(255, 255, 255, 0.1);
@@ -1092,7 +1092,7 @@ onMounted(loadList)
 }
 
 .cell-label {
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.74);
@@ -1138,7 +1138,7 @@ onMounted(loadList)
 }
 
 .meta-label {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.48);
   font-weight: 820;
 }
@@ -1156,7 +1156,7 @@ onMounted(loadList)
 }
 
 .ai-text {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.82);
   max-height: 220px;
@@ -1209,7 +1209,7 @@ onMounted(loadList)
 .ai-md :deep(table) {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 14px;
   margin: 8px 0;
 }
 
@@ -1243,7 +1243,7 @@ onMounted(loadList)
 }
 
 .ai-md :deep(code) {
-  font-size: 12px;
+  font-size: 14px;
   background: rgba(0, 0, 0, 0.35);
   padding: 1px 5px;
   border-radius: 4px;
@@ -1261,7 +1261,7 @@ onMounted(loadList)
 .ai-md :deep(pre code) {
   background: transparent;
   padding: 0;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .ai-md :deep(blockquote) {
@@ -1276,7 +1276,7 @@ onMounted(loadList)
 }
 
 .small-empty {
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 780;
 }
@@ -1286,7 +1286,7 @@ onMounted(loadList)
   justify-content: space-between;
   align-items: baseline;
   gap: 10px;
-  font-size: 14px;
+  font-size: 16px;
   padding: 6px 0;
   border-bottom: 1px dashed rgba(255, 255, 255, 0.14);
   font-weight: 820;
@@ -1303,7 +1303,7 @@ onMounted(loadList)
 
 .small-sub {
   color: rgba(255, 255, 255, 0.55);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -1334,7 +1334,7 @@ onMounted(loadList)
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.92);
   font-weight: 900;
 }
@@ -1348,7 +1348,7 @@ onMounted(loadList)
 
 .doc-type {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.48);
   font-weight: 820;
 }
@@ -1358,14 +1358,14 @@ onMounted(loadList)
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.52);
   font-weight: 780;
 }
 
 .right-footer {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.48);
   font-weight: 780;
 }
@@ -1417,7 +1417,7 @@ onMounted(loadList)
 
 .proj-status-dropdown .el-select-dropdown__item {
   color: rgba(255, 255, 255, 0.88);
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .proj-status-dropdown .el-select-dropdown__item.is-hovering,

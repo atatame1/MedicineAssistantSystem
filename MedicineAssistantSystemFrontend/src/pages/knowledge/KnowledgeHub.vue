@@ -117,7 +117,7 @@ function go(p: string) {
   color: rgba(255, 255, 255, 0.94);
 }
 .hub-badge {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   padding: 4px 10px;
   border-radius: 999px;
@@ -127,7 +127,7 @@ function go(p: string) {
 }
 .hub-sub {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.58);
 }
 
@@ -233,7 +233,7 @@ function go(p: string) {
 }
 
 .cell-tag {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.6);
   line-height: 1.35;
 }
@@ -267,14 +267,14 @@ function go(p: string) {
 }
 
 .kb-side-tip {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   color: rgba(200, 169, 103, 0.95);
 }
 
 .kb-side-sub {
   margin: 0 0 14px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.45);
 }
 
@@ -311,7 +311,7 @@ function go(p: string) {
 }
 
 .kb-chip-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   text-align: center;
   line-height: 1.35;

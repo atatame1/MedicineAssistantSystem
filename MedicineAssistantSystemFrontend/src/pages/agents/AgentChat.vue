@@ -653,7 +653,7 @@ function pickPrompt(p: string) {
 }
 
 .bt {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
 }
 
@@ -719,20 +719,20 @@ function pickPrompt(p: string) {
 }
 
 .history-sub {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.62);
   font-weight: 800;
 }
 
 .history-loading {
   color: rgba(255, 255, 255, 0.75);
-  font-size: 13px;
+  font-size: 15px;
   padding: 12px 0;
 }
 
 .history-empty {
   color: rgba(255, 255, 255, 0.72);
-  font-size: 13px;
+  font-size: 15px;
   padding: 12px 0;
 }
 
@@ -743,7 +743,7 @@ function pickPrompt(p: string) {
 }
 
 .history-group-label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.72);
   margin-top: 4px;
@@ -785,7 +785,7 @@ function pickPrompt(p: string) {
   background: rgba(255, 255, 255, 0.06);
   color: rgba(255, 255, 255, 0.85);
   border-radius: 8px;
-  font-size: 11px;
+  font-size: 13px;
   padding: 2px 6px;
   cursor: pointer;
   line-height: 1.2;
@@ -799,7 +799,7 @@ function pickPrompt(p: string) {
 .history-item-input {
   color: rgba(255, 255, 255, 0.92);
   font-weight: 800;
-  font-size: 13px;
+  font-size: 15px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -807,7 +807,7 @@ function pickPrompt(p: string) {
 
 .history-item-time {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.62);
 }
 
@@ -884,7 +884,7 @@ function pickPrompt(p: string) {
 }
 
 .who {
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.68);
   font-weight: 850;
   margin-bottom: 8px;
@@ -935,7 +935,7 @@ function pickPrompt(p: string) {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.1);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .txt :deep(.md-table-wrap) {
@@ -984,7 +984,7 @@ function pickPrompt(p: string) {
   align-items: center;
   gap: 6px;
   color: rgba(255, 255, 255, 0.7);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -1053,7 +1053,7 @@ function pickPrompt(p: string) {
 }
 
 .tool-txt {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   opacity: 0.85;
 }
@@ -1073,7 +1073,7 @@ function pickPrompt(p: string) {
   background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
   color: rgba(255, 255, 255, 0.86);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
 }
 

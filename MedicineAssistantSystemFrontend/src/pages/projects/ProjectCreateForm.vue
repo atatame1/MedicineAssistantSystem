@@ -295,7 +295,7 @@ defineExpose({ reset })
 .pcf-form :deep(.el-form-item__label) {
   color: rgba(255, 255, 255, 0.72);
   font-weight: 780;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .pcf-grid {
@@ -359,7 +359,7 @@ defineExpose({ reset })
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;

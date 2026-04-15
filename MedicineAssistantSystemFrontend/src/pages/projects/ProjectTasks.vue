@@ -363,7 +363,7 @@ onMounted(async () => {
 
 .kicker {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -379,7 +379,7 @@ onMounted(async () => {
 
 .s {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.58);
 }
 
@@ -413,7 +413,7 @@ onMounted(async () => {
   justify-content: center;
   padding: 5px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 950;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.08);

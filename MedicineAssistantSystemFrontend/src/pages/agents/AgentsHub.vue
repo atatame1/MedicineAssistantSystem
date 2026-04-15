@@ -146,7 +146,7 @@ function openAgent(key: string) {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.14);
   color: rgba(255, 255, 255, 0.88);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 850;
 }
 
@@ -162,7 +162,7 @@ function openAgent(key: string) {
 .intro-sub {
   margin: 10px 0 0;
   color: rgba(255, 255, 255, 0.56);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -262,7 +262,7 @@ function openAgent(key: string) {
   position: absolute;
   right: 14px;
   top: 10px;
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.3);
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -291,7 +291,7 @@ function openAgent(key: string) {
 .desc {
   margin-top: 8px;
   color: rgba(255, 255, 255, 0.66);
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.45;
   font-weight: 700;
 }

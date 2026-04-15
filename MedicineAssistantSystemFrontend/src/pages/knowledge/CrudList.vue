@@ -452,7 +452,7 @@ load()
 
 .kb-hint {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.45);
   line-height: 1.4;
 }
@@ -486,7 +486,7 @@ load()
 
 .kb-title-block .s {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(189, 212, 204, 0.72);
 }
 
@@ -570,7 +570,7 @@ load()
 
 .kb-tile-id {
   display: inline-block;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   color: rgba(200, 169, 103, 0.95);
   letter-spacing: 0.06em;
@@ -628,7 +628,7 @@ load()
 
 .kb-k {
   display: block;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   color: rgba(158, 228, 207, 0.78);
   margin-bottom: 4px;
@@ -637,7 +637,7 @@ load()
 
 .kb-v {
   margin: 0;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.55;
   color: rgba(233, 244, 239, 0.88);
   white-space: pre-wrap;
@@ -677,14 +677,14 @@ load()
   display: block;
   white-space: pre-wrap;
   word-break: break-word;
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.55;
 }
 
 .kb-empty {
   padding: 40px 16px;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.42);
 }
 

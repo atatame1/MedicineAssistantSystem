@@ -222,7 +222,7 @@ onMounted(load)
 
 .kicker {
   margin: 0 0 6px;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -238,7 +238,7 @@ onMounted(load)
 
 .s {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.58);
 }
 
@@ -276,7 +276,7 @@ onMounted(load)
   justify-content: center;
   padding: 5px 10px;
   border-radius: 999px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 950;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.08);
@@ -316,7 +316,7 @@ onMounted(load)
 }
 
 .dt {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   margin-bottom: 8px;

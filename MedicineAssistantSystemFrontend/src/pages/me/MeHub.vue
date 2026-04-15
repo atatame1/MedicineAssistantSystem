@@ -428,7 +428,7 @@ onMounted(load)
 
 .statline {
   margin-top: 14px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
@@ -445,7 +445,7 @@ onMounted(load)
 
 .statextra {
   margin-top: 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.55);
   display: flex;
@@ -466,7 +466,7 @@ onMounted(load)
   display: grid;
   grid-template-columns: 52px 1fr;
   gap: 8px;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.4;
 }
 
@@ -495,7 +495,7 @@ onMounted(load)
   border-radius: 12px;
   padding: 11px 14px;
   font-weight: 900;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.92);
   background: rgba(255, 255, 255, 0.12);
 }
@@ -525,7 +525,7 @@ onMounted(load)
 }
 
 .hk {
-  font-size: 11px;
+  font-size: 13px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   font-weight: 850;
@@ -555,7 +555,7 @@ onMounted(load)
 .badge {
   border-radius: 999px;
   padding: 8px 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 950;
   color: rgba(10, 34, 31, 0.95);
   background: rgba(200, 169, 103, 0.92);
@@ -609,12 +609,12 @@ onMounted(load)
   background: transparent;
   color: rgba(146, 230, 202, 0.95);
   font-weight: 900;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .empty {
   color: rgba(255, 255, 255, 0.6);
-  font-size: 14px;
+  font-size: 16px;
   padding: 8px 0 2px;
 }
 
@@ -658,7 +658,7 @@ onMounted(load)
 .tag {
   border-radius: 999px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 950;
   color: rgba(255, 255, 255, 0.86);
   background: rgba(255, 255, 255, 0.1);
@@ -692,7 +692,7 @@ onMounted(load)
 }
 
 .muted {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.6);
   font-weight: 800;
 }
@@ -737,7 +737,7 @@ onMounted(load)
 .rmeta {
   display: block;
   margin-top: 6px;
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 800;
 }
@@ -752,7 +752,7 @@ onMounted(load)
 .chip {
   border-radius: 999px;
   padding: 6px 10px;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 850;
   color: rgba(255, 255, 255, 0.85);
   background: rgba(255, 255, 255, 0.08);
@@ -766,7 +766,7 @@ onMounted(load)
   background: rgba(255, 0, 0, 0.08);
   color: rgba(255, 255, 255, 0.9);
   font-weight: 800;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 @media (max-width: 980px) {

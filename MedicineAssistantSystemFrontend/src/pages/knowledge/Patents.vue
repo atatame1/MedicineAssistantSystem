@@ -129,7 +129,7 @@ async function openSimilar(row: Patent | null) {
 }
 .extra-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(189, 212, 204, 0.75);
 }
 .extra-actions {
@@ -142,7 +142,7 @@ async function openSimilar(row: Patent | null) {
 .empty {
   margin-top: 10px;
   color: rgba(255, 255, 255, 0.58);
-  font-size: 12px;
+  font-size: 14px;
 }
 .mb {
   margin: 10px 0;
