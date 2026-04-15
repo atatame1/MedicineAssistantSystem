@@ -69,38 +69,6 @@ async function openSimilar(row: Patent | null) {
     :form-schema-edit="patentEdit"
     :on-row-interact="syncPatentRow"
   />
-
-  <div class="extra kb-panel">
-    <div class="extra-title">专利分析</div>
-    <div class="extra-sub">在卡片上点「详细」或「编辑」可选中专利；再使用下方分析</div>
-    <div class="extra-actions">
-      <el-button :disabled="!current?.id" @click="openSimilar(current)">相似专利</el-button>
-      <el-button type="danger" :disabled="!current?.id" @click="openRisk(current)">侵权风险</el-button>
-    </div>
-
-    <div v-if="!current" class="empty">请先点某条卡片的「详细」或「编辑」</div>
-
-    <el-alert v-if="errorExtra" :title="errorExtra" type="error" show-icon class="mb" />
-
-    <el-drawer v-model="simOpen" title="相似专利推荐" size="50%">
-      <el-table v-loading="loadingExtra" :data="similar" stripe>
-        <el-table-column prop="patentId" label="专利ID" width="100" />
-        <el-table-column prop="patentName" label="名称" min-width="240" />
-        <el-table-column prop="score" label="得分" width="90" />
-        <el-table-column prop="riskLevel" label="风险" width="100" />
-      </el-table>
-    </el-drawer>
-
-    <el-drawer v-model="riskOpen" title="侵权风险提示" size="50%">
-      <div v-loading="loadingExtra">
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="风险等级">{{ risk?.riskLevel ?? '-' }}</el-descriptions-item>
-          <el-descriptions-item label="风险说明">{{ risk?.riskDescription ?? '-' }}</el-descriptions-item>
-          <el-descriptions-item label="建议">{{ risk?.suggestion ?? '-' }}</el-descriptions-item>
-        </el-descriptions>
-      </div>
-    </el-drawer>
-  </div>
   </div>
 </template>
 
