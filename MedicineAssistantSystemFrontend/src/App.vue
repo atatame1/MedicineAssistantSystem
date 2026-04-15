@@ -6,7 +6,6 @@ import LoginDialog from '@/components/LoginDialog.vue'
 import { useAuthStore } from '@/stores/auth'
 import defaultAvatar from '@/assets/shark_cute2.jpg'
 import brandLogo from '@/assets/logo.png'
-import heroArt from '@/assets/picture.png'
 import { logout } from '@/api/auth'
 
 type NavItem = {
@@ -23,7 +22,6 @@ const auth = useAuthStore()
 const userMenuOpen = ref(false)
 const displayName = computed(() => auth.user?.nickname || auth.user?.username || '游客')
 const pendingTo = ref<string | null>(null)
-const showPortalArt = computed(() => route.path === '/portal')
 
 const navItems: NavItem[] = [
   { path: '/portal', label: '智研门户', icon: '◉' },
@@ -87,7 +85,6 @@ onBeforeUnmount(() => {
       <div class="orb orb-a"></div>
       <div class="orb orb-b"></div>
       <div class="orb orb-c"></div>
-      <div v-if="showPortalArt" class="tcm-hero-art" :style="{ backgroundImage: `url(${heroArt})` }"></div>
       <div class="grid-layer"></div>
     </div>
 
@@ -207,27 +204,6 @@ onBeforeUnmount(() => {
   bottom: -100px;
   background: #4a8f7b;
   animation: float-c 14s ease-in-out infinite;
-}
-
-.tcm-hero-art {
-  position: absolute;
-  right: 52px;
-  top: 44px;
-  width: min(49vw, 700px);
-  height: min(44vh, 360px);
-  z-index: 1;
-  background-repeat: no-repeat;
-  background-size: contain;
-  background-position: right center;
-  opacity: 0.38;
-  filter: saturate(0.98) brightness(0.98) contrast(1.08);
-  mix-blend-mode: screen;
-  -webkit-mask-image:
-    linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.16) 42%, rgba(0, 0, 0, 1) 66%),
-    radial-gradient(circle at 66% 48%, rgba(0, 0, 0, 0.98) 48%, rgba(0, 0, 0, 0) 90%);
-  mask-image:
-    linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.16) 42%, rgba(0, 0, 0, 1) 66%),
-    radial-gradient(circle at 66% 48%, rgba(0, 0, 0, 0.98) 48%, rgba(0, 0, 0, 0) 90%);
 }
 
 .grid-layer {
