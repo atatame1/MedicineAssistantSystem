@@ -821,11 +821,18 @@ onMounted(loadList)
   -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
   padding: 12px 10px 10px;
-  max-height: 440px;
+  max-height: 540px;
   overflow: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.lane-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .proj-pill {
@@ -1396,7 +1403,7 @@ onMounted(loadList)
   }
 
   .lane-scroll {
-    max-height: 260px;
+    max-height: 320px;
   }
 }
 </style>

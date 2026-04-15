@@ -136,7 +136,9 @@ public class PortalController {
             JsonNode root = objectMapper.readTree(body);
             int code = root.path("code").asInt(-99999);
             String msg = root.path("msg").asText();
-            if (code != 0) return Result.fail(StringUtils.hasText(msg) ? msg : ("请求失败，code=" + code));
+            if (code != 0) {
+                return Result.fail(normalizeThirdPartyMsg(msg, code));
+            }
 
             MpArticleQueryResponse response = new MpArticleQueryResponse();
             response.setMpNickname(asText(root, "mp_nickname"));
@@ -201,5 +203,15 @@ public class PortalController {
     private static Long asLongObj(JsonNode node, String field) {
         JsonNode n = node.path(field);
         return n.isLong() || n.isInt() ? n.asLong() : null;
+    }
+
+    private static String normalizeThirdPartyMsg(String msg, int code) {
+        String raw = msg == null ? "" : msg.trim();
+        String merged = raw + "|" + code;
+        if (merged.matches("(?is).*?(金额不足|额度不足|余额不足|请充值|QPS超过上限|请求频繁|20001|10002|被拦截|限额).*")) {
+            return "达到系统请求限额了";
+        }
+        if (StringUtils.hasText(raw)) return raw;
+        return "请求失败，code=" + code;
     }
 }
