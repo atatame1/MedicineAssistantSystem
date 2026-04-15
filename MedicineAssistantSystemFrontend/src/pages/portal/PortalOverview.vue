@@ -388,17 +388,17 @@ onMounted(async () => {
 
     <section class="metric-row">
       <div class="metric-item">
-        <div class="metric-label">我的项目</div>
+        <div class="metric-label">进行中中药研发项目</div>
         <div class="metric-value">{{ projectCount }}</div>
         <div class="metric-sub">最近更新前 10 个项目</div>
       </div>
       <div class="metric-item">
-        <div class="metric-label">待办任务</div>
+        <div class="metric-label">待处理立项评估</div>
         <div class="metric-value">{{ taskCount }}</div>
         <div class="metric-sub">包含实验与审批任务</div>
       </div>
       <div class="metric-item">
-        <div class="metric-label">风险预警</div>
+        <div class="metric-label">高风险研发节点</div>
         <div class="metric-value">{{ riskCount }}</div>
         <div class="metric-sub">高优先级项目风险提醒</div>
       </div>
