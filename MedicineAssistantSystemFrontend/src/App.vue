@@ -319,7 +319,7 @@ onBeforeUnmount(() => {
 }
 
 .user-name {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 800;
   max-width: 120px;
   overflow: hidden;
@@ -334,7 +334,7 @@ onBeforeUnmount(() => {
 
 .user-pop-sub {
   margin-top: 6px;
-  font-size: 12px;
+  font-size: 14px;
   color: #5c736b;
 }
 
@@ -418,16 +418,16 @@ onBeforeUnmount(() => {
 }
 
 .dock-icon {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1;
 }
 
 .dock-label {
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .dock-sub {
-  font-size: 9px;
+  font-size: 13px;
   line-height: 1;
   opacity: 0.88;
 }
