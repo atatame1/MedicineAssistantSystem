@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   deleteAiConversation,
   getAiConversationHistory,
@@ -51,6 +51,8 @@ const agentCodeMap: Record<string, string> = {
 }
 
 const input = ref('')
+const mdFileInput = ref<HTMLInputElement | null>(null)
+const mdContext = ref<{ name: string; content: string; truncated: boolean; chars: number } | null>(null)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const msgs = ref<Msg[]>([
@@ -383,7 +385,10 @@ async function send() {
     const v = text.trim()
     conversationTitle.value = v.length > 22 ? v.slice(0, 22) + '…' : v
   }
-  msgs.value.push({ role: 'user', content: text, ts: Date.now() })
+  const visibleText = mdContext.value
+    ? `${text}\n\n[已附加 Markdown 上下文：${mdContext.value.name}${mdContext.value.truncated ? '（已截断）' : ''}]`
+    : text
+  msgs.value.push({ role: 'user', content: visibleText, ts: Date.now() })
   loading.value = true
 
   try {
@@ -399,11 +404,15 @@ async function send() {
     msgs.value.push({ role: 'assistant', content: '', ts: Date.now() })
     const assistantIndex = msgs.value.length - 1
 
+    const payloadInput = mdContext.value
+      ? `${text}\n\n---\n以下是用户上传的 Markdown 文档上下文（文件名：${mdContext.value.name}${mdContext.value.truncated ? '，内容已截断' : ''}）：\n${mdContext.value.content}\n---`
+      : text
+
     await postAiStreamText(
       path,
       memoryEnabled.value
-        ? { input: text, conversationId: conversationId.value }
-        : { input: text },
+        ? { input: payloadInput, conversationId: conversationId.value }
+        : { input: payloadInput },
       (chunk) => {
         const msg = msgs.value[assistantIndex]
         if (msg) msg.content += chunk
@@ -445,6 +454,52 @@ function clearChat() {
 
 function pickPrompt(p: string) {
   input.value = p
+}
+
+function openMdPicker() {
+  mdFileInput.value?.click()
+}
+
+async function onMdFileChange(e: Event) {
+  const target = e.target as HTMLInputElement | null
+  const file = target?.files?.[0]
+  if (!file) return
+  const name = file.name || ''
+  const lower = name.toLowerCase()
+  if (!(lower.endsWith('.md') || lower.endsWith('.markdown'))) {
+    ElMessage.error('仅支持 .md/.markdown 文件')
+    if (target) target.value = ''
+    return
+  }
+  let txt = ''
+  try {
+    txt = await file.text()
+  } catch {
+    ElMessage.error('读取 Markdown 文件失败')
+    if (target) target.value = ''
+    return
+  }
+  const normalized = txt.replace(/\r\n/g, '\n').trim()
+  if (!normalized) {
+    ElMessage.warning('Markdown 文件内容为空')
+    if (target) target.value = ''
+    return
+  }
+  const MAX_CHARS = 12000
+  const truncated = normalized.length > MAX_CHARS
+  const content = truncated ? normalized.slice(0, MAX_CHARS) : normalized
+  mdContext.value = {
+    name,
+    content,
+    truncated,
+    chars: content.length
+  }
+  ElMessage.success(`已加载 Markdown 上下文：${name}`)
+  if (target) target.value = ''
+}
+
+function clearMdContext() {
+  mdContext.value = null
 }
 
 </script>
@@ -518,12 +573,16 @@ function pickPrompt(p: string) {
               @keydown.enter.shift.exact.stop />
             <div class="bar">
               <div class="tools">
-                <button class="tool-btn" type="button" @click="pickPrompt('请先问我 3 个关键问题，帮助你更准确地完成任务。')">
+                <button class="tool-btn" type="button" @click="openMdPicker">
                   +
                 </button>
                 <div class="tool-txt">Tools</div>
               </div>
               <el-button class="send" type="primary" :loading="loading" @click="send">发送</el-button>
+            </div>
+            <div v-if="mdContext" class="md-context-row">
+              <span class="md-context-name">Markdown：{{ mdContext.name }}（{{ mdContext.chars }}字）</span>
+              <button type="button" class="md-context-remove" @click="clearMdContext">移除</button>
             </div>
           </div>
 
@@ -570,17 +629,28 @@ function pickPrompt(p: string) {
             @keydown.enter.exact.prevent="send" @keydown.enter.shift.exact.stop />
           <div class="bar">
             <div class="tools">
-              <button class="tool-btn" type="button" @click="pickPrompt('请先问我 3 个关键问题，帮助你更准确地完成任务。')">
+              <button class="tool-btn" type="button" @click="openMdPicker">
                 +
               </button>
               <div class="tool-txt">Tools</div>
             </div>
             <el-button class="send" type="primary" :loading="loading" @click="send">发送</el-button>
           </div>
+          <div v-if="mdContext" class="md-context-row">
+            <span class="md-context-name">Markdown：{{ mdContext.name }}（{{ mdContext.chars }}字）</span>
+            <button type="button" class="md-context-remove" @click="clearMdContext">移除</button>
+          </div>
         </div>
       </div>
       </section>
     </div>
+    <input
+      ref="mdFileInput"
+      type="file"
+      accept=".md,.markdown,text/markdown,text/plain"
+      style="display: none"
+      @change="onMdFileChange"
+    />
   </div>
 </template>
 
@@ -1050,6 +1120,38 @@ function pickPrompt(p: string) {
   color: rgba(255, 255, 255, 0.9);
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(10px);
+}
+
+.md-context-row {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.md-context-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 700;
+}
+
+.md-context-remove {
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .tool-txt {

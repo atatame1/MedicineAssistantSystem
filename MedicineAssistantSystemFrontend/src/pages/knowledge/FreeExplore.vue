@@ -119,19 +119,19 @@ async function analyze() {
 }
 
 .shell {
-  width: min(920px, 100%);
+  width: min(960px, 100%);
   margin: 0 auto;
 }
 
 .hd .t {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 900;
   color: rgba(255, 255, 255, 0.94);
 }
 
 .hd .s {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: 18px;
   color: rgba(189, 212, 204, 0.72);
 }
 
@@ -160,6 +160,7 @@ async function analyze() {
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.03);
   color: rgba(233, 244, 239, 0.92);
+  font-size: 16px;
   border-radius: 12px;
   padding: 10px 12px;
   outline: none;
@@ -195,6 +196,7 @@ async function analyze() {
   color: rgba(255, 255, 255, 0.86);
   padding: 10px 12px;
   cursor: pointer;
+  font-size: 16px;
   font-weight: 800;
 }
 
@@ -204,6 +206,7 @@ async function analyze() {
   border-radius: 12px;
   padding: 11px 12px;
   cursor: pointer;
+  font-size: 16px;
   font-weight: 900;
   color: #06241e;
   background: linear-gradient(135deg, rgba(146, 230, 202, 0.96), rgba(115, 209, 180, 0.92));
@@ -234,7 +237,7 @@ async function analyze() {
 .txt {
   margin: 0;
   color: rgba(233, 244, 239, 0.9);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.8;
   word-break: break-word;
   font-family: inherit;

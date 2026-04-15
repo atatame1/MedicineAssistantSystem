@@ -328,6 +328,7 @@ async function submit() {
 .btn-ghost {
   width: 100%;
   margin-top: 10px;
+  margin-left: 0 !important;
 }
 
 .fine {

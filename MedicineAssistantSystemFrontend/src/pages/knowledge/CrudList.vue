@@ -367,6 +367,9 @@ load()
               <el-button type="danger" plain size="small" :disabled="saving" @click="remove(row)">删除</el-button>
             </div>
           </article>
+          <article class="kb-tile kb-tile-ellipsis" aria-hidden="true">
+            <div class="kb-tile-ellipsis-dot">...</div>
+          </article>
         </div>
         <div v-else-if="!loading" class="kb-empty">暂无数据，可尝试检索或新增</div>
       </div>
@@ -544,6 +547,23 @@ load()
   box-shadow: 0 10px 32px rgba(0, 0, 0, 0.2);
   overflow: hidden;
   min-height: 0;
+}
+
+.kb-tile-ellipsis {
+  align-items: center;
+  justify-content: center;
+  border-style: dashed;
+  border-color: rgba(115, 209, 180, 0.3);
+  background: linear-gradient(160deg, rgba(14, 42, 36, 0.35), rgba(8, 28, 24, 0.24));
+  min-height: 250px;
+}
+
+.kb-tile-ellipsis-dot {
+  font-size: 42px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  color: rgba(200, 169, 103, 0.76);
+  transform: translateX(0.08em);
 }
 
 .kb-tile-accent {
