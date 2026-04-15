@@ -182,7 +182,8 @@ onMounted(load)
     </el-dialog>
 
     <el-dialog v-model="detailOpen" width="720px" append-to-body>
-      <div class="dc">{{ detailTitle || '-' }}</div>
+      <div class="dt">详细描述</div>
+      <div class="dc">{{ detailDesc || '-' }}</div>
       <template #footer>
         <el-button @click="detailOpen = false">关闭</el-button>
       </template>
@@ -325,6 +326,8 @@ onMounted(load)
 .dc {
   border-radius: 10px;
   padding: 10px 12px;
+  font-size: 16px;
+  color: #303133;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
