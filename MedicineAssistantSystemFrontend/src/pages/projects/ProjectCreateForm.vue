@@ -17,6 +17,7 @@ const memberUserIds = ref<number[]>([])
 const aiEvalProgress = ref(0)
 const aiEvalRunning = ref(false)
 let aiEvalRaf = 0
+const DECIMAL_15_2_MAX = 9999999999999.99
 
 const form = reactive<Project>({
   projectName: '',
@@ -115,6 +116,15 @@ async function submit() {
     }
     if (!form.aiAssess || !form.aiAssess.trim()) {
       throw new Error('AI 立项评估必填')
+    }
+    if (form.budget != null) {
+      const b = Number(form.budget)
+      if (!Number.isFinite(b)) throw new Error('预算必须为数字')
+      if (b < 0) throw new Error('预算不能为负数')
+      if (b > DECIMAL_15_2_MAX) throw new Error('预算超出范围（decimal(15,2)）')
+      const rounded = Math.round(b * 100) / 100
+      if (Math.abs(b - rounded) > 1e-9) throw new Error('预算最多 2 位小数')
+      form.budget = rounded
     }
     const created = await createProject(form)
     const pid = created.id
@@ -237,7 +247,15 @@ defineExpose({ reset })
           </el-select>
         </el-form-item>
         <el-form-item label="预算（万）">
-          <el-input-number v-model="form.budget" :min="0" :step="1" class="pcf-num" controls-position="right" />
+          <el-input-number
+            v-model="form.budget"
+            :min="0"
+            :max="DECIMAL_15_2_MAX"
+            :step="0.01"
+            :precision="2"
+            class="pcf-num"
+            controls-position="right"
+          />
         </el-form-item>
         <el-form-item label="优先级" class="pcf-span2">
           <el-input-number v-model="form.priority" :min="0" class="pcf-num" controls-position="right" />
