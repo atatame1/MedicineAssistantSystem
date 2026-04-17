@@ -120,7 +120,7 @@ async function submit() {
           </el-button>
           <el-button class="btn-ghost" size="large" @click="open = false">先以游客身份继续</el-button>
           <div class="fine">
-            登录代表你同意以项目账号访问系统能力（仅本地开发/内网环境）
+            登录代表你同意以项目账号访问系统能力
           </div>
         </el-form>
       </div>

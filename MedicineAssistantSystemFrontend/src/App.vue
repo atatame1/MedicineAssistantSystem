@@ -2,9 +2,9 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { UserFilled } from '@element-plus/icons-vue'
 import LoginDialog from '@/components/LoginDialog.vue'
 import { useAuthStore } from '@/stores/auth'
-import defaultAvatar from '@/assets/shark_cute2.jpg'
 import brandLogo from '@/assets/logo.png'
 import { logout } from '@/api/auth'
 
@@ -103,7 +103,7 @@ onBeforeUnmount(() => {
         <el-popover v-model:visible="userMenuOpen" placement="bottom-end" :width="220" trigger="click">
           <template #reference>
             <button class="user-chip" type="button">
-              <img class="user-avatar" :src="defaultAvatar" alt="avatar" />
+              <el-avatar class="user-avatar" :icon="UserFilled" />
               <span class="user-name">{{ displayName }}</span>
             </button>
           </template>
@@ -313,9 +313,15 @@ onBeforeUnmount(() => {
 .user-avatar {
   width: 28px;
   height: 28px;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: 1px solid rgba(146, 230, 202, 0.82);
+  color: #0b2a24;
+  background: linear-gradient(145deg, #c8a967, #92e6ca);
+  box-shadow: 0 0 0 2px rgba(11, 42, 36, 0.35);
+}
+
+.user-avatar :deep(.el-icon) {
+  font-size: 16px;
+  font-weight: 900;
 }
 
 .user-name {

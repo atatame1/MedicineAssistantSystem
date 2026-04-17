@@ -576,7 +576,7 @@ function clearMdContext() {
                 <button class="tool-btn" type="button" @click="openMdPicker">
                   +
                 </button>
-                <div class="tool-txt">Tools</div>
+                <div class="tool-txt">文档上传</div>
               </div>
               <el-button class="send" type="primary" :loading="loading" @click="send">发送</el-button>
             </div>
@@ -587,10 +587,10 @@ function clearMdContext() {
           </div>
 
           <div class="chips">
-            <button class="chip" type="button" @click="pickPrompt('请帮我梳理当前任务目标、输入与输出格式。')">梳理目标</button>
-            <button class="chip" type="button" @click="pickPrompt('把我这段内容总结成要点，并给出下一步行动清单。')">总结要点</button>
-            <button class="chip" type="button" @click="pickPrompt('给出一个更专业、更清晰的表达版本。')">润色表达</button>
-            <button class="chip" type="button" @click="pickPrompt('先给出结论，再给出理由与步骤。')">结论优先</button>
+            <button class="chip" type="button" @click="pickPrompt('')">梳理目标</button>
+            <button class="chip" type="button" @click="pickPrompt('')">总结要点</button>
+            <button class="chip" type="button" @click="pickPrompt('')">润色表达</button>
+            <button class="chip" type="button" @click="pickPrompt('')">结论优先</button>
           </div>
         </div>
         </div>

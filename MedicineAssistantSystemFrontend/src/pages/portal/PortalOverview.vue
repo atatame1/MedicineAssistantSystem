@@ -37,20 +37,12 @@ let summaryRaf = 0
 const DEFAULT_MP_NAME = '中药新药'
 const MP_PREF_KEY = 'mas_portal_mp_pref'
 const MP_CACHE_PREFIX = 'mas_portal_mp_cache:v2:'
-const MP_REQ_LIMIT_KEY = 'mas_portal_mp_req_limit:v1'
 const MP_AUTO_REFRESH_KEY = 'mas_portal_mp_auto_refresh:v1'
-const MP_REQ_DAILY_LIMIT = 6
-const mpReqCount = ref(0)
 
 type MpCache = {
   nickname: string
   items: MpArticleItem[]
   updatedAt: number
-}
-
-type MpReqLimit = {
-  day: string
-  count: number
 }
 
 const projectCount = computed(() => overview.value?.myProjects?.length ?? 0)
@@ -132,7 +124,6 @@ const statusMap: Record<number, { text: string; type: 'info' | 'warning' | 'succ
 }
 
 const activeMpName = computed(() => mpNickname.value || mpKeyword.value || DEFAULT_MP_NAME)
-const mpReqRemain = computed(() => Math.max(0, MP_REQ_DAILY_LIMIT - mpReqCount.value))
 
 async function load() {
   if (!userId.value) return
@@ -225,43 +216,6 @@ function saveMpKeyword() {
   } catch {}
 }
 
-function currentDay() {
-  const d = new Date()
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${y}-${m}-${day}`
-}
-
-function loadMpReqLimit() {
-  try {
-    const raw = localStorage.getItem(MP_REQ_LIMIT_KEY)
-    if (!raw) {
-      mpReqCount.value = 0
-      return
-    }
-    const rec = JSON.parse(raw) as MpReqLimit
-    if (rec.day !== currentDay()) {
-      mpReqCount.value = 0
-      localStorage.setItem(MP_REQ_LIMIT_KEY, JSON.stringify({ day: currentDay(), count: 0 }))
-      return
-    }
-    mpReqCount.value = Number.isFinite(rec.count) ? Math.max(0, rec.count) : 0
-  } catch {
-    mpReqCount.value = 0
-  }
-}
-
-function consumeMpReqQuota() {
-  loadMpReqLimit()
-  if (mpReqCount.value >= MP_REQ_DAILY_LIMIT) return false
-  mpReqCount.value += 1
-  try {
-    localStorage.setItem(MP_REQ_LIMIT_KEY, JSON.stringify({ day: currentDay(), count: mpReqCount.value }))
-  } catch {}
-  return true
-}
-
 function loadMpCache(name: string) {
   try {
     const raw = localStorage.getItem(`${MP_CACHE_PREFIX}${name}`)
@@ -294,10 +248,6 @@ async function loadMpArticles(force = false, persistKeyword = true) {
   mpKeyword.value = name
   mpError.value = null
   if (!force && loadMpCache(name)) return
-  if (!consumeMpReqQuota()) {
-    mpError.value = `今日查询次数已用完（${MP_REQ_DAILY_LIMIT}次），请明天再试`
-    return
-  }
   mpLoading.value = true
   try {
     const res = await queryMpArticles({ name, page: 1 })
@@ -311,6 +261,14 @@ async function loadMpArticles(force = false, persistKeyword = true) {
   } finally {
     mpLoading.value = false
   }
+}
+
+function currentDay() {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }
 
 function isAfterNine() {
@@ -361,7 +319,6 @@ watch(
 onMounted(async () => {
   load()
   restoreMpKeyword()
-  loadMpReqLimit()
   await triggerDailyMpRefresh()
   loadMpArticles()
 })
@@ -413,12 +370,11 @@ onMounted(async () => {
         <div class="mp-toolbar">
           <el-input v-model="mpKeyword" size="small" placeholder="输入公众号名称" clearable @keyup.enter="loadMpArticles(true)" />
           <div class="mp-toolbar-actions">
-            <el-button size="small" :loading="mpLoading" :disabled="mpLoading || mpReqRemain <= 0" @click="loadMpArticles(true)">查询</el-button>
-            <el-button size="small" :disabled="mpLoading || mpReqRemain <= 0" @click="restoreMpDefault">恢复默认</el-button>
+            <el-button size="small" :loading="mpLoading" :disabled="mpLoading" @click="loadMpArticles(true)">查询</el-button>
+            <el-button size="small" :disabled="mpLoading" @click="restoreMpDefault">恢复默认</el-button>
           </div>
         </div>
         <div class="mp-name">{{ activeMpName }}</div>
-        <div class="mp-limit-tip">今日剩余查询 {{ mpReqRemain }} / {{ MP_REQ_DAILY_LIMIT }}</div>
         <div v-if="mpError" class="mp-error">{{ mpError }}</div>
         <ul v-else class="news-list">
           <li v-for="(item, idx) in mpArticles" :key="`${item.url || idx}`">

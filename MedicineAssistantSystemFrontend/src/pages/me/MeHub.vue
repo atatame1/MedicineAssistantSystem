@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { UserFilled } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import defaultAvatar from '@/assets/shark_cute2.jpg'
 import {
   getMyProfile,
   getUserFavoriteStatistics,
@@ -118,7 +118,7 @@ const profileSubline = computed(() => {
   return `ID ${id || '-'}`
 })
 
-const avatarSrc = computed(() => profile.value?.avatarUrl || defaultAvatar)
+const avatarSrc = computed(() => profile.value?.avatarUrl || '')
 
 const profileDetailRows = computed(() => {
   const p = profile.value
@@ -216,7 +216,7 @@ onMounted(load)
       <aside class="left">
         <div class="profile">
           <div class="avatar">
-            <img class="avimg" :src="avatarSrc" alt="" />
+            <el-avatar class="avimg" :size="148" :src="avatarSrc || undefined" :icon="UserFilled" />
           </div>
           <div class="pn">{{ displayName }}</div>
           <div class="ps">{{ profileSubline }}</div>
@@ -393,22 +393,52 @@ onMounted(load)
   width: 148px;
   height: 148px;
   border-radius: 999px;
+  position: relative;
   display: grid;
   place-items: center;
   overflow: hidden;
   font-weight: 950;
   font-size: 44px;
-  color: rgba(10, 34, 31, 0.95);
-  background: radial-gradient(circle at 30% 30%, rgba(146, 230, 202, 0.95), rgba(200, 169, 103, 0.55));
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.25);
+  color: rgba(232, 245, 239, 0.9);
+  background: radial-gradient(circle at 30% 24%, rgba(150, 186, 173, 0.34), rgba(72, 108, 98, 0.28));
+  border: 1px solid rgba(188, 163, 114, 0.34);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.avatar::before {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(205, 225, 216, 0.18);
+  pointer-events: none;
+}
+
+.avatar::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  top: 10px;
+  height: 42px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(225, 240, 234, 0.14), rgba(225, 240, 234, 0));
+  pointer-events: none;
 }
 
 .avimg {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  border: 1px solid rgba(192, 215, 205, 0.28);
+  color: rgba(229, 245, 239, 0.86);
+  background: linear-gradient(160deg, rgba(128, 165, 152, 0.32), rgba(62, 96, 87, 0.3));
+  box-shadow: inset 0 0 22px rgba(7, 30, 25, 0.2), 0 0 0 1px rgba(184, 159, 112, 0.14);
+}
+
+.avimg :deep(.el-icon) {
+  font-size: 56px;
+  font-weight: 900;
+  filter: drop-shadow(0 2px 4px rgba(8, 28, 24, 0.32));
 }
 
 .pn {
